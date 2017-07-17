@@ -1,0 +1,480 @@
+ --
+ -- WWP-LEOS-SW-XGRADE-MIB.my
+ --
+
+ --  This module provides authoritative definitions for WWP's
+ --  enterprise-specific SNMP API to upgrade the software 
+ --  on world wide packet devices. This MIB 
+ --  file allows the user to download, install and upgrade 
+ --  the world wide packet specific packages.
+ --  This module will be extended, as required.
+ 
+ WWP-LEOS-SW-XGRADE-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS 		
+   NOTIFICATION-TYPE, IpAddress, Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY			
+	    FROM SNMPv2-SMI			
+   DisplayString, TruthValue, TEXTUAL-CONVENTION			
+	    FROM SNMPv2-TC
+   AddressFamilyNumbers
+            FROM IANA-ADDRESS-FAMILY-NUMBERS-MIB
+   wwpModules, wwpModulesLeos		
+	    FROM WWP-SMI;
+	
+	
+ wwpLeosSwXgradeMIB MODULE-IDENTITY
+	    LAST-UPDATED "200304211700Z"
+	    ORGANIZATION "World Wide Packets, Inc"
+	    CONTACT-INFO
+		    "   Mib Meister
+		  	Postal: World Wide Packets
+		        P.O. Box 950
+		        Veradale, WA 99037
+		        USA
+		 	Phone:  +1 509 242 9000
+			Email:  mib.meister@worldwidepackets.com"
+	    DESCRIPTION
+		    "The MIB module for downloading and installing packages."
+	    REVISION    "200304211700Z"
+	    DESCRIPTION
+		    "Initial creation."
+	    ::= { wwpModulesLeos 10 }
+						
+ --
+ -- Node definitions
+ --
+	
+ wwpLeosSwXgradeMIBObjects OBJECT IDENTIFIER ::= { wwpLeosSwXgradeMIB 1 }
+ 
+ --
+ -- Software Xgrade
+ --
+ wwpLeosSwXgrade OBJECT IDENTIFIER ::= { wwpLeosSwXgradeMIBObjects 1 }
+ 
+ 
+ -- Notifications 
+  
+ wwpLeosSwXgradeMIBNotificationPrefix  OBJECT IDENTIFIER ::= { wwpLeosSwXgradeMIB 2 } 
+ wwpLeosSwXgradeMIBNotifications       OBJECT IDENTIFIER ::=  
+                       { wwpLeosSwXgradeMIBNotificationPrefix 0 }
+
+ -- Conformance information 
+ 
+ wwpLeosSwXgradeMIBConformance OBJECT IDENTIFIER ::= { wwpLeosSwXgradeMIB 3 } 
+ wwpLeosSwXgradeMIBCompliances OBJECT IDENTIFIER ::= { wwpLeosSwXgradeMIBConformance 1 } 		
+ wwpLeosSwXgradeMIBGroups      OBJECT IDENTIFIER ::= { wwpLeosSwXgradeMIBConformance 2 }
+
+ SwDownloadState ::= TEXTUAL-CONVENTION
+     STATUS current
+     DESCRIPTION
+	     "The state of a package download operation. 
+	     The description of each state is given below:
+
+	     idle: 	              No package download operation is in place.
+ 
+ 	     downloading: 	      this state signifies that the package is being
+				      downloaded from the tftp server.
+
+	     downloadComplete:        the state when a package download is
+				      successfully completed.
+
+	     downloadFailed:          the package download was unsuccesful.
+		"
+     SYNTAX   INTEGER {
+		   idle(1),
+		   downloading(2),
+                   downloadComplete(3), 
+		   downloadFailed(4)  
+	      }
+
+ SwDownloadFailCause ::= TEXTUAL-CONVENTION
+     STATUS current
+     DESCRIPTION
+	     "The reason a package download or Xgrade request failed."
+     SYNTAX        INTEGER  {
+                       downloadSuccess(0),
+		       invalidPkgFile(1),                       
+                       couldNotGetFile(2),
+		       tftpServerNotFound(3),
+                       cmdFileParseError(4),
+                       internalFilesystemError(5),                       
+                       flashOffline(6),
+                       noStatus(7),                    
+                       badFileCrc(8),
+		       alreadyUpgradeMode(9),		       
+		       unknownError(10)
+                   }
+    
+                       
+ SwXgradeOp ::= TEXTUAL-CONVENTION
+     STATUS current
+     DESCRIPTION
+             "The possible options for upgrading the software. 
+	     The description of each option is given below:
+                
+             none:                       No upgrade option is selected.
+ 
+             install:                    This option will install the software 
+                                         on the specified blade (or all the blades), if 
+                                         the software is not currently installed there.
+                            
+             inServiceActivate :         This option will activate any new software 
+                                         installed on the specified blade (or all the blades)
+                                         only if the installation is not service affecting. 
+                                         The option will fail if the blade (any of the blades) 
+                                         cannot be activated without affecting service.
+                                           
+             serviceAffectingActivate :  This option will activate any new software 
+                                         installed on the specified blade (or all the blades).
+                                         It will attempt to do so without affecting service, 
+                                         but will override if necessary.
+                                         
+             inServiceXgrade:           This option will Xgrade the specified blade 
+                                         (or all the blades) without affecting the services. 
+                                         If the system is in protected mode, 
+                                         then this command will cause both control blades to be 
+                                         x-graded via a redundant x-grade. If the control blades 
+                                         are not in protected mode, then this command will fail if 
+                                         an in-service Xgrade cannot be done on a single control 
+                                         blade. if inServiceXgrade is not possible for the blade,
+                                         then setting this option will result in Error and 
+                                         a service affecting report will be generated.
+                                         
+             serviceAffectingXgrade:    This option will Xgrade the specified blade 
+                                         (or all the blades) with minimum service affecting downtime.  
+                                         If the blade belongs to an enabled protection group, then both 
+                                         blades will be Xgraded.
+                                         
+                 
+             servAffectingXgradeReport:  This option will generate a service affecting report for a 
+                                         blade (or all the blades) to go to the specified package.
+					 Report file will be stored in local flash at following location 
+					 (/flash0/software/xgrade-sequence.txt)
+	
+	     servNonAffectingXgradeReport:  This option will generate a service non affecting report for a 
+                                         blade (or all the blades) to go to the specified package.
+					 Report file will be stored in local flash at following location 
+					 (/flash0/software/xgrade-sequence.txt)       
+                      "
+     SYNTAX       INTEGER {
+		       none(0),
+		       install(1),
+                       inServiceActivate(2),
+                       serviceAffectingActivate(3),
+		       inServiceXgrade(4),
+                       serviceAffectingXgrade(5),
+                       servAffectingXgradeReport(6),
+		       servNonAffectingXgradeReport(7)
+		  }                  
+                      
+ --
+ -- sw download
+ -- 
+ wwpLeosSwDownload OBJECT IDENTIFIER ::= { wwpLeosSwXgrade 1 }
+ 
+ wwpLeosSwDownloadServerAddrType OBJECT-TYPE
+     SYNTAX       AddressFamilyNumbers
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+	     "Specifies the wwpLeosSwDownloadServerAddr type. It can 
+	      be set to 1 for IPV4 type addresses or can be 
+	      set to 16 for host name."
+     DEFVAL { 0 }
+     ::= { wwpLeosSwDownload  1 }
+
+ wwpLeosSwDownloadServerAddr OBJECT-TYPE
+     SYNTAX       DisplayString
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+	     "The ip address of the tftp server or the host name from which the software 
+             package should be downloaded. 
+             Address must be a unicast address or host name that 
+             is reachable from the agent and no firewalls/acls preventing 
+             tftp datagrams from being transferred."
+     DEFVAL { 0 }
+     ::= { wwpLeosSwDownload  2 }
+
+ wwpLeosSwDownloadPackageName OBJECT-TYPE
+     SYNTAX      DisplayString(SIZE(0..128))
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+	     "The package name (including the path, if applicable) to be 
+             retrieved from the tftp server. Length of package string must 
+             not exceed 128 alpha-numeric characters, 
+             no spaces in filenames."
+     DEFVAL { "" }        
+     ::= { wwpLeosSwDownload 3 }
+
+ wwpLeosSwDownLoadActivate  OBJECT-TYPE
+     SYNTAX          TruthValue
+     MAX-ACCESS      read-write
+     STATUS          current
+     DESCRIPTION
+    	     "Activate the software download operation with a value 
+             of True(1). The object will return to 'false' once the 
+             software download is completed. Poll wwpLeosSwDownloadStatus 
+             for current status. Default value is False. 
+             WwpSwDownLoadServerAddr and wwpLeosSwDownloadPackageName must 
+             be valid prior to setting this object to True.
+             
+             The management station will not not be able to set this 
+             object to 'true' if the package name does not follow the
+             correct syntax (i.e. wwp/cmd/pmf-1.0.gz)"
+     DEFVAL { false }                
+     ::= { wwpLeosSwDownload 4 }		
+
+ wwpLeosSwDownloadNotifOnCompletion OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "Specifies whether or not a wwpLeosSwDownloadCompletion
+             notification should be issued on completion of the tftp
+             transfer. If such a notification is desired, it is the
+             responsibility of the management entity to ensure that the
+             SNMP administrative model is configured in such a way as to
+             allow the notification to be delivered."
+     DEFVAL { true }
+     ::= { wwpLeosSwDownload 5 }
+
+ wwpLeosSwDownloadStatus OBJECT-TYPE
+     SYNTAX        SwDownloadState
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+             "Specifies the state of this pacakge download request. 
+             If no pacakage download request is being processed , 
+             then the wwpLeosSwDownloadStatus should be 'idle'."
+    ::= { wwpLeosSwDownload 6 }
+
+ wwpLeosSwDownloadFailCause OBJECT-TYPE
+     SYNTAX       SwDownloadFailCause
+     MAX-ACCESS   read-only
+     STATUS       current
+     DESCRIPTION
+             "The reason why the software download operation failed. 
+             If no software download transfer request is being processed, 
+             then the wwpLeosSwDownloadFailCause should be 'noStatus'."           
+    ::= { wwpLeosSwDownload 7 }
+
+ wwpLeosSwDownloadNotificationInfo OBJECT-TYPE
+     SYNTAX         DisplayString (SIZE (0..127))
+     MAX-ACCESS     read-only
+     STATUS         current
+     DESCRIPTION
+             "The string explaining the error code in detail or 
+             the additional info for the software download 
+             completion."           
+    ::= { wwpLeosSwDownload 8 }
+    
+ --
+ --  The Software Xgrade Blade Table
+ --
+
+ wwpLeosSwXgradeBladeTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF WwpLeosSwXgradeBladeEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+            "The (conceptual) table applies
+            for all the blades." 
+    ::= { wwpLeosSwXgrade 2 }
+
+ wwpLeosSwXgradeBladeEntry OBJECT-TYPE
+    SYNTAX     WwpLeosSwXgradeBladeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the wwpLeosSwXgradeTable."
+    INDEX      { wwpLeosSwXgradeBladeId }
+    ::= { wwpLeosSwXgradeBladeTable 1 }
+ 
+ WwpLeosSwXgradeBladeEntry ::= SEQUENCE {   
+    wwpLeosSwXgradeBladeId	INTEGER,
+    wwpLeosSwXgradePackage	DisplayString,
+    wwpLeosSwXgradeOp		INTEGER,
+    wwpLeosSwXgradeTftpAddrType AddressFamilyNumbers,
+    wwpLeosSwXgradeTftpAddr	DisplayString,	    
+    wwpLeosSwXgradeOpActivate	TruthValue,    
+    wwpLeosSwXgradeOpStatus	INTEGER,        
+    wwpLeosSwXgradePackagePath	DisplayString
+ }
+
+ wwpLeosSwXgradeBladeId     OBJECT-TYPE
+     SYNTAX              INTEGER (0..65535)
+     MAX-ACCESS          read-only
+     STATUS              current
+     DESCRIPTION
+    	     "The object indicates the unique id for the 
+             blade. The id zero is reserved for chassis and
+             the corresponding Xgrade entry will be applied 
+             to all the blades."               
+       ::= { wwpLeosSwXgradeBladeEntry 1 }
+ 
+ wwpLeosSwXgradePackage OBJECT-TYPE
+     SYNTAX      DisplayString(SIZE(0..128))
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+	     "The package name to be Xgraded."
+     DEFVAL { "" }        
+     ::= { wwpLeosSwXgradeBladeEntry 2 }
+           
+ wwpLeosSwXgradeOp   OBJECT-TYPE
+     SYNTAX           SwXgradeOp
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+    	     "The Xgrade operation to be performed on the 
+             specified blade."           
+       ::= { wwpLeosSwXgradeBladeEntry 3 }	
+ 
+ wwpLeosSwXgradeTftpAddrType OBJECT-TYPE
+     SYNTAX       AddressFamilyNumbers
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+	     "Specifies the wwpLeosSwXgradeTftpAddr type. It can 
+	      be set to 1 for IPV4 type addresses or can be 
+	      set to 16 for host name."
+     DEFVAL { 0 }
+     ::= { wwpLeosSwXgradeBladeEntry  4 }
+
+ wwpLeosSwXgradeTftpAddr OBJECT-TYPE
+     SYNTAX       DisplayString
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+	     "The ip address of the tftp server or the host name from which the software 
+             package should be downloaded. This is optional. 
+             Address must be a unicast address or host name that is reachable from the 
+	     agent and no firewalls/acls preventing tftp datagrams from being transferred."
+     DEFVAL { 0 }
+     ::= { wwpLeosSwXgradeBladeEntry 5 }
+
+ wwpLeosSwXgradeOpActivate  OBJECT-TYPE
+     SYNTAX              TruthValue
+     MAX-ACCESS          read-write
+     STATUS              current
+     DESCRIPTION
+    	     "Setting this object to 'true' will activate the
+             Xgrade operation for the blade."           
+       ::= { wwpLeosSwXgradeBladeEntry 6 }
+ 
+ wwpLeosSwXgradeOpStatus  OBJECT-TYPE
+     SYNTAX               INTEGER {
+                             none(1),
+			     processing(2),
+                             success(3),
+                             failure(4)
+                          }
+     MAX-ACCESS           read-only
+     STATUS               current
+     DESCRIPTION
+    	     "Display the result of the wwpLeosSwXgradeOpActivate."               
+       ::= { wwpLeosSwXgradeBladeEntry 7 }      
+       
+  wwpLeosSwXgradePackagePath  OBJECT-TYPE
+     SYNTAX               DisplayString
+     MAX-ACCESS           read-write
+     STATUS               current
+     DESCRIPTION
+    	     "This object can be used to specify the path for the package
+    	      If this object is set then device will prepend the package name 
+    	      specified by wwpLeosSwXgradePackage object with wwpLeosSwXgradePackagePath.
+    	      
+    	      To reset this object set it to 0"               
+       ::= { wwpLeosSwXgradeBladeEntry 8 }
+
+ --
+ --  The Installed Software Package Info
+ --
+
+ wwpLeosBladePackageInfoTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF WwpLeosBladePackageInfoEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+            "The (conceptual) table applies for all the blades." 
+    ::= { wwpLeosSwXgrade 3 }
+
+ wwpLeosBladePackageInfoEntry OBJECT-TYPE
+    SYNTAX     WwpLeosBladePackageInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the wwpLeosSwXgradeTable."
+    INDEX      { wwpLeosSwXgradeBladeId }
+    ::= { wwpLeosBladePackageInfoTable 1 }
+ 
+ WwpLeosBladePackageInfoEntry ::= SEQUENCE {   
+    wwpLeosBladeInstPackageVer    DisplayString,    
+    wwpLeosBladeRunPackageVer     DisplayString
+ }
+
+ wwpLeosBladeInstPackageVer     OBJECT-TYPE
+     SYNTAX              DisplayString(SIZE(0..128))
+     MAX-ACCESS          read-only
+     STATUS              current
+     DESCRIPTION
+    	     "This displays the installed package version of the blade."               
+     DEFVAL { "" }
+       ::= { wwpLeosBladePackageInfoEntry 1 }
+ 
+ wwpLeosBladeRunPackageVer OBJECT-TYPE
+     SYNTAX      DisplayString(SIZE(0..128))
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+	     "This displays the running package version of the blade."
+     DEFVAL { "" }        
+     ::= { wwpLeosBladePackageInfoEntry 2 }
+           
+--
+-- Notification
+--
+
+ wwpLeosSwDownloadCompletion NOTIFICATION-TYPE
+	OBJECTS	   {	wwpLeosSwDownloadPackageName,
+			wwpLeosSwDownloadFailCause,
+			wwpLeosSwDownloadNotificationInfo
+		   }
+	STATUS	   current
+	DESCRIPTION
+		"A wwpLeosSwDownloadCompletion notification is sent 
+                at the completion of a software download request."
+	::= { wwpLeosSwXgradeMIBNotifications 1 }
+         
+ wwpLeosSwXgradeOpCompletion NOTIFICATION-TYPE
+     OBJECTS	   {   wwpLeosSwXgradeBladeId,                       
+		       wwpLeosSwXgradePackage,
+		       wwpLeosSwXgradeOp,
+                       wwpLeosSwXgradeOpStatus                 
+		   }
+     STATUS	   current
+     DESCRIPTION
+	     "A wwpLeosSwXgradeOpCompletion notification is sent at 
+	     the completion of a install/activate/Xgrade request."
+	::= { wwpLeosSwXgradeMIBNotifications 2 }
+
+ wwpLeosSwXgradeBladePkgIncorrect  NOTIFICATION-TYPE
+        OBJECTS	   {	
+			wwpLeosSwXgradeBladeId			
+		   }
+	STATUS	   current
+	DESCRIPTION
+		"A wwpLeosSwXgradeBladePkgIncorrect notification is sent 
+		 if device recognizes that it is running incorrect software 
+		 version."
+	::= { wwpLeosSwXgradeMIBNotifications 3 }
+ 
+ END
+ 
+ -- 
+ -- WWP-SW-Xgrade-MIB
+ --
+ 
+ 

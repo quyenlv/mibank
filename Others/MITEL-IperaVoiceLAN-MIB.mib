@@ -1,0 +1,330 @@
+-- Copyright 2001 MITEL Networks Corporation
+-- All rights reserved.
+-- This MITEL SNMP Management Information Base Specification
+-- (Specification) embodies MITEL's confidential and
+-- proprietary intellectual property. MITEL retains all
+-- title and ownership in the Specification, including any
+-- revisions.
+
+-- This Specification is supplied "AS IS", and MITEL makes
+-- no warranty, either express or implied, as to the use,
+-- operation, condition, or performance of the Specification.
+
+MITEL-IperaVoiceLAN-MIB DEFINITIONS ::= BEGIN
+
+
+    IMPORTS
+	OBJECT-TYPE
+		FROM RFC-1212
+	TRAP-TYPE
+		FROM RFC-1215
+	DisplayString
+		FROM RFC1213-MIB
+        mitelAppCallServer, mitelConfCompliances,
+        mitelConfAgents, 
+        mitelGrpIpera3000, mitelIdCsIpera3000
+            FROM MITEL-MIB;
+
+    mitelAppCsIpera3000  OBJECT IDENTIFIER ::= {mitelAppCallServer 2}  -- "1" being used for sx2000 as mitelAppCs2000   
+-- MODULE-IDENTITY
+--        LAST-UPDATED      "0011100000Z"
+--        ORGANIZATION      "MITEL Corporation"
+--        CONTACT-INFO      "MITEL Corporation
+--                           350 Legget Drive, PO Box 13089
+--                           Kanata, Ontario
+--                           Canada  K2K 1X3
+--                           Tel: +1 613 592 2122
+--                           Fax: +1 613 592 4784"
+--        DESCRIPTION       "The MITEL Ipera 3000 MIB module."
+--        REVISION          "0011100000Z"
+--        DESCRIPTION   "Mitel Ipera 3000 MIB Version 1.0"
+
+-- For SNMPv1 compliance:
+Integer32 ::= INTEGER (-2147483648..2147483647)
+DateAndTime ::= OCTET STRING(SIZE(8 | 11))
+
+    -- ************************************
+    -- Ipera 3000-specific Textual Conventions
+    -- ************************************
+
+    MitelIpera3000AlarmLevelType ::= INTEGER   
+                {               almClear(1),     -- all clear
+                                almMinor(2),     -- minor alarm
+                                almMajor(3),     -- major alarm
+                                almCritical(4)   -- critical alarm
+				}
+
+--TEXTUAL-CONVENTION
+--        STATUS            current
+--        DESCRIPTION       "The MITEL-defined alarm level type."
+
+
+    -- ************************************
+    -- The mitelAppCsIpera3000 subtree... Ipera 3000.
+    -- ************************************
+
+    mitelIpera3000System  OBJECT IDENTIFIER ::= {mitelAppCsIpera3000 1 }    
+--OBJECT-IDENTITY
+--    STATUS                current
+--    DESCRIPTION           "Subtree for any product-specific information."
+--    ::= { mitelAppCsIpera3000 1 }
+
+    mitelIpera3000Alarms  OBJECT IDENTIFIER ::= {mitelAppCsIpera3000 2}   
+--OBJECT-IDENTITY
+--    STATUS                current
+--    DESCRIPTION           "Alarms information for the Ipera 3000."
+--    ::= { mitelAppCsIpera3000 2 }
+
+    -- ************************************
+    -- The mitel subtree... table of Call Server-specific system information.
+    -- ************************************
+
+--    mitelIpera3000SysName    OBJECT-TYPE
+--        SYNTAX            DisplayString
+--        ACCESS        read-only
+--        STATUS           mandatory 
+--        DESCRIPTION       "The name of the call server."
+--        ::= { mitelIpera3000System 1 }
+
+
+    -- ************************************
+    -- The mitelIpera3000Alarms subtree... table of alarm states
+    -- ************************************
+
+
+    mitelIpera3000AlmLevel       OBJECT-TYPE
+        SYNTAX            MitelIpera3000AlarmLevelType
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "The current overall alarm level for the call
+                          server."
+        ::= { mitelIpera3000Alarms 1 }
+
+    mitelIpera3000AlmDetectDate  OBJECT-TYPE
+        SYNTAX            DateAndTime
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "Defines when the alarm was detected."
+        ::= { mitelIpera3000Alarms 2 }
+
+    mitelIpera3000AlmNbrCategories OBJECT-TYPE
+        SYNTAX            Integer32
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "Defines the number of associated entries in
+                          the categories table."
+        ::= { mitelIpera3000Alarms 3 }
+
+    -- ************************************
+    -- The mitelIpera3000CategoryTable subtree... table of categorized alarms
+    -- ************************************
+
+    mitelIpera3000CategoryTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF MitelIpera3000CategoryTableEntry
+        ACCESS        not-accessible
+        STATUS           mandatory 
+        DESCRIPTION       "Table defining the alarm state for individual
+                          call server categories. There will be multiple
+                          categories for each call server. The number of
+                          rows in the table is determined by the total
+                          of the mitelIpera3000AlmTblNbrCategories value."
+        ::= { mitelIpera3000Alarms 4 }
+
+    mitelIpera3000CategoryTableEntry OBJECT-TYPE
+        SYNTAX            MitelIpera3000CategoryTableEntry
+        ACCESS        not-accessible
+        STATUS           mandatory 
+        DESCRIPTION       "A row defining a single category."
+        INDEX             { mitelIpera3000CatTblIndex }
+        ::= { mitelIpera3000CategoryTable 1 }
+
+    MitelIpera3000CategoryTableEntry ::=
+        SEQUENCE {
+          mitelIpera3000CatTblIndex            INTEGER,
+          mitelIpera3000CatTblAvailable        Integer32,
+          mitelIpera3000CatTblUnavailable      Integer32,
+          mitelIpera3000CatTblLevel            MitelIpera3000AlarmLevelType,
+          mitelIpera3000CatTblMinorThresh      Integer32,
+          mitelIpera3000CatTblMajorThresh      Integer32,
+          mitelIpera3000CatTblCriticalThresh   Integer32,
+          mitelIpera3000CatTblName             DisplayString
+        }
+
+    mitelIpera3000CatTblIndex    OBJECT-TYPE
+        SYNTAX           INTEGER 
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "Differentiates the different category reports
+                          for the call server. The first category
+                          will have an index value of 1, the second will
+                          have 2, etc. up to the last category report. The
+                          highest possible index value is 100."
+        ::= { mitelIpera3000CategoryTableEntry 1 }
+
+    mitelIpera3000CatTblAvailable OBJECT-TYPE
+        SYNTAX            Integer32
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "The number of available resources of this type
+                          of category on this call server."
+        ::= { mitelIpera3000CategoryTableEntry 2 }
+
+    mitelIpera3000CatTblUnavailable OBJECT-TYPE
+        SYNTAX            Integer32
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "The number of unavailable resources of this type
+                          of category on this call server."
+        ::= { mitelIpera3000CategoryTableEntry 3 }
+
+    mitelIpera3000CatTblLevel    OBJECT-TYPE
+        SYNTAX            MitelIpera3000AlarmLevelType
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "Defines the alarm level for this category on this
+                          call server."
+        ::= { mitelIpera3000CategoryTableEntry 4 }
+
+    mitelIpera3000CatTblMinorThresh OBJECT-TYPE
+        SYNTAX            Integer32
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "The percentage unavailable threshold indicating
+                          a minor alarm on this call server category."
+        ::= { mitelIpera3000CategoryTableEntry 5 }
+
+    mitelIpera3000CatTblMajorThresh OBJECT-TYPE
+        SYNTAX            Integer32
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "The percentage unavailable threshold indicating
+                          a major alarm on this call server category."
+        ::= { mitelIpera3000CategoryTableEntry 6 }
+
+    mitelIpera3000CatTblCriticalThresh OBJECT-TYPE
+        SYNTAX            Integer32
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "The percentage unavailable threshold indicating
+                          a critical alarm on this call server category."
+        ::= { mitelIpera3000CategoryTableEntry 7 }
+
+    mitelIpera3000CatTblName     OBJECT-TYPE
+        SYNTAX            DisplayString
+        ACCESS        read-only
+        STATUS           mandatory 
+        DESCRIPTION       "The name of this resource category."
+        ::= { mitelIpera3000CategoryTableEntry 8 }
+
+    -- ************************************
+    -- The Ipera 3000 Alarm Notifications
+    -- ************************************
+
+    mitelIpera3000Notifications  OBJECT IDENTIFIER ::= {mitelAppCsIpera3000 3}
+--        STATUS           mandatory 
+--        DESCRIPTION       "The common traps supported by MITEL agents."
+--        ::= { mitelAppCsIpera3000 3 }
+
+    mitelIpera3000NotifAlarm     TRAP-TYPE 
+    ENTERPRISE mitelIdCsIpera3000
+        VARIABLES {
+--          mitelIpera3000SysName,      	 the name of the system 
+          mitelIpera3000AlmLevel,           -- the call server alarm level
+          mitelIpera3000AlmDetectDate,      -- the alarm detection time
+          mitelIpera3000AlmNbrCategories    -- indicates the number of assoc'd categories
+        }
+--        STATUS           mandatory 
+        DESCRIPTION       "This notification is generated whenever
+                          an alarm condition is detected or cleared. The
+                          manager is expected to retrieve the corresponding
+                          alarm and category table information."
+        ::= 301  -- "201" being used by sx-2000
+
+    -- ************************************
+    -- The mitelConformance subtree.
+    -- ************************************
+
+    mitelComplIpera3000 OBJECT IDENTIFIER ::= {mitelConfCompliances 4}    
+-- MODULE-COMPLIANCE
+--        STATUS           mandatory 
+--        DESCRIPTION       "The compliance statement for SNMPv2 entities which
+--                           implement the MITEL Ipera 3000 MIB."
+--        MODULE 
+--              compliance to the MITEL Ipera 3000 MIB module
+--          MANDATORY-GROUPS { mitelGrpIpera3000System }
+--        ::= { mitelConfCompliances 4 }
+
+    mitelGrpIpera3000System  OBJECT IDENTIFIER ::= {mitelGrpIpera3000 1}    
+--OBJECT-GROUP
+--        OBJECTS           {
+--                            mitelIpera3000SysName
+--                          }
+--        STATUS          mandatory 
+--        DESCRIPTION       "The system information objects in the Ipera 3000 MIB."
+--        ::= { mitelGrpIpera3000 1 }
+
+    mitelGrpIpera3000Alarms  OBJECT IDENTIFIER ::= {mitelGrpIpera3000 2}    
+--OBJECT-GROUP
+--        OBJECTS           {
+--                            mitelIpera3000AlmLevel, 
+--                            mitelIpera3000AlmDetectDate,
+--                            mitelIpera3000AlmNbrCategories,
+--                            mitelIpera3000CatTblAvailable,
+--                            mitelIpera3000CatTblUnavailable,
+--                            mitelIpera3000CatTblLevel,
+--                            mitelIpera3000CatTblMinorThresh, 
+--                            mitelIpera3000CatTblMajorThresh,
+--                            mitelIpera3000CatTblCriticalThresh, 
+--                            mitelIpera3000CatTblName
+--                          }
+--        STATUS           mandatory 
+--        DESCRIPTION       "The alarms-related objects in the Ipera 3000 MIB."
+--        ::= { mitelGrpIpera3000 2 }
+
+--  mitelGrpIpera3000AlarmsNotifs NOTIFICATION-GROUP
+--      OBJECTS           {
+--                          mitelIpera3000NotifAlarm
+--                        }
+--      STATUS           mandatory 
+--      DESCRIPTION       "The current notifications in the Ipera 3000 MIB."
+--      ::= { mitelGrpIpera3000 3 }
+
+    -- ************************************
+    -- The mitelConfAgents subtree.
+    -- ************************************
+
+    mitelAgentIpera3000    OBJECT IDENTIFIER ::= {mitelConfAgents 3}  --"2"being used by sx2000
+--AGENT-CAPABILITIES
+--        PRODUCT-RELEASE   "MITEL Agent Release 1.0 for Ipera 3000"
+--        STATUS           mandatory 
+--        DESCRIPTION       "MITEL Ipera 3000 Agent."
+--
+--        SUPPORTS          SNMPv2-MIB
+--            INCLUDES      {
+--                            snmpStatsGroup, snmpORGroup,
+--                            snmpTrapGroup, snmpSetGroup,
+--                            snmpV1Group
+--                          systemGroup, snmpGroup, snmpSetGroup,
+--                          snmpBasicNotificationsGroup
+--                          }
+--
+--        SUPPORTS          MITEL-MIB
+--            INCLUDES      {
+--                            mitelGrpCmnNotifBasic
+--                          }
+--            VARIATION     mitelNotifEnblTblEnable
+--                ACCESS      read-only
+--                DESCRIPTION "Implemented as a configuration file item."
+--            VARIATION     mitelNotifEnblTblAck
+--                ACCESS      read-only
+--                DESCRIPTION "Acknowledgement of notifications is not
+--                             supported. Will always return False."
+--
+--        SUPPORTS          MITEL-SX2000-MIB
+--            INCLUDES      {
+--                            mitelGrpIpera3000Alarms,
+--                          mitelGrpIpera3000AlarmsNotifs
+--                         }
+--    ::= { mitelConfAgents 2 }
+
+END -- MITEL-IPERA3000-MIB

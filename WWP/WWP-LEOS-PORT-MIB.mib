@@ -1,0 +1,705 @@
+ --
+ -- WWP-LEOS-PORT-MIB.my
+ --
+ --
+
+ WWP-LEOS-PORT-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS                
+   Gauge32, NOTIFICATION-TYPE, Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY                  
+        FROM SNMPv2-SMI                 
+   DisplayString, MacAddress, TEXTUAL-CONVENTION, TruthValue                    
+        FROM SNMPv2-TC
+   sysName, sysLocation
+        FROM RFC1213-MIB                                                        
+   wwpModules, wwpModulesLeos           
+        FROM WWP-SMI;
+
+        
+ wwpLeosPortMIB MODULE-IDENTITY
+         LAST-UPDATED "200603150000Z"
+         ORGANIZATION "World Wide Packets, Inc"
+         CONTACT-INFO
+                  "   Mib Meister
+                      Postal: World Wide Packets
+                      P.O. Box 950
+                      Veradale, WA 99037
+                      USA
+                      Phone:  +1 509 242 9000
+                      Email:  mib.meister@worldwidepackets.com"
+          DESCRIPTION
+                  "This MIB module is for the Extension of the dot1dBasePortTable for WWP Products"
+          REVISION    "200603150000Z"
+          DESCRIPTION
+                  "Added eumeration to wwpLeosEtherPortAdminSpeed."
+          REVISION    "200507280000Z"
+          DESCRIPTION
+                  "Initial creation."
+          ::= { wwpModulesLeos 2 }
+
+
+ --
+ -- Textual conventions
+ --
+
+ PortList ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port.  Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1'
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'."
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    
+ --
+ -- Node definitions
+ --
+        
+ wwpLeosPortMIBObjects OBJECT IDENTIFIER ::= { wwpLeosPortMIB 1 }
+ 
+ wwpLeosEtherPort OBJECT IDENTIFIER ::= { wwpLeosPortMIBObjects 1 }
+
+ wwpLeosEtherPortNotif OBJECT IDENTIFIER ::= { wwpLeosPortMIBObjects 2 }
+
+ -- Notifications 
+  
+ wwpLeosPortMIBNotificationPrefix  OBJECT IDENTIFIER ::= { wwpLeosPortMIB 2 } 
+ wwpLeosPortMIBNotifications       OBJECT IDENTIFIER ::=  
+                       { wwpLeosPortMIBNotificationPrefix 0 }
+
+ -- Conformance information 
+ 
+ wwpLeosPortMIBConformance OBJECT IDENTIFIER ::= { wwpLeosPortMIB 3 } 
+ wwpLeosPortMIBCompliances OBJECT IDENTIFIER ::= { wwpLeosPortMIBConformance 1 }                
+ wwpLeosPortMIBGroups      OBJECT IDENTIFIER ::= { wwpLeosPortMIBConformance 2 }
+
+ 
+ wwpLeosEtherPortTable OBJECT-TYPE
+     SYNTAX       SEQUENCE OF WwpLeosEtherPortEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+             "Table of Ethernet Ports."
+     ::= { wwpLeosEtherPort 1 }
+                
+ wwpLeosEtherPortEntry OBJECT-TYPE
+     SYNTAX       WwpLeosEtherPortEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+             "Port Entry in the Ethernet Port Table."
+     INDEX { wwpLeosEtherPortId }
+     ::= { wwpLeosEtherPortTable 1 } 
+
+ WwpLeosEtherPortEntry ::= SEQUENCE { 
+     wwpLeosEtherPortId                         INTEGER,
+     wwpLeosEtherPortName                       DisplayString,
+     wwpLeosEtherPortDesc                       DisplayString,
+     wwpLeosEtherPortType                       INTEGER,
+     wwpLeosEtherPortPhysAddr                   MacAddress,
+     wwpLeosEtherPortAutoNeg                    TruthValue,
+     wwpLeosEtherPortAdminStatus                INTEGER,
+     wwpLeosEtherPortOperStatus                 INTEGER,
+     wwpLeosEtherPortAdminSpeed                 INTEGER,
+     wwpLeosEtherPortOperSpeed                  INTEGER,
+     wwpLeosEtherPortAdminDuplex                INTEGER,
+     wwpLeosEtherPortOperDuplex                 INTEGER,
+     wwpLeosEtherPortAdminFlowCtrl              INTEGER,
+     wwpLeosEtherPortOperFlowCtrl               INTEGER, 
+     wwpLeosEtherIngressPvid                    INTEGER,
+     wwpLeosEtherUntagEgressVlanId              INTEGER,     
+     wwpLeosEtherPortAcceptableFrameTypes       INTEGER,            
+     wwpLeosEtherPortUntaggedPriority           INTEGER,
+     wwpLeosEtherPortMaxFrameSize               INTEGER,
+     wwpLeosEtherPortVlanIngressFiltering       TruthValue,
+     wwpLeosEtherPortAdminAdvertisedFlowCtrl    INTEGER,
+     wwpLeosEtherPortVplsPortType               INTEGER,
+     wwpLeosEtherPortIngressCosPolicy           INTEGER,
+     wwpLeosEtherPortIngressFixedDot1dPri       INTEGER,
+     wwpLeosEtherPortUntagDataVsi               INTEGER,
+     wwpLeosEtherPortOperationalSpeed           Gauge32,
+     wwpLeosEtherPortUntagCtrlVsi               INTEGER,
+     wwpLeosEtherPortMirrorPort			TruthValue,
+     wwpLeosEtherPortMirrorIngress		INTEGER,
+     wwpLeosEtherPortMirrorEgress				INTEGER,
+     wwpLeosEtherPortUntagDataVsiType			INTEGER,
+     wwpLeosEtherPortUntagCtrlVsiType			   INTEGER,
+     wwpLeosEtherPortVsIngressFiltering         TruthValue
+  } 
+ 
+
+ wwpLeosEtherPortId   OBJECT-TYPE
+     SYNTAX         INTEGER (1..65535) 
+     MAX-ACCESS     read-only
+     STATUS         current
+     DESCRIPTION
+             "Port ID for the instance.  Port ID's start at 1, 
+             and may not be consecutive for each additional port. 
+             This port Id should refer to the dot1dBasePort in the 
+             Dot1dBasePortEntry."
+     ::= { wwpLeosEtherPortEntry 1 }            
+ 
+ wwpLeosEtherPortName OBJECT-TYPE
+     SYNTAX      DisplayString (SIZE (0..8))
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+             "A textual string containing information about the
+             port. This string should indicate about the physical
+             location of the port as well."
+     ::= { wwpLeosEtherPortEntry 2 }
+ 
+ wwpLeosEtherPortDesc OBJECT-TYPE
+     SYNTAX      DisplayString (SIZE (0..32))
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "A textual string containing port description."
+     ::= { wwpLeosEtherPortEntry 3 }
+
+ wwpLeosEtherPortType OBJECT-TYPE
+     SYNTAX        INTEGER {
+                        ethernet(1),
+                        fastEthernet(2),
+                        hundredFx(3),
+                        gigEthernet(4),                 
+                        lagPort(5),
+                        unknown(6),
+                        gigHundredFx(7),
+                        tripleSpeed(8)
+                   }
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+             "The port type for the port."
+     ::= { wwpLeosEtherPortEntry 4 }  
+
+ wwpLeosEtherPortPhysAddr OBJECT-TYPE
+     SYNTAX       MacAddress
+     MAX-ACCESS   read-only
+     STATUS       current
+     DESCRIPTION
+             "The ethernet MAC address for the port. This information can also
+             be achieved via dot1dTpFdbTable"
+     ::= { wwpLeosEtherPortEntry 5 }
+                
+ wwpLeosEtherPortAutoNeg  OBJECT-TYPE
+     SYNTAX       TruthValue
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "The object sets the port to AUTO NEG MOde and vice versa.
+             Specific platforms may have requirements of configuring
+             speed before moving the port to out of AUTO-NEG mode."
+     ::= { wwpLeosEtherPortEntry 6 }
+
+ wwpLeosEtherPortAdminStatus OBJECT-TYPE
+     SYNTAX       INTEGER {
+                       up(1),
+                       down(2)
+                  }
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "The desired state of the port."
+     ::= { wwpLeosEtherPortEntry 7 }
+                
+ wwpLeosEtherPortOperStatus OBJECT-TYPE
+     SYNTAX        INTEGER {
+                        up(1),
+                        down(2)
+                   }
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+             "The current operational state of Port."
+     ::= { wwpLeosEtherPortEntry 8 }
+                
+ wwpLeosEtherPortAdminSpeed OBJECT-TYPE
+     SYNTAX        INTEGER {
+                        tenMb(1),
+                        hundredMb(2),
+                        gig(3),
+                        auto(4)
+                   }
+     MAX-ACCESS    read-write
+     STATUS        current
+     DESCRIPTION
+             "Desired speed of the port. 
+             Set the port speed to be either 10MB, 100MB, or gig.  Set the
+             port speed to auto to enable automatic port speed detection.
+             The default value for this object depends upon the platform."
+     ::= { wwpLeosEtherPortEntry 9 }
+                
+ wwpLeosEtherPortOperSpeed OBJECT-TYPE
+     SYNTAX      INTEGER {
+                        unknown(0),
+                        tenMb(1),
+                        hundredMb(2),
+                        gig(3)
+                   }
+     MAX-ACCESS  read-only
+     STATUS      deprecated
+     DESCRIPTION
+             "The current operational speed of the port."
+     ::= { wwpLeosEtherPortEntry 10 }
+                
+ wwpLeosEtherPortAdminDuplex OBJECT-TYPE
+     SYNTAX         INTEGER {
+                         half(1),
+                         full(2)
+                     }
+     MAX-ACCESS     read-write
+     STATUS         current
+     DESCRIPTION
+             "The desired mode for the port. It can be set to either half or 
+             full duplex operation. The default value for this object 
+             depends upon the platform."
+     ::= { wwpLeosEtherPortEntry 11 }
+                
+ wwpLeosEtherPortOperDuplex OBJECT-TYPE
+     SYNTAX        INTEGER {
+                        half(1),
+                        full(2)   
+                   }
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+             "The current duplex mode of the port."
+     ::= { wwpLeosEtherPortEntry 12 }
+                
+ wwpLeosEtherPortAdminFlowCtrl OBJECT-TYPE
+     SYNTAX           INTEGER {
+                           unknown(1),
+                           off(2),
+                           asymTx(3),
+                           asymRx(4),
+                           sym(5)                           
+                      }
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "Configures the ports flow control operation."
+     ::= { wwpLeosEtherPortEntry 13 }
+                
+ wwpLeosEtherPortOperFlowCtrl OBJECT-TYPE
+      SYNTAX          INTEGER {
+                           unknown(1),
+                           off(2),
+                           asymTx(3),
+                           asymRx(4),
+                           sym(5)                           
+                      }
+     MAX-ACCESS       read-only
+     STATUS           current
+     DESCRIPTION
+             "Shows ports flow control configuration."
+     ::= { wwpLeosEtherPortEntry 14 }
+                
+ wwpLeosEtherIngressPvid OBJECT-TYPE
+     SYNTAX           INTEGER (1..24576)  
+     MAX-ACCESS       read-write
+     STATUS           current    
+     DESCRIPTION
+             "The Ingress PVID, the VLAN ID associated with untagged frames ingressing 
+              the port or if tunnel is enabled on this port. The max value for this 
+              object is platform dependent. Refer to architecture document for details 
+              of platform dependency."
+     REFERENCE
+         "IEEE 802.1Q/D11 Section 12.10.1.1"
+     DEFVAL      { 1 } 
+     ::= { wwpLeosEtherPortEntry 15 }
+          
+ wwpLeosEtherUntagEgressVlanId OBJECT-TYPE
+     SYNTAX           INTEGER (0..24576)
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "All the egress frames whose vlan id matches the wwpLeosEtherUntagEgressVlanId, will 
+              egress the port as untagged. To egress the frames tagged set 
+              wwpLeosEtherUntagEgressVlanId to 0. The max value for this object is 
+              platform dependent. Refer to architecture document for 
+              details of platform dependency."
+     ::= { wwpLeosEtherPortEntry 16 }
+ 
+ wwpLeosEtherPortAcceptableFrameTypes OBJECT-TYPE
+     SYNTAX           INTEGER {
+                          admitAll(1),
+                          admitOnlyVlanTagged(2)
+                      }
+    MAX-ACCESS        read-write
+    STATUS            current
+    DESCRIPTION
+            "When this is admitOnlyVlanTagged(2) the device will
+            discard untagged frames or Priority-Tagged frames
+            received on this port.  When admitAll(1), untagged
+            frames or Priority-Tagged frames received on this port
+            will be accepted and assigned to the PVID for this port.
+
+            This control does not affect VLAN independent BPDU
+            frames, such as GVRP and STP.  It does affect VLAN
+            dependent BPDU frames, such as GMRP."
+    REFERENCE
+        "IEEE 802.1Q/D11 Section 12.10.1.3"
+    DEFVAL      { admitAll }
+     ::= { wwpLeosEtherPortEntry 17 }
+          
+ wwpLeosEtherPortUntaggedPriority OBJECT-TYPE
+     SYNTAX       INTEGER {     
+                       p0(0),
+                       p1(1),
+                       p2(2),
+                       p3(3),
+                       p4(4),
+                       p5(5),
+                       p6(6),
+                       p7(7)
+                   }
+     MAX-ACCESS    read-write
+     STATUS        deprecated
+     DESCRIPTION
+             "The 802.1p packet priority to be assigned to packets ingressing 
+              this port that do not have an 802.1Q VLAN header. This priority 
+              is also assigned to ingress frame if tunnel is enabled on this port."
+     ::= { wwpLeosEtherPortEntry 18 }
+
+ wwpLeosEtherPortMaxFrameSize OBJECT-TYPE
+    SYNTAX           INTEGER (1522..9216)
+    MAX-ACCESS       read-write
+    STATUS           current
+    DESCRIPTION
+            "Setting this object will set the max frame size allowed on a 
+             port. The max frame size can vary from 1522 bytes to 9216 bytes. 
+             Default value is 1526 bytes."
+    ::= { wwpLeosEtherPortEntry 19 }
+
+ 
+ wwpLeosEtherPortVlanIngressFiltering   OBJECT-TYPE
+     SYNTAX         TruthValue
+     MAX-ACCESS     read-write
+     STATUS         current
+     DESCRIPTION
+             "When this is true(1) the device will discard incoming
+              frames for VLANs which do not include this Port in its
+              Member set.  When false(2), the port will accept all
+              incoming frames."
+     DEFVAL { true }
+     ::= { wwpLeosEtherPortEntry 20 }
+ 
+ wwpLeosEtherPortAdminAdvertisedFlowCtrl OBJECT-TYPE
+     SYNTAX           INTEGER {
+                           unknown(1),
+                           off(2),
+                           asymTx(3),
+                           sym(4),
+                           symAsymRx(5)
+                      }
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "This object specifies the advertised flow control
+              for given port."
+     ::= { wwpLeosEtherPortEntry 21 }
+     
+ wwpLeosEtherPortVplsPortType OBJECT-TYPE
+     SYNTAX           INTEGER {
+                                                notDefined(1),
+                                                subscriber(2),
+                                                networkFacing(3)                                                
+                                        }
+     MAX-ACCESS       read-only
+     STATUS           current
+     DESCRIPTION
+             "This object specifies wheather port is in subscriber type,
+              network facing side or both. "
+     ::= { wwpLeosEtherPortEntry 22 }
+     
+ wwpLeosEtherPortIngressCosPolicy OBJECT-TYPE
+     SYNTAX           INTEGER {                                                 
+                                                leave(1),
+                                                fixed(2),
+                                                ippInherit(3),
+                                                phbgInherit(4)
+                                        }
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "This object specifies the ingress cos policy to be applied to all 
+              frames coming in on the given port."
+     ::= { wwpLeosEtherPortEntry 23 }     
+      
+ wwpLeosEtherPortIngressFixedDot1dPri OBJECT-TYPE
+     SYNTAX           INTEGER (0..7)
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "The 802.1p packet priority to be assigned to packets ingressing 
+              this port that do not have an 802.1Q VLAN header. This priority 
+              is also assigned to ingress untag frame if virtual switch cos policy is set to fix.
+              for a given port."
+     ::= { wwpLeosEtherPortEntry 24 }
+     
+  wwpLeosEtherPortUntagDataVsi OBJECT-TYPE
+     SYNTAX           INTEGER (0..65535)
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "This object specifies the virtual switch to be used for this 
+              port if data frame is untagged. If this object is set to 0 then 
+              device will unset this object. 
+              When setting this object to Mpls Vsi Index then wwpLeosEtherPortUntagDataVsiType must also
+              be set to mpls (Use mutliple set operation)"
+     ::= { wwpLeosEtherPortEntry 25 } 
+     
+  wwpLeosEtherPortOperationalSpeed OBJECT-TYPE
+     SYNTAX      Gauge32
+     UNITS		 "kbps"
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+             "An estimate of the port's current bandwidth in k-bits per second
+              for given port."
+     ::= { wwpLeosEtherPortEntry 26 }
+     
+  wwpLeosEtherPortUntagCtrlVsi OBJECT-TYPE
+     SYNTAX           INTEGER (0..65535)
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "This object specifies the virtual switch to be used for this 
+              port if control frame is untagged. If this object is set to 0 then 
+              device will unset this object. 
+              When setting this object to Mpls Vsi Index then wwpLeosEtherPortUntagCtrlVsiType must also
+              be set to mpls (Use mutliple set operation)"
+     ::= { wwpLeosEtherPortEntry 27 } 
+ 
+  wwpLeosEtherPortMirrorPort  OBJECT-TYPE
+     SYNTAX       TruthValue
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "This object defines whether the port will allow traffic from other ports to 
+             be mirrored to this port.
+             To allow traffic from other ports to be sent to this port, set this object to
+             True(1). This port is known as a mirror port.
+             If set to true, then other ports may set the values of their 
+             wwpLeosEtherPortMirrorIngress or wwpLeosEtherPortMirrorEgress
+             objects to the port index of this port.
+             Setting this object to false(2) disables this port as a mirror port."           
+     DEFVAL { false }
+     ::= { wwpLeosEtherPortEntry 28 }
+  
+  wwpLeosEtherPortMirrorIngress  OBJECT-TYPE
+     SYNTAX       INTEGER (0..65535)
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "The value of this object is the port index of a mirror port. The ingress traffic
+             of this port can be mirrored by setting the destination port's wwpLeosEtherPortMirrorPort
+             object to true.
+             If the value of this object is set to zero this port's ingress traffic will not be mirrored."
+     DEFVAL {0}
+     ::= { wwpLeosEtherPortEntry 29 }
+
+  wwpLeosEtherPortMirrorEgress  OBJECT-TYPE
+     SYNTAX       INTEGER (0..65535)
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "The value of this object is the port index of a mirror port. The egress traffic
+             of this port can be mirrored by setting the destination port's wwpLeosEtherPortMirrorPort
+             object to true.
+             If the value of this object is set to zero this port's egress traffic will not be mirrored."            
+     DEFVAL {0}
+     ::= { wwpLeosEtherPortEntry 30 }
+
+  wwpLeosEtherPortUntagDataVsiType  OBJECT-TYPE
+     SYNTAX       INTEGER { 
+     					ethernet(1),
+     					mpls(2)     					
+     				}
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "This object specifies the virtual switch instance type associated with this
+              port. This object defaults to ethernet and specifes if  
+              wwpLeosEtherPortUntagDataVsi belongs to ethernet virtual switch table 
+              (wwpLeosVplsVirtualSwitchEthTable in WWP-LEOS-VPLS-MIB) 
+              or mpls virtual switch table (wwpLeosVplsVirtualSwitchMplsTable in
+              WWP-LEOS-VPLS-MIB).
+              When setting wwpLeosEtherPortUntagDataVsi to Mpls Vsi Index then this object must also be set to
+              mpls (Use mutliple set operation)"            
+     DEFVAL {ethernet}
+     ::= { wwpLeosEtherPortEntry 31 }
+ 
+ wwpLeosEtherPortUntagCtrlVsiType  OBJECT-TYPE
+     SYNTAX       INTEGER { 
+     					ethernet(1),
+     					mpls(2)     					
+     				}
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "This object specifies the virtual switch instance type associated with this
+              port. This object defaults to ethernet and specifes if  
+              wwpLeosEtherPortUntagCtrlVsi belongs to ethernet virtual switch table 
+              (wwpLeosVplsVirtualSwitchEthTable) or mpls virtual switch table
+              (wwpLeosVplsVirtualSwitchMplsTable).
+              When setting wwpLeosEtherPortUntagCtrlVsi to Mpls Vsi Index then this object must also be set to
+              mpls (Use mutliple set operation)"            
+     DEFVAL {ethernet}
+     ::= { wwpLeosEtherPortEntry 32 }
+
+ wwpLeosEtherPortVsIngressFiltering   OBJECT-TYPE
+     SYNTAX         TruthValue
+     MAX-ACCESS     read-write
+     STATUS         current
+     DESCRIPTION
+             "This item is applicable to this port when the port is
+              added as a per-port member to a v-switch. If true(1) the device
+              will discard incoming tagged frames. If false(2) the device will
+              forwared incoming tagged frames so long as those customer tagged
+              frames do not match another v-switch with this port included as
+              a per-port-per-vlan member."
+     DEFVAL { false }
+     ::= { wwpLeosEtherPortEntry 33 }
+
+ -- 
+ -- Port Flush Table
+ --
+ wwpLeosEtherPortFlushTable OBJECT-TYPE
+     SYNTAX       SEQUENCE OF WwpLeosEtherPortFlushEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+             "Table of port flush entries."
+     ::= { wwpLeosEtherPort 2 }
+                
+ wwpLeosEtherPortFlushEntry OBJECT-TYPE
+     SYNTAX       WwpLeosEtherPortFlushEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+             "Broadcast containment port entry in the Ethernet Port Table."
+     INDEX { wwpLeosEtherPortId }
+     ::= { wwpLeosEtherPortFlushTable 1 } 
+
+ WwpLeosEtherPortFlushEntry ::= SEQUENCE { 
+     wwpLeosEtherPortFlushActivate       TruthValue
+ }
+ 
+ wwpLeosEtherPortFlushActivate OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "Setting this object to 'true' will cause 
+             the Macs to be flushed for the port 
+             specified by wwpLeosEtherPortId."
+     DEFVAL { false }
+     ::= { wwpLeosEtherPortFlushEntry 1 }           
+ 
+ --
+ -- Port Traps enable/disable
+ --
+ wwpLeosEtherPortTrapsTable OBJECT-TYPE
+     SYNTAX       SEQUENCE OF WwpLeosEtherPortTrapsEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+             "Table of Ethernet Ports Traps."
+     ::= { wwpLeosEtherPort 3 }
+                
+ wwpLeosEtherPortTrapsEntry OBJECT-TYPE
+     SYNTAX       WwpLeosEtherPortTrapsEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+             "Port Traps Entry in the Ethernet Port Trap Table."
+     INDEX { wwpLeosEtherPortId }
+     ::= { wwpLeosEtherPortTrapsTable 1 } 
+
+ WwpLeosEtherPortTrapsEntry ::= SEQUENCE { 
+     wwpLeosEtherPortTrapsState     INTEGER     
+  } 
+
+ wwpLeosEtherPortTrapsState   OBJECT-TYPE
+     SYNTAX         INTEGER {
+                        disable(1),
+                        enable(2)
+                    }
+     MAX-ACCESS     read-write
+     STATUS         current
+     DESCRIPTION
+             "Setting this object will enable or disable all traps on given port."
+     ::= { wwpLeosEtherPortTrapsEntry 1 }
+
+ wwpLeosEtherStndLinkUpDownTrapsEnable OBJECT-TYPE
+     SYNTAX       TruthValue       
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "Setting this object to 'false(2)' will cause
+              standard Link Up Down Traps to be suppressed." 
+     DEFVAL { true }
+     ::= { wwpLeosEtherPortNotif 1 }
+     
+ wwpLeosEtherPortLinkUpDownTrapsEnable OBJECT-TYPE
+     SYNTAX       TruthValue       
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "Setting this object to 'true(1)' will cause
+              wwp specific port up down trap to be generated." 
+     DEFVAL { false }
+     ::= { wwpLeosEtherPortNotif 2 }
+ wwpLeosEthLinkUp  NOTIFICATION-TYPE
+        OBJECTS    {  sysName,
+                      sysLocation, 
+                      wwpLeosEtherPortId,
+                      wwpLeosEtherPortName,  
+                      wwpLeosEtherPortType,
+                      wwpLeosEtherPortAdminStatus,
+                      wwpLeosEtherPortOperStatus   
+                   }
+        STATUS     current
+        DESCRIPTION  
+                "A wwpLeosEthLinkUp trap signifies that the SNMP entity, acting in
+                 an agent role, has detected that the ifOperStatus object for
+                 one of its communication links has entered the up state."
+        ::= { wwpLeosPortMIBNotifications 3 } 
+        
+
+ wwpLeosEthLinkDown  NOTIFICATION-TYPE
+        OBJECTS    { sysName,
+                     sysLocation,
+                     wwpLeosEtherPortId,
+                     wwpLeosEtherPortType,
+                     wwpLeosEtherPortName,
+                     wwpLeosEtherPortAdminStatus,
+                     wwpLeosEtherPortOperStatus   
+                   }
+        STATUS     current
+        DESCRIPTION  
+                "A wwpLeosEthLinkDown trap signifies that the SNMP entity, acting in
+                 an agent role, has detected that the ifOperStatus object for
+                 one of its communication links has entered the down state."
+        ::= { wwpLeosPortMIBNotifications 4 } 
+
+ wwpLeosEthAdminSpeedIncompatible  NOTIFICATION-TYPE
+        OBJECTS    { wwpLeosEtherPortId
+                   }
+        STATUS     current
+        DESCRIPTION  
+                "A wwpLeosEthAdminSpeedIncompatible trap is generated when the port
+                 administrative speed doesn't match the speed of the SFP transceiver
+                 installed."
+        ::= { wwpLeosPortMIBNotifications 5 } 
+         
+ END

@@ -1,0 +1,179 @@
+ --
+ -- WWP-LEOS-RSVPTE-MIB.my
+ --
+
+ WWP-LEOS-RSVPTE-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS 		
+   IpAddress, TimeTicks, Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY			
+	FROM SNMPv2-SMI			
+   DisplayString, MacAddress, TEXTUAL-CONVENTION, RowStatus, TruthValue			
+	FROM SNMPv2-TC							
+   wwpModulesLeos		
+	FROM WWP-SMI;
+
+	
+ wwpLeosRsvpteMIB MODULE-IDENTITY
+	    LAST-UPDATED "200104031700Z"
+	    ORGANIZATION "World Wide Packets, Inc"
+	    CONTACT-INFO
+		    "   Mib Meister
+		  	Postal: World Wide Packets
+		        P.O. Box 950
+		        Veradale, WA 99037
+		        USA
+		 	Phone:  +1 509 242 9000
+			Email:  mib.meister@worldwidepackets.com"
+	    DESCRIPTION
+		    "This MIB module is for the RSVP-TE configuration for MPLS tunnels"
+	    REVISION    "200508081700Z"
+	    DESCRIPTION
+		    "Initial creation."
+	    ::= { wwpModulesLeos 30 }
+
+ --
+ -- Node definitions
+ --
+	
+ wwpLeosRsvpteMIBObjects OBJECT IDENTIFIER ::= { wwpLeosRsvpteMIB 1 }
+ wwpLeosRsvpteObjects    OBJECT IDENTIFIER ::= { wwpLeosRsvpteMIBObjects 1 }
+ wwpLeosRsvpte           OBJECT IDENTIFIER ::= { wwpLeosRsvpteMIBObjects 2 }
+
+ wwpLeosRsvpteAdminStatus OBJECT-TYPE
+      SYNTAX      INTEGER {
+                      enable(1),
+                      disable(2)
+                  }
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+          "The desired administrative state of RSVP-TE."
+      ::= { wwpLeosRsvpteObjects 1 }
+
+ wwpLeosRsvpteOperStatus OBJECT-TYPE
+      SYNTAX      INTEGER {
+                      up(1),          -- active
+                      down(2),        -- inactive
+                      goingUp(3),     -- activating
+                      goingDown(4),   -- deactivating
+                      actFailed(5)    -- activation failed
+                  }
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+          "The current operational state of RSVP-TE."
+      ::= { wwpLeosRsvpteObjects 2 }
+      
+ wwpLeosRsvpteRetryInterval OBJECT-TYPE
+      SYNTAX      Unsigned32 (3..65)
+      UNITS       "seconds"
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+          "The persistent tunnel retry interval.
+           This is the interval between the first failure of a persistent
+           tunnel and the first attempt to re-establish the tunnel.
+           This cannot be changed while admin status is enable or oper status is up"
+      DEFVAL      { 3 }
+      ::= { wwpLeosRsvpteObjects 3 }
+
+ wwpLeosRsvpteRetryInfiniteState OBJECT-TYPE
+      SYNTAX      INTEGER {
+      				on(1),
+      				off(2)
+      				}      
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+          "The persistent tunnel retry infinity.
+           This is the State which when on will trigger RSVP to try to restore the RSVP tunnels
+           infinite times. This object can only be set if RSVP is globally disabled."
+      DEFVAL      { on }
+      ::= { wwpLeosRsvpteObjects 4 }
+
+wwpLeosRsvpteIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwpLeosRsvpteIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of interfaces that RSVP-TE can be enabled on."
+    ::= { wwpLeosRsvpte 1 }
+    
+wwpLeosRsvpteIfEntry OBJECT-TYPE
+    SYNTAX      WwpLeosRsvpteIfEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "WWP Descr."
+         INDEX       { wwpLeosRsvpteIfIndex }
+    ::= { wwpLeosRsvpteIfTable 1 }
+
+WwpLeosRsvpteIfEntry ::= SEQUENCE {
+    wwpLeosRsvpteIfIndex           INTEGER,
+    wwpLeosRsvpteIfName            DisplayString,
+    wwpLeosRsvpteIfIpAddr          IpAddress,
+    wwpLeosRsvpteIfMtu             INTEGER,
+    wwpLeosRsvpteIfAdminStatus     INTEGER,
+    wwpLeosRsvpteIfOperStatus      INTEGER
+}
+
+ wwpLeosRsvpteIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface Name"
+    ::= { wwpLeosRsvpteIfEntry 1 }
+
+ wwpLeosRsvpteIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..4096)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Interface Index"
+    ::= { wwpLeosRsvpteIfEntry 2 }
+
+ wwpLeosRsvpteIfIpAddr OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Interface IP Address"
+    ::= { wwpLeosRsvpteIfEntry 3 }
+
+ wwpLeosRsvpteIfMtu OBJECT-TYPE
+    SYNTAX      INTEGER (1500..9216)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "RSVP-TE Interface MTU"
+    ::= { wwpLeosRsvpteIfEntry 4 }
+
+ wwpLeosRsvpteIfAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   enable(1),
+                   disable(2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Desired RSVP-TE status on this Interface"
+    ::= { wwpLeosRsvpteIfEntry 5 }
+
+ wwpLeosRsvpteIfOperStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   up(1),
+                   down(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "RSVP-TE Operational Status on this Interface"
+    ::= { wwpLeosRsvpteIfEntry 6 }
+
+
+ END
+ 
+--
+-- WWP-LEOS-RSVPTE-MIB
+--

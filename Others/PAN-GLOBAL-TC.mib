@@ -1,0 +1,74 @@
+PAN-GLOBAL-TC DEFINITIONS ::= BEGIN
+
+	IMPORTS
+		MODULE-IDENTITY
+			FROM SNMPv2-SMI
+		TEXTUAL-CONVENTION
+			FROM SNMPv2-TC
+		panModules
+			FROM PAN-GLOBAL-REG;
+
+	panGlobalTcModule MODULE-IDENTITY
+		LAST-UPDATED			"200709172200Z"
+		ORGANIZATION			"Palo Alto Networks"
+		CONTACT-INFO			"
+					Customer Support
+					Palo Alto Networks
+					2130 Gold St. Suite 200
+					Alviso, CA 95002
+
+					+1 408-786-0001
+					support at paloaltonetworks dot com"
+
+		DESCRIPTION				"
+			A MIB module containing textual conventions
+			for Palo Alto Networks' enterprise MIB modules.
+			These textual conventions are used across all Palo Alto products."
+
+		REVISION				"200709172200Z"
+		DESCRIPTION				"
+			Rev 1.0
+			Initial version of MIB module PAN-GLOBAL-TC."
+
+		::= { panModules 2 }
+
+	-- No Palo Alto textual conventions yet!
+
+	TcAppaname ::= TEXTUAL-CONVENTION
+		DISPLAY-HINT			"64a"
+		STATUS					current
+		DESCRIPTION				"
+			Represents the name of an application.
+
+			This has all the restrictions of the DisplayString textual
+			convention with the following additional ones:
+
+			- Only the following characters/character ranges are allowed:
+				0-9
+				A-Z
+				a-z
+				:./#$&_-+()'
+				<space>
+
+			Any object defined using this syntax may not exceed 64
+			characters in length."
+		SYNTAX       OCTET STRING (SIZE (0..64))
+
+	TcChassisType ::= TEXTUAL-CONVENTION
+		STATUS					current
+		DESCRIPTION				"
+			Enumerates all possible chassis types for Palo Alto devices."
+		SYNTAX       OCTET STRING (SIZE (0..64))
+END
+
+-- End - PAN-GLOBAL-TC Module
+
+-- ========================================================================
+-- Start - PAN-COMMON-MIB Module
+
+-- MIB for the common MIB objects implemented by all
+-- Palo Alto devices.
+--
+-- The convention described in "Understanding SNMP MIBs"
+-- (David Perkins, Evan McGinnis), Chapter 8, has generally been followed.
+

@@ -1,0 +1,1569 @@
+SYNOPTICS-ETHERNET-MIB
+
+-- Ethernet MIB Release 3.3
+-- DRAFT Revision 10/25/91
+-- Printed 10/25/91
+
+-- Copyright 1991 SynOptics Communications, Inc.  All Rights
+-- Reserved.  Reproduction of this document is authorized on
+-- condition that the foregoing copyright notice is included.
+-- This SynOptics SNMP Management Information Base Specification
+-- (Specification) embodies SynOptics' confidential and
+-- proprietary intellectual property.  SynOptics retains all
+-- title and ownership in the Specification, including any
+-- revisions.  
+--
+-- It is SynOptics intent to encourage the widespread use of
+-- this Specification in connection with the management of
+-- SynOptics products. SynOptics grants vendors, end-users,
+-- and other interested parties a non-exclusive license to
+-- use this Specification in connection with the management
+-- of SynOptics products.
+--
+-- This Specification is supplied "AS IS," and SynOptics makes
+-- no warranty, either express or implied, as to the use,
+-- operation, condition, or performance of the Specification.
+
+
+DEFINITIONS ::= BEGIN
+
+-- SECTION 1: Top Level Definitions
+
+-- Imports
+
+IMPORTS
+	Counter, IpAddress, Gauge	FROM RFC1155-SMI
+	DisplayString			FROM RFC1213-MIB
+	OBJECT-TYPE			FROM RFC-1212
+	s3000Ethernet			FROM SYNOPTICS-COMMON-MIB;
+
+
+-- Groups
+
+s3000EnetConcentrator	OBJECT IDENTIFIER ::= { s3000Ethernet 1 }
+s3000EnetBoard		OBJECT IDENTIFIER ::= { s3000Ethernet 2 }
+s3000EnetLocBridge	OBJECT IDENTIFIER ::= { s3000EnetBoard 2 }
+s3000EnetRemBridge	OBJECT IDENTIFIER ::= { s3000EnetBoard 3 }
+s3000EnetRouter		OBJECT IDENTIFIER ::= { s3000EnetBoard 4 }
+s3000EnetPort 		OBJECT IDENTIFIER ::= { s3000Ethernet 3 }
+s3000EnetNmm		OBJECT IDENTIFIER ::= { s3000Ethernet 4 }
+
+
+
+-- SECTION 2: Ethernet Status and Statistics Group
+
+-- The Ethernet Status and Statistics group consists of Concentrator Group,
+-- Board Table, Local Bridge Board Table, Local Bridge Port Table,
+-- Remote Bridge Board Table, Remote Bridge Port Table, Router Board
+-- Table, and Port Table.
+
+
+-- Concentrator Group
+
+-- Implementation of this group is mandatory for all 
+-- SynOptics Series 3000 Ethernet NMM agents
+
+s3EnetConcRetimingStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		off(1),		-- retiming off
+		on(2)		-- retiming on
+	}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"Does this concentrator have retiming turned on.  Writing a 1 
+		will turn off retiming and writing a 2 will turn on retiming. 
+ 		This will change the active state of retiming but will change 
+		the value in EEPROM only when agentWriteEeprom is set.The 
+		factory default of this state is on. Retiming cannot be 
+		disabled in the 2810 concentrator.  The 2810 agent will
+		implement this object as read-only."
+	::= { s3000EnetConcentrator 1 }
+
+s3EnetConcFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the concentrator. This does not include frames 
+		received with a frame-too-long, runt, FCS, or alignment errors.
+		This counter includes broadcast and multicast frames that are 
+		received."
+	::= { s3000EnetConcentrator 2 }
+
+s3EnetConcOctetsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Contains a count of data and padding octets in frames that 
+		are successfully received by the concentrator.  This does not 
+		include frames received with a frame-too-long, runt, FCS, or 
+		alignment errors. This counter includes octets in broadcast 
+		and multicast frames that are received. This counter does not 
+		include the octets in the address, length/type and CRC fields."
+	::= { s3000EnetConcentrator 3 }
+
+s3EnetConcMcastFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the concentrator and are directed to an active 
+		non-broadcast group address. This does not include frames 
+		received with a frame-too-long, runt, FCS, or alignment errors.
+		Only frames that are for a multicast address that this 
+		interface is receiving are counted.  Broadcast packets are 
+		not included."
+	::= { s3000EnetConcentrator 4 }
+
+s3EnetConcBcastFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully received
+		by the concentrator and are directed to the broadcast group 
+		address. This does not include frames received with a 
+		frame-too-long, runt, FCS, or alignment errors. Multicast 
+		packets are not included."
+	::= { s3000EnetConcentrator 5 }
+
+s3EnetConcColls OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of the collision flags at the 
+		concentrator level."
+	::= { s3000EnetConcentrator 6 }
+
+
+-- MAC Receive Error Statistics
+
+-- A hierarchical order has been established for those objects listed below 
+-- such that when multiple error conditions can be associated with one frame, 
+-- only one condition is counted.  This hierarchy, in descending order is:
+--	frame too long
+--	runt frames
+--	fragments
+--	alignment error
+--	frame check error
+
+
+s3EnetConcTooLongErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are received by the 
+		concentrator and exceed the maximum permitted frame size.  
+		This counter is incremented when the frameTooLong error is 
+		detected."
+	::= { s3000EnetConcentrator 7 }
+
+s3EnetConcRuntErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the concentrator 
+		that are less than the minimum permitted frame size and have a
+ 		good FCS."
+	::= { s3000EnetConcentrator 8 }
+
+s3EnetConcFragErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the concentrator 
+		that are less than the minimum permitted frame size and have a
+ 		bad FCS or alignment error."
+	::= { s3000EnetConcentrator 9 }
+
+s3EnetConcAlignErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the concentrator 
+		that are not an integral number of octets in length and do not
+ 		pass the FCS check.  This counter is incremented when the 
+		alignment Error status is detected."
+	::= { s3000EnetConcentrator 10 }
+
+s3EnetConcFcsErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the concentrator 
+		that are an integral number of octets in length that do not 
+		pass the FCS check.  This counter is incremented when the 
+		frame Check Error status is detected."
+	::= { s3000EnetConcentrator 11 }
+
+s3EnetConcLateCollErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a total concentrator count of the late 
+		collision flags."
+	::= { s3000EnetConcentrator 12 }
+
+
+-- Board Table
+
+
+s3EnetBoardTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetBoardEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table of board-related objects.  The number of entries is 
+		given by the number of Ethernet host module and network 
+		management module boards that are contained in the 
+		Concentrator Slot Configuration Table."
+	::= { s3000EnetBoard 1 }
+
+s3EnetBoardEntry OBJECT-TYPE
+	SYNTAX	S3EnetBoardEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table containing objects about Ethernet boards which are 
+		currently plugged into the 3000 chassis."
+	INDEX	{ s3EnetBoardIndex }
+	::= { s3EnetBoardTable 1 }
+
+S3EnetBoardEntry ::= SEQUENCE {
+	s3EnetBoardIndex
+		INTEGER,
+-- the bounded below objects are deprecated
+	s3EnetBoardType
+		INTEGER,
+	s3EnetBoardHwVer
+		INTEGER,
+	s3EnetBoardStatus
+		INTEGER,
+	s3EnetBoardReset
+		INTEGER,
+	s3EnetBoardPartStatus
+		INTEGER,
+	s3EnetBoardNmCntlStatus
+		INTEGER,
+	s3EnetBoardPsStatus
+		INTEGER,
+-- the bounded above objects are deprecated
+	s3EnetBoardFrmsRxOk
+		Counter,
+	s3EnetBoardOctetsRxOk
+		Counter,
+	s3EnetBoardMcastFrmsRxOk
+		Counter,
+	s3EnetBoardBcastFrmsRxOk
+		Counter,
+	s3EnetBoardColls
+		Counter,
+	s3EnetBoardTooLongErrors
+		Counter,
+	s3EnetBoardRuntErrors
+		Counter,
+	s3EnetBoardAlignErrors
+		Counter,
+	s3EnetBoardFcsErrors
+		Counter,
+	s3EnetBoardLateCollErrors
+		Counter
+}
+
+s3EnetBoardIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each board.  Its value ranges between 1 
+		and 12. The value for each board must remain constant at least
+ 		from one re-initialization of the entity's network management 
+		system to the next re-initialization."
+	::= { s3EnetBoardEntry 1 }
+
+s3EnetBoardType OBJECT-TYPE
+	SYNTAX	INTEGER {
+		empty(1),		-- nothing installed
+		other(2),		-- none of the following
+		m3302(3),		-- Model 3302
+		m3304-ST(4),		-- Model 3304-ST
+		m3305(5),		-- Model 3305
+		m3308(6),		-- Model 3308
+		m3313(7),		-- Model 3313
+		m3313M(8),		-- Model 3313M
+		m3314-ST(9),		-- Model 3314
+		m3314M-ST(10),		-- Model 3314M-ST
+		m3323(11),		-- Model 3323
+		m3324-ST(12),		-- Model 3324-ST
+		m3301(16),		-- Model 3301
+		m3307(17),		-- Model 3307
+		m3356(18),		-- Model 3356
+		m3383(24),		-- Model 3383
+		m3384(25),		-- Model 3384
+		m331x(26),		-- unknown 331x
+		m3386(32),		-- Model 3386
+		m3394(33),		-- Model 3394
+		m3395(34),		-- Model 3395
+		m3323S(35),		-- Model 3323S
+		m3324S-ST(36),		-- Model 3324S-ST
+		m3307A(37),		-- Model 3307A
+		m3308A(38)		-- Model 3308A
+	}
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3SlotModuleType"
+	::= { s3EnetBoardEntry 2 }
+
+s3EnetBoardHwVer OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3CommonBoardHwVer"
+	::= { s3EnetBoardEntry 3 }
+
+s3EnetBoardStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		ok(1),		-- good status
+		fail(2)		-- bad status
+	}
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3CommonBoardStatus"
+	::= { s3EnetBoardEntry 4 }
+
+s3EnetBoardReset OBJECT-TYPE
+	SYNTAX	INTEGER {
+		noReset(1),	-- not resetting
+		reset(2)	-- resetting
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3CommonBoardReset"
+	::= { s3EnetBoardEntry 5 }
+
+s3EnetBoardPartStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		enabled(1),	-- board enabled
+		partition(2)	-- board partitioned
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3CommonBoardPartStatus"
+	::= { s3EnetBoardEntry 6 }
+
+s3EnetBoardNmCntlStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		notNmControl(1),	-- board not under NM control
+		nmControl(2)		-- board under NM control
+	}
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3CommonBoardCntlStatus"
+	::= { s3EnetBoardEntry 7 }
+
+s3EnetBoardPsStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		ok(1),		-- good status
+		fail(2)		-- bad status
+	}
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3CommonBoardPsStatus"
+	::= { s3EnetBoardEntry 8 }
+
+s3EnetBoardFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the board.  This does not include frames received 
+		with a frame-too-long, runt, FCS, or alignment errors. This 
+		counter includes broadcast and multicast frames that are 
+		received."
+	::= { s3EnetBoardEntry 9 }
+
+s3EnetBoardOctetsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Contains a count of data and padding octets in frames that 
+		are successfully received by the board.  This does not include
+ 		frames received with a frame-too-long, runt, FCS, or alignment
+ 		errors.	This counter includes octets in broadcast and multicast
+ 		frames that are received. This counter does not include the 
+		octets in the address, length/type and CRC fields."
+	::= { s3EnetBoardEntry 10 }
+
+s3EnetBoardMcastFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the board and are directed to an active 
+		non-broadcast group address.  This does not include frames 
+		received with a frame-too-long, runt, FCS, or alignment errors.
+		Only frames that are for a multicast address that this 
+		interface is receiving are counted. Broadcast packets are not 
+		included."
+	::= { s3EnetBoardEntry 11 }
+
+s3EnetBoardBcastFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the board and are directed to the broadcast group 
+		address. This does not include frames received with a 
+		frame-too-long, runt, FCS, or alignment errors.	Multicast 
+		packets are not included."
+	::= { s3EnetBoardEntry 12 }
+
+s3EnetBoardColls OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a board level count of the collision flags.  
+		This is a summation of all the port level collision flag 
+		counters for this board."
+	::= { s3EnetBoardEntry 13 }
+
+
+-- MAC Receive Error Statistics
+
+-- A hierarchical order has been established for those objects listed below 
+-- such that when multiple error condition can be associated with one frame, 
+-- only one condition is counted.  This hierarchy, in descending order is:
+--	frame Too Long
+--	runt frames
+--	alignment Error
+--	frame Check Error
+
+
+s3EnetBoardTooLongErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are received by the 
+		board and exceed the maximum permitted frame size.  This 
+		counter is incremented when the frameTooLong error is 
+		detected."
+	::= { s3EnetBoardEntry 14 }
+
+s3EnetBoardRuntErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the board that 
+		are less than the minimum permitted frame size and have a good
+		FCS."
+	::= { s3EnetBoardEntry 15 }
+
+s3EnetBoardAlignErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the board that are
+ 		not an integral number of octets in length and do not pass the
+ 		FCS check.  This counter is incremented when the alignmentError
+ 		status is detected."
+	::= { s3EnetBoardEntry 16 }
+
+s3EnetBoardFcsErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the board that 
+		are an integral number of octets in length that do not pass 
+		the FCS check.  This counter is incremented when the 
+		frameCheckError status is detected."
+	::= { s3EnetBoardEntry 17 }
+
+s3EnetBoardLateCollErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of the board level late collision flags.
+  		This is a summation of all the port level late collision flag 
+		counters for this board."
+	::= { s3EnetBoardEntry 18 }
+
+
+-- Local Bridge Board Table
+
+
+s3EnetLocBridgeSlotTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetLocBridgeEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table of Local Bridge Board entries.  The number of entries
+ 		is determined by  the Concentrator Slot Configuration Table.  
+		Only those entries that are Ethernet local bridges will have 
+		entries in this list."
+	::= { s3000EnetLocBridge 1 }
+
+s3EnetLocBridgeEntry OBJECT-TYPE
+	SYNTAX	S3EnetLocBridgeEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table containing objects about Boards which are local 
+		bridges that are currently plugged into the 3000 chassis."
+	INDEX	{ s3EnetLocBridgeIndex }
+	::= { s3EnetLocBridgeSlotTable 1 }
+
+S3EnetLocBridgeEntry ::= SEQUENCE {
+	s3EnetLocBridgeIndex
+		INTEGER,
+	s3EnetLocBridgeDescr
+		DisplayString,
+	s3EnetLocBridgePortCount
+		INTEGER,
+	s3EnetLocBridgeDiagSts
+		OCTET STRING,
+	s3EnetLocBridgeBootSts
+		INTEGER,
+	s3EnetLocBridgeStandbySts
+		INTEGER
+}
+
+s3EnetLocBridgeIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each board.  Its value ranges between 1 
+		and 12. The value for each board must remain constant at least
+ 		from one re-initialization of the entity's network management 
+		system to the next re-initialization."
+	::= { s3EnetLocBridgeEntry 1 }
+
+s3EnetLocBridgeDescr OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..128))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Description of the local bridge board."
+	::= { s3EnetLocBridgeEntry 2 }
+
+s3EnetLocBridgePortCount OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Number of ports that are on the local bridge board."
+	::= { s3EnetLocBridgeEntry 3 }
+
+s3EnetLocBridgeDiagSts OBJECT-TYPE
+	SYNTAX	OCTET STRING (SIZE(4))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Latest Diagnostic LED Status that has been recorded."
+	::= { s3EnetLocBridgeEntry 4 }
+
+s3EnetLocBridgeBootSts OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- unknown booting status
+		reqstToBoot(2),		-- board is requesting to boot
+		notReqstToBoot(3)	-- board is not requesting to boot
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"The current status of the board as it relates to rebooting."
+	::= { s3EnetLocBridgeEntry 5 }
+
+s3EnetLocBridgeStandbySts OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- unknown booting status
+		standby(2), 		-- bridge is in standby mode
+		notStandby(3)		-- bridge is operational and not standby
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This status says whether the local bridge is active or in 
+		standby mode."
+	::= { s3EnetLocBridgeEntry 6 }
+
+
+
+-- Local Bridge Port Table
+
+
+s3EnetLocBridgePortTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetLocBridgePortEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table of Port entries that are part of a local bridge.  The 
+		number of entries is determined by knowing the number of local 
+		bridge boards that are installed by looking at 
+		s3ChassisSlotConfigTable and by knowing how many ports are on 
+		a local bridge board by looking at s3EnetLocBridgePortCount."
+	::= { s3000EnetLocBridge 2 }
+
+s3EnetLocBridgePortEntry OBJECT-TYPE
+	SYNTAX	S3EnetLocBridgePortEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table containing objects about the ports of the local 
+		bridges that are currently plugged into the 3000 chassis."
+	INDEX	{ s3EnetLocBridgePortSlotIndex, s3EnetLocBridgePortIndex }
+	::= { s3EnetLocBridgePortTable 1 }
+
+S3EnetLocBridgePortEntry ::= SEQUENCE {
+	s3EnetLocBridgePortSlotIndex
+		INTEGER,
+	s3EnetLocBridgePortIndex
+		INTEGER,
+	s3EnetLocBridgePortMdaId
+		INTEGER,
+	s3EnetLocBridgePortIf
+		INTEGER,
+	s3EnetLocBridgePortDescr
+		DisplayString,
+	s3EnetLocBridgePortOpSts
+		INTEGER
+}
+
+s3EnetLocBridgePortSlotIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each board.  Its value ranges between 1 
+		and 12. The value for each board must remain constant at least
+ 		from one re-initialization of the entity's network management 
+		system to the next re-initialization."
+	::= { s3EnetLocBridgePortEntry 1 }
+
+s3EnetLocBridgePortIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each port.  Its value ranges between 1 and
+ 		12. The value for each port must remain constant at least from
+ 		one reinitialization of the entity's network management system
+ 		to the next reinitialization."
+	::= { s3EnetLocBridgePortEntry 2 }
+
+s3EnetLocBridgePortMdaId OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Medium dependent ID for the port."
+	::= { s3EnetLocBridgePortEntry 3 }
+
+s3EnetLocBridgePortIf OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- unknown interfaces
+		etherEther(2),		-- ethernet to ethernet bridge
+		etherTokenRing(3)	-- ethernet to token ring bridge
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Bridge interface types."
+	::= { s3EnetLocBridgePortEntry 4 }
+
+s3EnetLocBridgePortDescr OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..128))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A text description of the port."
+	::= { s3EnetLocBridgePortEntry 5 }
+
+s3EnetLocBridgePortOpSts OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),
+		standby(2),
+		notStandby(3)
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Operating status of the port."
+	::= { s3EnetLocBridgePortEntry 6 }
+
+
+-- Remote Bridge Board Table
+
+
+s3EnetRemBridgeSlotTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetRemBridgeEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table of Remote Bridge Board entries.  The number of 
+		entries is determined by the Concentrator Slot Configuration 
+		Table. Only those entries that are Ethernet remote bridges will
+ 		have entries in this list."
+	::= { s3000EnetRemBridge 1 }
+
+s3EnetRemBridgeEntry OBJECT-TYPE
+	SYNTAX	S3EnetRemBridgeEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table containing objects about Boards which are remote 
+		bridges that are currently plugged into the 3000 chassis."
+	INDEX	{ s3EnetRemBridgeIndex }
+	::= { s3EnetRemBridgeSlotTable 1 }
+
+S3EnetRemBridgeEntry ::= SEQUENCE {
+	s3EnetRemBridgeIndex
+		INTEGER,
+	s3EnetRemBridgeDescr
+		DisplayString ,
+	s3EnetRemBridgePortCount
+		INTEGER,
+	s3EnetRemBridgeDiagSts
+		OCTET STRING,
+	s3EnetRemBridgeBootSts
+		INTEGER,
+	s3EnetRemBridgeStandbySts
+		INTEGER
+}
+
+s3EnetRemBridgeIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each board.  Its value ranges between 1 
+		and 12. The value for each board must remain constant at least
+ 		from one re-initialization of the entity's network management 
+		system to the next re-initialization."
+	::= { s3EnetRemBridgeEntry 1 }
+
+s3EnetRemBridgeDescr OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..128))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Description of the board."
+	::= { s3EnetRemBridgeEntry 2 }
+
+s3EnetRemBridgePortCount OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Number of ports that are on the board."
+	::= { s3EnetRemBridgeEntry 3 }
+
+s3EnetRemBridgeDiagSts OBJECT-TYPE
+	SYNTAX	OCTET STRING (SIZE(4))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Latest Diagnostic LED Status that has been recorded."
+	::= { s3EnetRemBridgeEntry 4 }
+
+s3EnetRemBridgeBootSts OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- unknown booting status
+		reqstToBoot(2),		-- board is requesting to boot
+		notReqstToBoot(3)	-- board is not requesting to boot
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"The current status of the board as it relates to rebooting."
+	::= { s3EnetRemBridgeEntry 5 }
+
+s3EnetRemBridgeStandbySts OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),	-- unknown booting status
+		standby(2),	-- remote bridge is in standby mode
+		notStandby(3)	-- remote bridge is active not in standby
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This status says whether the remote bridge is active or in 
+		standby mode."
+	::= { s3EnetRemBridgeEntry 6 }
+
+
+
+-- Remote Bridge Port Table
+
+
+s3EnetRemBridgePortTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetRemBridgePortEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table of Port entries that are part of a remote bridge.  
+		The number of entries is determined by knowing the number of 
+		remote bridge boards that are installed by looking at 
+		s3ChassisSlotConfigTable and by knowing how many ports are on 
+		a remote bridge board by looking at s3EnetRemBridgePortCount."
+	::= { s3000EnetRemBridge 2 }
+
+s3EnetRemBridgePortEntry OBJECT-TYPE
+	SYNTAX	S3EnetRemBridgePortEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table containing objects about the ports of the remote 
+		bridges that are currently plugged into the 3000 chassis."
+	INDEX	{ s3EnetRemBridgePortSlotIndex,
+			 s3EnetRemBridgePortIndex }
+	::= { s3EnetRemBridgePortTable 1 }
+
+S3EnetRemBridgePortEntry ::= SEQUENCE {
+	s3EnetRemBridgePortSlotIndex
+		INTEGER,
+	s3EnetRemBridgePortIndex
+		INTEGER,
+	s3EnetRemBridgePortMdaId
+		INTEGER,
+	s3EnetRemBridgePortDescr
+		DisplayString,
+	s3EnetRemBridgePortOpSts
+		INTEGER,
+	s3EnetRemBridgePortRdySnd
+		INTEGER,
+	s3EnetRemBridgePortClrSnd
+		INTEGER,
+	s3EnetRemBridgePortCarDt
+		INTEGER
+}
+
+s3EnetRemBridgePortSlotIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each board.  Its value ranges between 1 
+		and 12. The value for each board must remain constant at least
+ 		from one re-initialization of the entity's network management 
+		system to the next re-initialization."
+	::= { s3EnetRemBridgePortEntry 1 }
+
+s3EnetRemBridgePortIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each port.  Its value ranges between 1 and
+ 		12. The	value for each port must remain constant at least from
+ 		one re-	initialization of the entity's network management 
+		system to the next re-initialization."
+	::= { s3EnetRemBridgePortEntry 2 }
+
+s3EnetRemBridgePortMdaId OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),
+		ethernet(2),
+		x21Barrier(3),
+		x21Unbarrier(4),
+		rs232(5),
+		rs449(6),
+		v35(7),
+		g703(8),
+		t1(9)
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Medium dependent ID for the port."
+	::= { s3EnetRemBridgePortEntry 3 }
+
+s3EnetRemBridgePortDescr OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..128))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A text description of the port."
+	::= { s3EnetRemBridgePortEntry 4 }
+
+s3EnetRemBridgePortOpSts OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),
+		standby(2),
+		operational(3),
+		noLink(4)
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Operating status of the port."
+	::= { s3EnetRemBridgePortEntry 5 }
+
+s3EnetRemBridgePortRdySnd OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- unknown status
+		rdySnd(2),		-- ready to send
+		notRdySnd(3)		-- not ready to send
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Ready to send status of the port."
+	::= { s3EnetRemBridgePortEntry 6 }
+
+s3EnetRemBridgePortClrSnd OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- unknown status
+		clrSnd(2),		-- clear to send
+		notClrSnd(3)		-- not clear to send
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Clear to send status of the port."
+	::= { s3EnetRemBridgePortEntry 7 }
+
+s3EnetRemBridgePortCarDt OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- unknown status
+		carDt(2),		-- carrier detected
+		noCarDt(3)		-- no carrier detected
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Carrier detect status of the port."
+	::= { s3EnetRemBridgePortEntry 8 }
+
+
+
+-- Router Board Table
+
+
+s3EnetRouterSlotTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetRouterEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table of Router Board entries.  The number of entries is 
+		determined by the Concentrator Slot Configuration Table.  
+		Only those entries that are Ethernet routers will have entries
+ 		in this list."
+	::= { s3000EnetRouter 1 }
+
+s3EnetRouterEntry OBJECT-TYPE
+	SYNTAX	S3EnetRouterEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table containing objects about Boards which are routers 
+		that are currently plugged into the 3000 chassis."
+	INDEX	{ s3EnetRouterIndex }
+	::= { s3EnetRouterSlotTable 1 }
+
+S3EnetRouterEntry ::= SEQUENCE {
+	s3EnetRouterIndex
+		INTEGER,
+	s3EnetRouterDescr
+		DisplayString,
+	s3EnetRouterDiagSts
+		OCTET STRING,
+	s3EnetRouterStandbySts
+		INTEGER
+}
+
+s3EnetRouterIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each board.  Its value ranges between 1 
+		and 12. The value for each board must remain constant at 
+		least from one re-initialization of the entity's network 
+		management system to the next re-initialization."
+	::= { s3EnetRouterEntry 1 }
+
+s3EnetRouterDescr OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..128))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Description of the router board."
+	::= { s3EnetRouterEntry 2 }
+
+s3EnetRouterDiagSts OBJECT-TYPE
+	SYNTAX	OCTET STRING (SIZE(4))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Latest Diagnostic LED Status that has been recorded."
+	::= { s3EnetRouterEntry 3 }
+
+s3EnetRouterStandbySts OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),	-- unknown booting status
+		standby(2),	-- router is in standby mode
+		notStandby(3)	-- router is operational, not in standby
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This status says whether the router is active or in standby 
+		mode."
+	::= { s3EnetRouterEntry 4 }
+
+
+
+-- Port Table
+
+
+s3EnetPortTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetPortEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A list of port entries.  The number of entries is given by 
+		learning the type of board from the information in the 
+		s3ChassisSlotConfigTable."
+	::= { s3000EnetPort 1 }
+
+s3EnetPortEntry OBJECT-TYPE
+	SYNTAX	S3EnetPortEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A table containing objects about the Ports of each board 
+		plugged into the 3000 chassis."
+	INDEX	{ s3EnetPortBoardIndex, s3EnetPortIndex }
+	::= { s3EnetPortTable 1 }
+
+S3EnetPortEntry ::= SEQUENCE {
+	s3EnetPortBoardIndex
+		INTEGER,
+	s3EnetPortIndex
+		INTEGER,
+	s3EnetPortLinkStatus
+		INTEGER,
+	s3EnetPortPartStatus
+		INTEGER,
+	s3EnetPortJabberStatus
+		INTEGER,
+	s3EnetPortFrmsRxOk
+		Counter,
+	s3EnetPortOctetsRxOk
+		Counter,
+	s3EnetPortMcastFrmsRxOk
+		Counter,
+	s3EnetPortBcastFrmsRxOk
+		Counter,
+	s3EnetPortColls
+		Counter,
+	s3EnetPortTooLongErrors
+		Counter,
+	s3EnetPortRuntErrors
+		Counter,
+	s3EnetPortAlignErrors
+		Counter,
+	s3EnetPortFcsErrors
+		Counter,
+	s3EnetPortLateCollErrors
+		Counter,
+	s3EnetPortMDIXSwitch
+		INTEGER
+	}
+
+s3EnetPortBoardIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each board.  Its value ranges between 1 and
+		12.  The value for each board must remain constant at
+		least from one reinitialization of the entity's network
+		management system to the next reinitialization."
+	::= { s3EnetPortEntry 1 }
+
+s3EnetPortIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"A unique value for each port.  Its value is dependent on the
+		board type.  The value for each port must remain constant
+		at least from one reinitialization of the entity's network
+		management system to the next reinitialization."
+	::= { s3EnetPortEntry 2 }
+
+s3EnetPortLinkStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		off(1),		-- link is not connected
+		on(2),		-- link is connected
+		other(3)	-- returned for AUI
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Tells whether the port is receiving link status."
+	::= { s3EnetPortEntry 3 }
+
+s3EnetPortPartStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		enabled(1),		-- port enabled
+		partition(2),		-- port partitioned
+		autoPartition(3)	-- port auto-partitioned
+	}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"This indicates the operational status of the Port.  Writing a partition(2) 
+		will partition the port indefinitely and enabled(1) will enable the port."
+	::= { s3EnetPortEntry 4 }
+
+s3EnetPortJabberStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		ok(1),	
+		jabbering(2)	-- Port receiving jabber
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Tells whether the DTE connected to the Port is jabbering or 
+		not."
+	::= { s3EnetPortEntry 5 }
+
+s3EnetPortFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the port.  This does not include frames received 
+		with a frame-too-long, runt, FCS, or alignment errors. This 
+		counter includes broadcast and multicast frames that are 
+		received."
+	::= { s3EnetPortEntry 6 }
+
+s3EnetPortOctetsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"Contains a count of data and padding octets in frames that 
+		are successfully received by the port.  This does not include 
+		frames received with a frame-too-long, runt, FCS, or 
+		alignment errors. This counter includes octets in broadcast 
+		and multicast frames that are received. This counter does not 
+		include the octets in the address, length/type and CRC fields."
+	::= { s3EnetPortEntry 7 }
+
+s3EnetPortMcastFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the port and are directed to an active 
+		non-broadcast group address.  This does not include frames 
+		received with a frame-too-long, runt, FCS, or alignment errors.
+		Only frames that are for a multicast address that this 
+		interface is receiving are counted. Broadcast packets are not 
+		included."
+	::= { s3EnetPortEntry 8 }
+
+s3EnetPortBcastFrmsRxOk OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are successfully 
+		received by the port and are directed to the broadcast group 
+		address. This does not include frames received with a 
+		frame-too-long, runt, FCS, or alignment errors.	Multicast 
+		packets are not included."
+	::= { s3EnetPortEntry 9 }
+
+s3EnetPortColls OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of the collision flags."
+	::= { s3EnetPortEntry 10 }
+
+
+-- Port MAC Error Statistics
+
+-- A hierarchical order has been established for those objects listed below 
+-- such that when multiple error conditions can be associated with one frame, 
+-- only one condition is counted.  This hierarchy, in descending order is:
+--	frame too long
+--	runt frames
+--	alignment error
+--	frame check error
+
+
+s3EnetPortTooLongErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames that are received by the port 
+		and exceed the maximum permitted frame size.  This counter is 
+		incremented when the frameTooLong error is detected."
+	::= { s3EnetPortEntry 11 }
+
+s3EnetPortRuntErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the port that are
+ 		less than the minimum permitted frame size and have a good 
+		FCS."
+	::= { s3EnetPortEntry 12 }
+
+s3EnetPortAlignErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received by the port that 
+		are not an integral number of octets in length and do not 
+		pass the FCS check. This counter is incremented when the 
+		alignmentError status is detected."
+	::= { s3EnetPortEntry 13 }
+
+s3EnetPortFcsErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of frames received the port that are 
+		an integral number of octets in length that do not pass the 
+		FCS check.  This counter is incremented when the 
+		frameCheckError status is detected."
+	::= { s3EnetPortEntry 14 }
+
+s3EnetPortLateCollErrors OBJECT-TYPE
+	SYNTAX	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This contains a count of the port level late collision flags."
+	::= { s3EnetPortEntry 15 }
+
+s3EnetPortMDIXSwitch OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),	-- unknown or other
+		tenBaseT(2),	-- 10BASE-T, "normal" or MDI-X
+		tenBaseTMdi(3)	-- 10BASE-T, switched to MDI
+	}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"This tells whether the MDI-X/MDI switch for the port is set 
+		to MDI-X or MDI position.  If the port has an associated 
+		MDI-X/MDI switch, then the agent will return the current 
+		setting.  If the port does not have the	switch, then other(1) 
+		will be returned."
+	::= { s3EnetPortEntry 19 }
+
+-- SECTION 3: Network Management Module Group
+
+-- The Network Management Module Group consists of Module Group,
+-- EEPROM Configuration Group, Hardware Configuration Group, Trap
+-- Server Table, and Authentication Trap Control.
+--
+-- All of these groups are DEPRECATED!
+
+
+-- Module Group
+
+s3EnetNmmType OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other(1),		-- none of the following
+		m3313(2),		-- Model 3313
+		m3313M(3),		-- Model 3313M
+		m3314-ST(4),		-- Model 3314-ST
+		m3314M-ST(5),		-- Model 3314M-ST
+		m3138(6)		-- Model 3138
+	}
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentType"
+	::= { s3000EnetNmm 1 }
+
+s3EnetNmmMdaHwVer OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See AgentMdaHwVer"
+	::= { s3000EnetNmm 2 }
+
+s3EnetNmmFwVer OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentFwVer"
+	::= { s3000EnetNmm 3 }
+
+s3EnetNmmSwMajorVer OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentSwMajor"
+	::= { s3000EnetNmm 4 }
+
+s3EnetNmmSwMinorVer OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentSwMinor"
+	::= { s3000EnetNmm 5 }
+
+s3EnetNmmStatus OBJECT-TYPE
+	SYNTAX	INTEGER {
+		offline(1),	-- the nmm is offline
+		online(2)	-- the nmm is online
+	}
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentStatus"
+	::= { s3000EnetNmm 6 }
+
+s3EnetNmmMode OBJECT-TYPE
+	SYNTAX	INTEGER {
+		primary(1),	-- in primary mode
+		secondary(2)	-- in secondary mode
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentMode"
+	::= { s3000EnetNmm 7 }
+
+s3EnetNmmReset OBJECT-TYPE
+	SYNTAX	INTEGER {
+		notreset(1),	-- not reseting
+		reset(2)	-- reset
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentReset"
+	::= { s3000EnetNmm 8 }
+
+s3EnetNmmRestart OBJECT-TYPE
+	SYNTAX	INTEGER {
+		notrestart(1),	-- not restarting
+		restart(2)	-- restart
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentRestart"
+	::= { s3000EnetNmm 9 }
+
+
+
+-- EEPROM Configuration Group
+
+s3EnetNmmIpAddr OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentIpAddr"
+	::= { s3000EnetNmm 10 }
+
+s3EnetNmmNetMask OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentNetMask"
+	::= { s3000EnetNmm 11 }
+
+s3EnetNmmDefaultGateway OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentDefaultGateway"
+	::= { s3000EnetNmm 12 }
+
+s3EnetNmmFileServerAddr OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentBootServerAddr"
+	::= { s3000EnetNmm 13 }
+
+s3EnetNmmBootFilePath OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..64))
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentBootFile"
+	::= { s3000EnetNmm 14 }
+
+s3EnetNmmBootMode OBJECT-TYPE
+	SYNTAX	INTEGER {
+		eeprom(1),	-- get boot info from eeprom
+		bootp(2)	-- get boot info from bootp
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentBootMode"
+	::= { s3000EnetNmm 15 }
+
+s3EnetNmmWriteEeprom OBJECT-TYPE
+	SYNTAX	INTEGER {
+		notWriteEeprom(1),	-- not writing EEPROM 
+		writeEeprom(2)		-- write EEPROM
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentWriteEeprom"
+	::= { s3000EnetNmm 16 }
+
+
+
+-- Hardware Configuration Group
+
+s3EnetNmmBaudRate OBJECT-TYPE
+	SYNTAX	Gauge
+	ACCESS	read-only
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentBaudRate"
+	::= { s3000EnetNmm 17 }
+
+s3EnetNmmInitString OBJECT-TYPE
+	SYNTAX	OCTET STRING (SIZE(0..64))
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentInitString"
+	::= { s3000EnetNmm 18 }
+
+s3EnetNmmLocation OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..64))
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentLocation"
+	::= { s3000EnetNmm 19 }
+
+
+
+-- Trap Server Table
+
+s3EnetNmmTrapServerTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF S3EnetNmmTrapServerEntry
+	ACCESS	not-accessible
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentReceiverTable"
+	::= { s3000EnetNmm 20 }
+
+s3EnetNmmTrapServerEntry OBJECT-TYPE
+	SYNTAX	S3EnetNmmTrapServerEntry
+	ACCESS	not-accessible
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentTrapReceiverEntry"
+	INDEX	{ s3EnetNmmTrapServerAddress }
+	::= { s3EnetNmmTrapServerTable 1 }
+
+S3EnetNmmTrapServerEntry ::= SEQUENCE {
+	s3EnetNmmTrapType
+		INTEGER,
+	s3EnetNmmTrapServerAddress
+		IpAddress,
+	s3EnetNmmTrapServerComm
+		OCTET STRING
+}
+
+s3EnetNmmTrapType OBJECT-TYPE
+	SYNTAX	INTEGER {
+		other (1),	-- none of the following
+		invalid (2)	-- an invalidated address
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentTrapRcvrStatus"
+	::= { s3EnetNmmTrapServerEntry 1 }
+
+s3EnetNmmTrapServerAddress OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentTrapRcvrNetAddress"
+	::= { s3EnetNmmTrapServerEntry 2 }
+
+s3EnetNmmTrapServerComm OBJECT-TYPE
+	SYNTAX	OCTET STRING (SIZE(0..20))
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentTrapRcvrComm"
+	::= { s3EnetNmmTrapServerEntry 3 }
+
+-- Authentication Trap Control
+
+s3EnetNmmAuthTrap OBJECT-TYPE
+	SYNTAX	INTEGER {
+		disable(1),	-- disable authentication traps
+		enable(2)	-- enable authentication traps
+	}
+	ACCESS	read-write
+	STATUS	deprecated
+	DESCRIPTION
+		"See s3AgentAuthTrap"
+	::= { s3000EnetNmm 21 }
+
+END
+
+
+-- file:  ieee802.3-1.0-09.30.91
+

@@ -1,0 +1,701 @@
+-- COPYRIGHT NOTICE
+-- Copyright (c) Alteon WebSystems, Inc. 2002
+-- All rights reserved
+-- 
+-- HISTORY
+-- $Log: cheetahLayer7.mib $
+-- Revision ge_wyin/3 2002/10/03 18:24:32 wyin
+-- 	CRID Q00533800. Added slbCurCfgUrlLbPathString to monitor table.
+-- 
+-- Revision ge_wyin/2 2002/09/11 01:34:48 wyin
+-- 	Added support for the new url maint/stats for cheetah.
+-- 
+-- Revision ch_1_0_0_dev/4 2002/06/04 18:36:24 rrekha
+-- Fixed some typos in the mib descriptions.
+-- 
+-- Revision ch_1_0_0_dev/3 2002/05/28 19:42:24 rrekha
+-- Added layer7 maintenance statistics.
+-- 
+-- Revision ch_1_0_0_dev/2 2002/05/01 22:50:52 rrekha
+-- Removed slbUrlExpTable since it is no longer used.
+-- 
+-- Revision ch_1_0_0_dev/1 2002/04/23 21:47:04 smiao
+-- Renamed node cheetah to aws-switches.
+-- 
+-- Revision ch10latest_smiao/4 2002/02/22 01:20:27 smiao
+-- 	Removed WCR_RTSP for CHEETAH  in SNMP and webUI.
+-- 
+-- Revision ch10latest_smiao/2 2002/02/13 01:41:24 smiao
+-- 	Initial checked in for cheetah MIB files.
+-- 
+-- $EndLog$
+
+ALTEON-CHEETAH-LAYER7-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    IpAddress, Counter, Gauge 
+        FROM RFC1155-SMI
+    OBJECT-TYPE
+        FROM RFC-1212
+    PhysAddress, DisplayString
+        FROM RFC1213-MIB
+    Counter64
+        FROM SNMPv2-SMI
+    aws-switch 
+        FROM ALTEON-ROOT-MIB;
+
+layer7            OBJECT IDENTIFIER ::= { aws-switch 5 }
+
+layer7Configs     OBJECT IDENTIFIER ::= { layer7 1 }
+layer7Stats       OBJECT IDENTIFIER ::= { layer7 2 }
+layer7Info        OBJECT IDENTIFIER ::= { layer7 3 }
+layer7Oper        OBJECT IDENTIFIER ::= { layer7 4 }
+
+urlCfg	          OBJECT IDENTIFIER ::= { layer7Configs 1 }
+
+slbUrlRedir       OBJECT IDENTIFIER ::= { urlCfg 1 }
+slbUrlBalance     OBJECT IDENTIFIER ::= { urlCfg 2 }
+
+urlStats          OBJECT IDENTIFIER ::= { layer7Stats  1 }
+
+-- Layer 7 Configuration 
+
+-- SLB URL Redirection Group
+slbCurCfgUrlRedirNonGetOrigSrv OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"This is for controlling if the switch should redirect packet 
+         to the origin server when HTTP non-GETs are detected.  
+
+         enabled(1) - Allow redirect traffic to the origin server
+         disabled(2)- redirect to a group of servers"
+    ::= { slbUrlRedir 3 }
+
+slbNewCfgUrlRedirNonGetOrigSrv OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This is for controlling if the switch should redirect packet to 
+         the origin server when HTTP non-GETs are detected.  
+
+         enabled(1) - Allow redirect traffic to the origin server
+         disabled(2)- redirect to a group of servers"
+    ::= { slbUrlRedir 4 }
+
+slbCurCfgUrlRedirCookieOrigSrv OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This is for controlling if the switch should redirect packet to the 
+         origin server when user cookies are detected.  
+
+         enabled(1) - Allow redirect traffic to the origin server
+         disabled(2)- redirect to a group of servers"
+    ::= { slbUrlRedir 5 }
+
+slbNewCfgUrlRedirCookieOrigSrv OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This is for controlling if the switch should redirect packet to the 
+         origin server when user cookies are detected.  
+
+         enabled(1) - Allow redirect traffic to the origin server
+         disabled(2)- redirect to a group of servers"
+    ::= { slbUrlRedir 6 }
+
+slbCurCfgUrlRedirNoCacheOrigSrv OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This is for controlling if the switch should redirect packet to the 
+         origin server when no-cache header are detected.  
+
+         enabled(1) - Allow redirect traffic to the origin server
+         disabled(2)- redirect to a group of servers"
+    ::= { slbUrlRedir 7 }
+
+slbNewCfgUrlRedirNoCacheOrigSrv OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This is for controlling if the switch should redirect packet to the 
+         origin server when no-cache header are detected.  
+
+         enabled(1) - Allow redirect traffic to the origin server
+         disabled(2)- redirect to a group of servers"
+    ::= { slbUrlRedir 8 }
+
+slbCurCfgUrlRedirUriHashLength OBJECT-TYPE
+    SYNTAX  INTEGER (0..255) 
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Specify the number of bytes in the URI will be used to hash 
+         onto server"
+    ::= { slbUrlRedir 9 }
+
+slbNewCfgUrlRedirUriHashLength OBJECT-TYPE
+    SYNTAX  INTEGER (0..255) 
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Specify the number of bytes in the URI will be used to hash 
+         onto server"
+    ::= { slbUrlRedir 10 }
+
+slbCurCfgUrlRedirHeader OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"This is for controlling if the switch should redirect packet to the 
+         cache server based on HTTP header.
+
+         enabled(1) - Redirect web traffic based on HTTP header
+         disabled(2)- Redirect web traffic based on URI"
+    ::= { slbUrlRedir 11 }
+
+slbNewCfgUrlRedirHeader OBJECT-TYPE
+    SYNTAX  INTEGER {
+        enabled(1),
+        disabled(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+	"This is for controlling if the switch should redirect packet to the 
+         cache server based on HTTP header.
+
+         enabled(1) - Redirect web traffic based on HTTP header
+         disabled(2)- Redirect web traffic based on URI"
+    ::= { slbUrlRedir 12 }
+
+slbCurCfgUrlRedirHeaderName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..32))
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The HTTP header name"
+    ::= { slbUrlRedir 13 }
+
+slbNewCfgUrlRedirHeaderName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..32))
+    ACCESS read-write 
+    STATUS mandatory
+    DESCRIPTION
+        "The HTTP header name"
+    ::= { slbUrlRedir 14 }
+
+-- SLB URL Load Balancing
+
+slbUrlLbPathTableMaxSize OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-only 
+    STATUS mandatory 
+    DESCRIPTION 
+        "The maximum number of entries in SLB URL load balance table." 
+    ::= { slbUrlBalance 1 }
+
+slbCurCfgUrlLbPathTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SlbCurCfgUrlLbPathTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of URL path for URL load balancing in the current_config."
+    ::= { slbUrlBalance 2 }
+
+slbCurCfgUrlLbPathTableEntry OBJECT-TYPE
+    SYNTAX  SlbCurCfgUrlLbPathTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "Information about an URL path for URL load balancing."
+    INDEX   { slbCurCfgUrlLbPathIndex }
+    ::= { slbCurCfgUrlLbPathTable 1 }
+
+SlbCurCfgUrlLbPathTableEntry ::= SEQUENCE {
+    slbCurCfgUrlLbPathIndex      INTEGER,
+    slbCurCfgUrlLbPathString     DisplayString,
+    slbCurCfgUrlLbBwmContract    INTEGER
+    }
+
+slbCurCfgUrlLbPathIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The URL path table index."
+    ::= { slbCurCfgUrlLbPathTableEntry 1 }
+
+slbCurCfgUrlLbPathString OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..40))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The URL path for URL load balancing."
+    ::= { slbCurCfgUrlLbPathTableEntry 2 }
+
+slbCurCfgUrlLbBwmContract OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The BW contract for the path."
+    ::= { slbCurCfgUrlLbPathTableEntry 3 }
+
+slbNewCfgUrlLbPathTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SlbNewCfgUrlLbPathTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of URL path for URL load balancing in the new_config."
+    ::= { slbUrlBalance 3 }
+
+slbNewCfgUrlLbPathTableEntry OBJECT-TYPE
+    SYNTAX  SlbNewCfgUrlLbPathTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "Information about an URL path for URL load balancing."
+    INDEX   { slbNewCfgUrlLbPathIndex }
+    ::= { slbNewCfgUrlLbPathTable 1 }
+
+SlbNewCfgUrlLbPathTableEntry ::= SEQUENCE {
+    slbNewCfgUrlLbPathIndex      INTEGER,
+    slbNewCfgUrlLbPathString     DisplayString,
+    slbNewCfgUrlLbBwmContract    INTEGER,
+    slbNewCfgUrlLbPathDelete     INTEGER
+    }
+
+slbNewCfgUrlLbPathIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The URL path table index."
+    ::= { slbNewCfgUrlLbPathTableEntry 1 }
+
+slbNewCfgUrlLbPathString OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..40))
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The URL path for URL load balancing."
+    ::= { slbNewCfgUrlLbPathTableEntry 2 }
+
+slbNewCfgUrlLbBwmContract OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The BW contract for the load path."
+    ::= { slbNewCfgUrlLbPathTableEntry 4 }
+
+slbNewCfgUrlLbPathDelete OBJECT-TYPE
+    SYNTAX  INTEGER {
+        other(1),
+        delete(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Action object to delete an URL Path.  When set to the value 
+         of 2 (delete), the entire row is deleted. When read, other(1) is 
+         returned. Setting the value to anything other than delete(2) 
+         has no effect on the state of the row."
+    ::= { slbNewCfgUrlLbPathTableEntry 3 }
+
+slbCurCfgUrlLbErrorMsg OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..64))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Customize error message to send back to client when switch cannot 
+         bind client's request to servers."
+    ::= { slbUrlBalance 4 }
+
+slbNewCfgUrlLbErrorMsg OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..64))
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Customize error message to send back to client when switch cannot 
+         bind client's request to servers."
+    ::= { slbUrlBalance 5 }
+
+-- The URL Redirection/Load Balancing Statistics
+
+urlRedirStats    OBJECT IDENTIFIER ::= { urlStats  1 }
+
+urlStatRedRedirs OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of instances that the received packet matches the 
+         specified URL expressions and redirected to specified group of 
+         real servers."
+    ::= { urlRedirStats 1 }
+
+urlStatRedOrigSrvs OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of instances that the received packet is sent to the 
+         origin server due to mis-match with the specified URL expressions 
+         or detecting of HTTP non-GETs,user cookies, and no-cache as users 
+         configuration."
+    ::= { urlRedirStats 2 }
+
+urlStatRedNonGets OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of instances that the received packet contains 
+         none GETs(POST ,HEAD ,PUT..) methods."
+    ::= { urlRedirStats 3 }
+
+urlStatRedCookie OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of instances that the received packet contains
+         a 'Cookie: ' header."
+    ::= { urlRedirStats 4 }
+
+urlStatRedNoCache OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of instances that the received packet contains
+         a no-cache header value."
+    ::= { urlRedirStats 5 }
+
+urlStatRedStraightOrigSrvs OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of HTTP requests forwarded straight to the origin server."
+    ::= { urlRedirStats 6 }
+
+urlStatRedRtspCacheSrvs OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of RTSP requests redirected to the cache server."
+    ::= { urlRedirStats 7 }
+
+urlStatRedRtspOrigSrvs OBJECT-TYPE 
+    SYNTAX  Counter 
+    ACCESS  read-only
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The number of RTSP requests forwarded to the origin server."
+    ::= { urlRedirStats 8 }
+
+urlSlbStats    OBJECT IDENTIFIER ::= { urlStats  2 }
+
+urlStatSlbPathTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UrlStatSlbPathTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The statistics table of instances that the URL path matched."
+    ::= { urlSlbStats 1 }
+
+urlStatSlbPathTableEntry OBJECT-TYPE
+    SYNTAX  UrlStatSlbPathTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "Information about the number of instances that are 
+	 load-balanced due to match of a particular URL path."
+    INDEX   { urlStatSlbPathIndex }
+    ::= { urlStatSlbPathTable 1 }
+
+UrlStatSlbPathTableEntry ::= SEQUENCE {
+    urlStatSlbPathIndex       INTEGER,
+    urlStatSlbPathHits        Counter
+    }
+
+urlStatSlbPathIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The URL path table index."
+    ::= { urlStatSlbPathTableEntry 1 }
+
+urlStatSlbPathHits OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of instances that are load-balanced due to match of 
+         the particular URL path."
+    ::= { urlStatSlbPathTableEntry 2 }
+
+-- Layer 7 Maintenance Statistics
+
+urlMaintStats    OBJECT IDENTIFIER ::= { urlStats  3 }
+
+urlMaintStatClientReset OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of reset frames sent to the client by the switch during
+         client connection termination."
+    ::= { urlMaintStats 1 }
+
+urlMaintStatServerReset OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of reset frames sent to the server by the switch during
+         server connection termination."
+    ::= { urlMaintStats 2 }
+
+urlMaintStatConnSplicing OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of connection swapping between different real
+         servers in supporting multiple HTTP/1.1 client requests."
+    ::= { urlMaintStats 3 }
+
+urlMaintStatHalfOpens OBJECT-TYPE
+    SYNTAX  Gauge 
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of outstanding TCP connections have been half opened.
+	 This statistics is valid only when URL parsing has been turned on.
+	 It is incremented when the switch respond to TCP SYN packet and 
+	 decremented upon receiving TCP SYN ACK packet from the requester."
+    ::= { urlMaintStats 4 }
+
+urlMaintStatSwitchRetries OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of switch retries to connect to the real server."
+    ::= { urlMaintStats 5 }
+
+urlMaintStatRandomEarlyDrops OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of SYN frames dropped when the buffer is low."
+    ::= { urlMaintStats 6 }
+
+urlMaintStatReqTooLong OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of GET requests that exceeded 4500 bytes."
+    ::= { urlMaintStats 7 }
+
+urlMaintStatInvalidHandshakes OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of dropped frames because of invalid 3-way 
+         handshakes."
+    ::= { urlMaintStats 8 }
+
+urlMaintStatCurSPMemUnits OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The current available SP memory units."
+    ::= { urlMaintStats 9 }
+
+urlMaintStatCurSEQBufEntries OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of outstanding sequence buffers used."
+    ::= { urlMaintStats 10 }
+
+urlMaintStatHighestSEQBufEntries OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The highest number of sequence buffers ever used."
+    ::= { urlMaintStats 11 }
+
+urlMaintStatCurDataBufUse OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of outstanding data buffers used."
+    ::= { urlMaintStats 12 }
+
+urlMaintStatHighestDataBufUse OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The highest number of data buffers ever used."
+    ::= { urlMaintStats 13 }
+
+urlMaintStatCurSPBufEntries OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of outstanding SP buffers used."
+    ::= { urlMaintStats 14 }
+
+urlMaintStatHighestSPBufEntries OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of SP buffers ever used."
+    ::= { urlMaintStats 15 }
+
+urlMaintStatTotalNonZeroSEQAlloc OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of sequence buffer allocations with non zero length."
+    ::= { urlMaintStats 16 }
+
+urlMaintStatTotalSEQBufAllocs OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of sequence buffer allocations."
+    ::= { urlMaintStats 17 }
+
+urlMaintStatTotalSEQBufFrees OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of sequence buffer freed."
+    ::= { urlMaintStats 18 }
+
+urlMaintStatTotalDataBufAllocs OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of data buffers allocated to store client request."
+    ::= { urlMaintStats 19 }
+
+urlMaintStatTotalDataBufFrees OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of data buffers freed."
+    ::= { urlMaintStats 20 }
+
+urlMaintStatSeqBufAllocFails OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of times sequence buffer allocation failed."
+    ::= { urlMaintStats 21 }
+
+urlMaintStatUBufAllocFails OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The number of times URL data buffer allocation failed."
+    ::= { urlMaintStats 22 }
+
+urlMaintStatMaxSessPerBucket OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The maximum number of items(sessions) allowed in the session table
+         hash bucket chain."
+    ::= { urlMaintStats 23 }
+
+urlMaintStatMaxFramesPerSess OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The maximum number of frames to be buffered per session."
+    ::= { urlMaintStats 24 }
+
+urlMaintStatMaxBytesBuffered OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The maximum number of bytes buffered per session."
+    ::= { urlMaintStats 25 }
+
+urlMaintStatInvalidMethods OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of invalid method hits."
+    ::= { urlMaintStats 26 }
+
+urlMaintStatAgedSessions OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The total number of aged delayed binding sessions."
+    ::= { urlMaintStats 27 }
+
+END

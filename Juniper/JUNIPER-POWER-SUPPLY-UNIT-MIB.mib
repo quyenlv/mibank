@@ -1,0 +1,281 @@
+-- *****************************************************************
+-- Juniper Enterprise Specific MIB: JUNIPER-POWER-MANAGEMENT
+--
+-- Copyright (c) 2009-2010, Juniper Networks, Inc.
+-- All rights reserved.
+--
+-- The contents of this document are subject to change without notice.
+-- *****************************************************************
+
+JUNIPER-POWER-SUPPLY-UNIT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE
+                FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION, DisplayString, TruthValue
+                FROM SNMPv2-TC
+        jnxContentsContainerIndex, jnxContentsL1Index,
+        jnxContentsL2Index, jnxContentsL3Index
+                FROM JUNIPER-MIB
+        jnxPsuMIBRoot
+                FROM JUNIPER-SMI;
+
+jnxPsuMIB MODULE-IDENTITY
+    LAST-UPDATED "201001270000Z" -- January 27 00:00:00 2010 UTC
+    ORGANIZATION "Juniper Networks, Inc."
+    CONTACT-INFO
+        "Juniper Technical Assistance Center
+         Juniper Networks, Inc.
+         1194 N. Mathilda Avenue
+         Sunnyvale, CA 94089
+         E-mail: support@juniper.net"
+
+    DESCRIPTION
+            "The Juniper Supply Unit MIB definitions for enabling
+             power monitoring and management of a juniper device."
+
+    -- revision history
+    REVISION  "201001270000Z" -- January 27 00:00:00 2010 UTC
+    DESCRIPTION
+            "Initial revision."
+
+    ::= { jnxPsuMIBRoot 1 }
+
+jnxPsuNotifications     OBJECT IDENTIFIER ::= { jnxPsuMIB 1 }
+jnxPsuObjects           OBJECT IDENTIFIER ::= { jnxPsuMIB 2 }
+
+--**********************************************************************
+-- PSU Scalar Objects 
+--**********************************************************************
+
+jnxPsuScalars           OBJECT IDENTIFIER ::= { jnxPsuObjects 1 }
+
+jnxPsuAvailableDeviceCount OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Gives the number of PSU units available online in the System."
+    ::= { jnxPsuScalars 1 }
+
+jnxPsuAvailableAveragePowerSupply OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Gives the total average power that the System can supply from the
+        available online units in Watts."
+    ::= { jnxPsuScalars 2 }
+
+jnxPsuAvailableMaxPowerSupply OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "Gives the total maximum power that the System can supply from the 
+        available online units in Watts."
+    ::= { jnxPsuScalars 3 }
+
+jnxPsuRedundancy  OBJECT-TYPE
+    SYNTAX        INTEGER {
+                  nPlusNRedundancy(1),
+                  nPlusOneRedundancy(2),
+                  none(3)
+    }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "PSU power redundancy configuration."
+    ::= { jnxPsuScalars 4 }
+
+--**********************************************************************
+-- Device POWER
+--**********************************************************************
+
+jnxPsuTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF JnxPsuEntry 
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION   "A list of power entries for each PSU component."
+    ::= { jnxPsuObjects 2 }
+
+jnxPsuEntry    OBJECT-TYPE
+    SYNTAX        JnxPsuEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION   "Defines an entry in jnxPsuTable. "
+    INDEX         { jnxContentsContainerIndex,
+                    jnxContentsL1Index,
+                    jnxContentsL2Index,
+                    jnxContentsL3Index }
+
+    ::= { jnxPsuTable 1 }
+
+JnxPsuEntry ::= 
+    SEQUENCE { 
+        jnxPsuAvgPower    INTEGER,
+        jnxPsuMaxPower    INTEGER,
+        jnxPsuMode        INTEGER,
+        jnxPsuOutletCount INTEGER
+    }
+
+jnxPsuAvgPower   	OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Buffer that contains the average power used, in Watts 
+                  for each component."
+    ::= { jnxPsuEntry 1 }
+                 
+jnxPsuMaxPower   	OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Buffer that contains the max power available, in Watts 
+                  for each component."
+    ::= { jnxPsuEntry 2 }
+
+jnxPsuMode   OBJECT-TYPE
+    SYNTAX        INTEGER {
+                      single(1),
+                      three(3)
+                  }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Mode for each PSU component."
+    ::= { jnxPsuEntry 3 }
+
+jnxPsuOutletCount OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "The number of outlets (regardless of their current state)
+                  present on this psu component, default is 0."
+    DEFVAL        { 0 }
+    ::= { jnxPsuEntry 4 }
+
+--**********************************************************************
+-- Environment
+--**********************************************************************
+
+jnxPsuEnvironmentTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF JnxPsuEnvironmentEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION   "A list of PSU Environment entries."
+    ::= { jnxPsuObjects 3 }
+
+jnxPsuEnvironmentEntry OBJECT-TYPE
+    SYNTAX       JnxPsuEnvironmentEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION  "Defines an entry in jnxPsuEnvironmentTable."
+    INDEX        { jnxContentsContainerIndex,
+                   jnxContentsL1Index,
+                   jnxContentsL2Index,
+                   jnxContentsL3Index }
+    ::= { jnxPsuEnvironmentTable 1 }
+
+JnxPsuEnvironmentEntry ::=
+    SEQUENCE {
+        jnxPsuThermalValue    INTEGER,
+        jnxPsuHumidityValue   INTEGER
+    }
+
+jnxPsuThermalValue  OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Temparature at each component in degrees Celsius."
+    ::= { jnxPsuEnvironmentEntry 1 }
+
+jnxPsuHumidityValue  OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Humidity at each component in percentage."
+    ::= { jnxPsuEnvironmentEntry 2 }
+
+--**********************************************************************
+-- OUTLETS
+--**********************************************************************
+
+jnxPsuOutletTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF JnxPsuOutletEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION   "A list of outlet entries. The number of
+                  entries is given by the value of jnxPsuOutletPsuIndex."
+    ::= { jnxPsuObjects 4 }
+
+jnxPsuOutletEntry OBJECT-TYPE
+    SYNTAX       JnxPsuOutletEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION  "A value contained within the OutletEntry"
+    INDEX        { jnxContentsContainerIndex,
+                   jnxContentsL1Index,
+                   jnxContentsL2Index,
+                   jnxContentsL3Index }
+     ::= { jnxPsuOutletTable 1 }
+
+JnxPsuOutletEntry ::= 
+    SEQUENCE {
+	jnxPsuOutletName                     DisplayString,
+	jnxPsuOutletDescription              DisplayString,
+	jnxPsuOutletAvgPower                 INTEGER,
+	jnxPsuOutletMaxPower                 INTEGER,
+	jnxPsuOutletCurrent                  INTEGER,
+	jnxPsuOutletStatus                   INTEGER
+    }
+
+jnxPsuOutletName  OBJECT-TYPE
+    SYNTAX        DisplayString(SIZE (0..15))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Outlet name associated to the power supply unit for 
+                   each PSU Component."
+    ::= { jnxPsuOutletEntry 1 }
+
+jnxPsuOutletDescription	OBJECT-TYPE
+    SYNTAX        DisplayString(SIZE (0..63))
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Outlet description associated to the power supply unit for 
+                   each PSU Component."
+    ::= { jnxPsuOutletEntry 2 }
+
+jnxPsuOutletAvgPower OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Buffer that contains the average power used, in Watts for each component."
+    ::= { jnxPsuOutletEntry 3 }
+		 
+jnxPsuOutletMaxPower OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Buffer that contains the maximum power available, in Watts for each component."
+    ::= { jnxPsuOutletEntry 4 }
+		 
+jnxPsuOutletCurrent OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "The value of the Current of the given outlet
+                   returned in MilliAmps"
+    ::= { jnxPsuOutletEntry 5 }
+                  
+jnxPsuOutletStatus  OBJECT-TYPE
+    SYNTAX        INTEGER {
+                      off(0),
+                      on(1)
+                  }
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "The value of the operational status for the given outlet.
+                   This can also be used to set the outlet state"
+    ::= { jnxPsuOutletEntry 8 }
+
+END

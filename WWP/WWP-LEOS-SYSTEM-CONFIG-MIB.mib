@@ -1,0 +1,356 @@
+ --
+ -- WWP-LEOS-SYSTEM-CONFIG-MIB.my
+ --
+
+ WWP-LEOS-SYSTEM-CONFIG-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS 		
+   NOTIFICATION-TYPE, IpAddress, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY			
+	    FROM SNMPv2-SMI			
+   TruthValue, DateAndTime, RowStatus, TEXTUAL-CONVENTION			
+	    FROM SNMPv2-TC						
+   wwpModules, 	wwpModulesLeos	
+	    FROM WWP-SMI;
+	
+	
+ wwpLeosSystemConfigMIB MODULE-IDENTITY
+	    LAST-UPDATED "200203160000Z"
+	    ORGANIZATION "World Wide Packets, Inc"
+	    CONTACT-INFO
+		    "   Mib Meister
+		  	Postal: World Wide Packets
+		        P.O. Box 950
+		        Veradale, WA 99037
+		        USA
+		 	Phone:  +1 509 242 9000
+			Email:  mib.meister@worldwidepackets.com"
+	    DESCRIPTION
+		    "The MIB module for the WWP System Config information."
+	    REVISION    "200203160000Z"
+	    DESCRIPTION
+		    "Initial creation."
+	    ::= { wwpModulesLeos 12 }
+
+ FileName ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS       current
+    DESCRIPTION
+            "Represents the textual convention which defines the 
+	     name string and display hint"
+    SYNTAX       OCTET STRING (SIZE (1..64))
+
+ --
+ -- Node definitions
+ --
+	
+ wwpLeosSystemConfigMIBObjects OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIB 1 }
+
+ --
+ -- SystemCfg Attributes
+ --
+ wwpLeosSystemConfigAttr OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIBObjects 1 }
+
+ --
+ -- Cfg Group
+ --
+ wwpLeosSystemConfig OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIBObjects 2 }
+ 
+ --
+ -- system telnet objects
+ --
+ wwpLeosSystemTelnet  OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIBObjects 3 }
+ 
+ -- Notifications 
+  
+ wwpLeosSystemConfigMIBNotificationPrefix  OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIB 2 } 
+ wwpLeosSystemConfigMIBNotifications       OBJECT IDENTIFIER ::=  
+                       { wwpLeosSystemConfigMIBNotificationPrefix 0 }
+
+ -- Conformance information 
+ 
+ wwpLeosSystemConfigMIBConformance OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIB 3 } 
+ wwpLeosSystemConfigCompliances OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIBConformance 1 } 		
+ wwpLeosSystemConfigMIBGroups      OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIBConformance 2 }
+ 				 		
+
+ wwpLeosSystemConfigDefaultGateway OBJECT-TYPE
+     SYNTAX      IpAddress
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+	     "Default gateway IP address."
+     ::= { wwpLeosSystemConfigAttr 1 }
+
+ wwpLeosSystemConfigBootCmdFile OBJECT-TYPE
+      SYNTAX      FileName
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+	      "Name of the last successfully executed cmd file name 
+	       executed by the device."
+      ::= { wwpLeosSystemConfigAttr 2 }
+      
+ wwpLeosSystemConfigBootCfgFile OBJECT-TYPE
+      SYNTAX      FileName
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+	      "Name of the bootup config file for the system."
+      ::= { wwpLeosSystemConfigAttr 3 }
+ 
+ wwpLeosSystemClockDateTime    OBJECT-TYPE
+     SYNTAX                DateAndTime
+     MAX-ACCESS            read-write
+     STATUS                current
+     DESCRIPTION
+	     "The current system date and time of box.  
+				
+	      There are no privisions for local time or
+	      daylight savings. All times use the 24 hr clock
+	      and are UTC.
+				
+	      Because device time is UTC, only first 7 bytes of
+	      DateAndTime data are returned, as per rfc1903."
+      ::= { wwpLeosSystemConfigAttr 4 }
+
+ wwpLeosSystemConfigSavePermFile OBJECT-TYPE
+      SYNTAX      FileName
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+	      "Setting this object will set the save file name 
+	       to the value of wwpLeosSystemConfigSavePermFile.
+	       What it means is that whenever wwpLeosSystemConfigControl
+	       is set to value 'save' then if wwpLeosSystemConfigSaveFile is not set
+	       then device will use wwpLeosSystemConfigSavePermFile as the file name
+	       to store config."
+      ::= { wwpLeosSystemConfigAttr 5 }
+
+ wwpLeosSystemConfigLastFileNameReset OBJECT-TYPE
+      SYNTAX      TruthValue
+      MAX-ACCESS  read-write
+      STATUS      current
+      DESCRIPTION
+	      "Setting this object will reset the name of the last config
+	       filename that was successfuly executed by the device."
+      ::= { wwpLeosSystemConfigAttr 6 }
+ 
+ wwpLeosSystemConfigSaveFileName OBJECT-TYPE
+      SYNTAX		FileName
+      MAX-ACCESS	read-write
+      STATUS		current   
+      DESCRIPTION
+	      "wwpLeosSystemConfigSaveFileName specifes the name of the config
+	       file to be used when wwpLeosSystemConfigControl has been set 
+	       to 'save'. If this object is not set then device will use 
+	       the file name specified by wwpLeosSystemConfigSavePermFile.
+	       If wwpLeosSystemConfigSavePermFile is also not set then default config 
+	       file name i.e startup-config will be used to save config.
+	       Once 'wwpLeosSystemConfigControl' has been successfully applied,
+	       read on wwpLeosSystemConfigSaveFileName will always return empty
+	       string else it will show what user has configured."
+       ::= { wwpLeosSystemConfig 1 }
+       
+ wwpLeosSystemConfigControl OBJECT-TYPE
+      SYNTAX          INTEGER {
+                           none(0),
+			   save(1),   
+			   mfgDefaultCfg(2)
+		       }
+      MAX-ACCESS       read-write
+      STATUS           current   
+      DESCRIPTION
+	      "Controls configuration options on the device.
+              The current options are:
+	      save:   
+		  to make the configuration changes made
+		  using SNMP persistent across a reboot.
+				 
+	      mfgDefaultCfg:
+		   Set system configuration to factory defaults.
+		   Note: this will wipe out all of the current 
+		   configuration including Password and VLAN 
+		   information.
+              
+             If the system doesn't support any of these control 
+             configuration option, it should return error while 
+             trying to set this object to the specific option.
+              
+             A read on this object should return none(0)."
+       ::= { wwpLeosSystemConfig 2 }
+ 
+ wwpLeosSystemConfigFilepath OBJECT-TYPE
+      SYNTAX        FileName
+      MAX-ACCESS    read-only
+      STATUS        current
+      DESCRIPTION
+	      "Returns the path for configuration related files."
+      ::= { wwpLeosSystemConfig 3 }
+ 				
+ --
+ --  The System Config File Table
+ --
+
+ wwpLeosSystemConfigFileTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF WwpLeosSystemConfigFileEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+            "The (conceptual) table listing the configs"
+     ::= { wwpLeosSystemConfig 4 }
+
+ wwpLeosSystemConfigFileEntry OBJECT-TYPE
+    SYNTAX     WwpLeosSystemConfigFileEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the wwpLeosSystemConfigFileTable."
+    INDEX      { wwpLeosSystemConfigFileIndex }
+    ::= { wwpLeosSystemConfigFileTable 1 }
+
+
+ WwpLeosSystemConfigFileEntry ::= SEQUENCE {
+    wwpLeosSystemConfigFileIndex      INTEGER,   
+    wwpLeosSystemConfigFileName       FileName,
+    wwpLeosSystemConfigActivateFile   INTEGER
+ }
+ 
+ wwpLeosSystemConfigFileIndex     OBJECT-TYPE
+     SYNTAX             INTEGER(1..65535)
+     MAX-ACCESS         read-only
+     STATUS             current
+     DESCRIPTION
+    	     "Unique identifier to the table."               
+     ::= { wwpLeosSystemConfigFileEntry 1 }
+ 
+ wwpLeosSystemConfigFileName     OBJECT-TYPE
+     SYNTAX          FileName
+     MAX-ACCESS      read-only
+     STATUS          current
+     DESCRIPTION
+    	     "The name of the Config file."               
+     ::= { wwpLeosSystemConfigFileEntry 2 }
+ 
+ wwpLeosSystemConfigActivateFile  OBJECT-TYPE
+     SYNTAX      INTEGER {
+		     loadCfg(1),
+		     resetToCfg(2)
+		 }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+	     "Set this object to 'loadCfg to load the 'wwpLeosSystemConfigFileName' config. 
+	      If the operation was successful, this object performs 
+              the CLI equivalent to these commands and will return the status
+	      Set this object to 'resetCfg' to reset system config to 'wwpLeosSystemConfigFileName'.
+              If the operation was successful, this object performs 
+              reset to factory default and device will lose network connectivity
+	      and will lose local and remote interface configuration."
+     ::= { wwpLeosSystemConfigFileEntry 3 }
+     
+     
+ wwpLeosTelnetMaxBaseUserSessions OBJECT-TYPE
+     SYNTAX           INTEGER (0..10)      
+     MAX-ACCESS       read-write
+     STATUS           current   
+     DESCRIPTION
+             "The max number of base user telnet sesssions
+             for the device."
+     ::= { wwpLeosSystemTelnet 1 }
+     
+ wwpLeosTelnetMaxSuperUserSessions OBJECT-TYPE
+     SYNTAX           INTEGER (0..10)
+     MAX-ACCESS       read-write
+     STATUS           current   
+     DESCRIPTION
+             "The max number of super user telnet sesssions
+             for the device."
+     ::= { wwpLeosSystemTelnet 2 }    
+
+ --
+ -- System Cpu Load Query
+ --
+ wwpLeosSystemCpuLoadQuery OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIBObjects 7 }
+
+ wwpLeosSystemCpuLoad1Min OBJECT-TYPE
+     SYNTAX     INTEGER(1..65535)
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+            "The OID to display cpu load in last 1 min."
+     ::= { wwpLeosSystemCpuLoadQuery 1 }
+
+ wwpLeosSystemCpuLoad10Min OBJECT-TYPE
+     SYNTAX     INTEGER(1..65535)
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+            "The OID to display cpu load in last 10 min."
+     ::= { wwpLeosSystemCpuLoadQuery 2 }
+ 
+ wwpLeosSystemCpuLoad15Min OBJECT-TYPE
+     SYNTAX     INTEGER(1..65535)
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+            "The OID to display cpu load in last 15 min."
+     ::= { wwpLeosSystemCpuLoadQuery 3 }
+ 
+ --
+ -- String used for notification
+ --
+ wwpLeosSystemConfigNotif OBJECT IDENTIFIER ::= { wwpLeosSystemConfigMIBObjects 8 }
+
+ wwpLeosSystemConfigNotifTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF WwpLeosSystemConfigNotifEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+            "The (conceptual) table listing the config file line numbers.
+	     This table is only used when sending wwpLeosImproperCmdInConfigFile
+	     notification. No Get, GetNext or Set is allowed on this table."
+     ::= { wwpLeosSystemConfigNotif 1 }
+
+ wwpLeosSystemConfigNotifEntry OBJECT-TYPE
+    SYNTAX     WwpLeosSystemConfigNotifEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the wwpLeosSystemConfigNotifTable.
+	     No Get, GetNext or Set is allowed on this table."
+    INDEX      { wwpLeosSystemConfigFileIndex }
+    ::= { wwpLeosSystemConfigNotifTable 1 }
+
+ WwpLeosSystemConfigNotifEntry ::= SEQUENCE {
+    wwpLeosSystemConfigErrLineNum	INTEGER
+ }
+
+ wwpLeosSystemConfigErrLineNum OBJECT-TYPE
+     SYNTAX     INTEGER (0..64)
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+            "The OID is sent in the wwpLeosImproperCmdInConfigFile 
+	     trap to identify the line number which was failed 
+	     when config is applied. No Get, GetNext or Set is 
+	     allowed on this table."
+     ::= { wwpLeosSystemConfigNotifEntry 1 }
+
+ wwpLeosImproperCmdInConfigFile  NOTIFICATION-TYPE
+	OBJECTS	   {  
+	              wwpLeosSystemConfigFileName,
+		      wwpLeosSystemConfigErrLineNum
+		   }
+	STATUS	   current
+	DESCRIPTION  
+		"A wwpLeosImproperCmdInConfigFile notif signifies that the SNMP entity, acting in
+                an agent role, has detected that improper commands were found in the
+		config file while processing the wwpLeosSystemConfigFileName. 
+		wwpLeosSystemConfigErrStr will specify the commands which failed."  
+	::= { wwpLeosSystemConfigMIBNotifications 1 } 
+
+ END
+     
+ --
+ -- WWP-SYSTEM-CONFIG-MIB.my
+ --

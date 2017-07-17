@@ -1,0 +1,886 @@
+ --
+ -- WWP-LEOS-CHASSIS-MIB.my
+ --
+ --
+
+ WWP-LEOS-CHASSIS-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS 		
+	TEXTUAL-CONVENTION FROM SNMPv2-TC
+     NOTIFICATION-TYPE, Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY			
+	    FROM SNMPv2-SMI
+     TruthValue, DisplayString
+            FROM SNMPv2-TC
+     wwpModules, wwpModulesLeos		
+	    FROM WWP-SMI;	
+
+ wwpLeosChassisMIB MODULE-IDENTITY
+	    LAST-UPDATED "200104031700Z"
+	    ORGANIZATION "World Wide Packets, Inc"
+	    CONTACT-INFO
+		    "   Mib Meister
+		  	Postal: World Wide Packets
+		        P.O. Box 950
+		        Veradale, WA 99037
+		        USA
+		 	Phone:  +1 509 242 9000
+			Email:  mib.meister@worldwidepackets.com"
+	    DESCRIPTION
+		    "The MIB module for the WWP Specifc chassis mib. It contains the 
+                     variables which applies on the whole chassis for the WWP System."
+            REVISION     "200304280000Z"  -- 28th April. 2003  
+	    DESCRIPTION
+		    "Updated the battery status. Added the four notifications
+                    for the battery state change. The new added notification
+                    wwpLeosChassisPowerSourceNotification replaces the 
+                    wwpLeosChassisPowerSwitchNotification."
+	    REVISION     "200303110000Z"  -- 11th March. 2003  
+	    DESCRIPTION
+		    "Changed the temperature thresholds to be read-write.
+		    Added Battery States and updated the notification for the 
+		    battery states. Added dry contact, door and RF notifications."
+	    REVISION    "200104031700Z"
+	    DESCRIPTION
+		    "Initial creation."
+	    ::= { wwpModulesLeos 11 }
+
+ 
+ --
+ -- Textual conventions
+ --
+
+ PortList ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port.  Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1'
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'."
+    SYNTAX      OCTET STRING (SIZE (0..255))						
+
+ --
+ -- Node definitions
+ --
+	
+ wwpLeosChassisMIBObjects OBJECT IDENTIFIER ::= { wwpLeosChassisMIB 1 }
+ 
+ wwpLeosChassis OBJECT IDENTIFIER ::= { wwpLeosChassisMIBObjects 1 }
+ wwpLeosChassisNotifAttrs OBJECT IDENTIFIER ::= { wwpLeosChassisMIBObjects 2 }
+
+ -- the Chassis Module 
+
+ wwpLeosChassisModule OBJECT IDENTIFIER ::= { wwpLeosChassis 1 } 
+
+ -- the Battery Module 
+
+ wwpLeosChassisBatteryModule OBJECT IDENTIFIER ::= { wwpLeosChassis 2 } 
+
+ -- the Power Supply module group.
+          
+ wwpLeosChassisPowerSupplyModule OBJECT IDENTIFIER ::= { wwpLeosChassis 3 }
+
+ -- the Fan module group.
+ 
+ wwpLeosChassisFanModule  OBJECT IDENTIFIER ::= { wwpLeosChassis 4 } 
+
+ -- the Temp Module
+
+ wwpLeosChassisTempSensor OBJECT IDENTIFIER ::= { wwpLeosChassis 5 }  
+
+ -- The Chassis Notif Objects
+ 
+ wwpLeosChassisNotif   OBJECT IDENTIFIER ::= { wwpLeosChassis 7 }
+ 
+ -- Notifications 
+  
+ wwpLeosChassisMIBNotificationPrefix  OBJECT IDENTIFIER ::= { wwpLeosChassisMIB 2 } 
+ wwpLeosChassisMIBNotifications       OBJECT IDENTIFIER ::=  
+                       { wwpLeosChassisMIBNotificationPrefix 0 }
+
+ -- Conformance information 
+ 
+ wwpLeosChassisMIBConformance OBJECT IDENTIFIER ::= { wwpLeosChassisMIB 3 } 
+ wwpLeosChassisMIBCompliances OBJECT IDENTIFIER ::= { wwpLeosChassisMIBConformance 1 } 		
+ wwpLeosChassisMIBGroups      OBJECT IDENTIFIER ::= { wwpLeosChassisMIBConformance 2 }
+ 
+ wwpLeosChassisRebootState    OBJECT-TYPE
+     SYNTAX           TruthValue
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "Setting this to true will cause chassis to reboot."
+     DEFVAL { false }
+     ::= { wwpLeosChassisModule 1 }
+ 
+ wwpLeosChassisSystemTimeOffsetScope    OBJECT-TYPE
+     SYNTAX           INTEGER {
+     					    dhcp(1),
+     					    user(2),
+     					    both(3)					
+     					}
+     UNITS			  "seconds"
+     MAX-ACCESS       read-only
+     STATUS           current
+     DESCRIPTION
+	     "This object specifies who has conifgured system time-offset."     
+     ::= { wwpLeosChassisModule 2 }
+          
+ wwpLeosChassisSystemTimeOffset    OBJECT-TYPE
+     SYNTAX           INTEGER (0..2147483647)
+     UNITS			  "seconds"
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "This object specifies the system time-offset in seconds from 
+	      UTC -- positive->east, negative->west."     
+     ::= { wwpLeosChassisModule 3 }
+     
+ wwpLeosChassisSerialConsoleState    OBJECT-TYPE
+     SYNTAX           INTEGER {
+     					 disabled(1),
+     					 enabled(2)
+     				  }     
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "This object specifies the current state of serial console. 
+	      It can be set to disabled/enabled."     
+     ::= { wwpLeosChassisModule 4 }
+     
+ wwpLeosChassisShellInactivityTimerState    OBJECT-TYPE
+     SYNTAX           INTEGER {
+     					disabled(1),
+     					enabled(2)
+     				  }
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "This object specifies if device should close the shell sessions which
+	      are inactive for sometime. The time is decided by 
+	      wwpLeosChassisShellInactivityTimeout."	      
+     ::= { wwpLeosChassisModule 5 }
+     
+ wwpLeosChassisShellInactivityTimeout    OBJECT-TYPE
+     SYNTAX           INTEGER (1..1500)
+     UNITS			  "minutes"
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "This object specifies the idle time after which the device will 
+	      forcefully close the shell sessions if enabled 
+	      (decided by wwpLeosChassisShellInactivityTimerState)."     
+     ::= { wwpLeosChassisModule 6 }
+     
+ -- 
+ -- Power Module
+ --      
+ wwpLeosChassisPowerTable  OBJECT-TYPE
+     SYNTAX      SEQUENCE OF WwpLeosChassisPowerEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "A list of power supply entries."
+     ::= { wwpLeosChassisPowerSupplyModule 1 }
+
+ wwpLeosChassisPowerEntry     OBJECT-TYPE
+     SYNTAX         WwpLeosChassisPowerEntry
+     MAX-ACCESS     not-accessible
+     STATUS         current
+     DESCRIPTION
+             "An entry in the powerTable providing objects for a
+             power supply."
+     INDEX  { wwpLeosChassisPowerSupplyNum }
+     ::= { wwpLeosChassisPowerTable 1 }
+
+ WwpLeosChassisPowerEntry ::=  SEQUENCE  {
+     wwpLeosChassisPowerSupplyNum         Integer32,
+     wwpLeosChassisPowerSupplyState       INTEGER,
+     wwpLeosChassisPowerSupplyType		INTEGER,
+     wwpLeosChassisPowerSupplyRedundantState  INTEGER 
+ }
+
+ wwpLeosChassisPowerSupplyNum  OBJECT-TYPE
+     SYNTAX            Integer32(1..2147483647) 
+     MAX-ACCESS        read-only
+     STATUS            current
+     DESCRIPTION
+             "Denotes the power supply."
+     ::= { wwpLeosChassisPowerEntry 1 }
+
+ wwpLeosChassisPowerSupplyState  OBJECT-TYPE
+     SYNTAX  INTEGER  {
+                  online(1),
+                  offline(2),
+                  faulted(3)                  
+              }
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+             "Specifies the power supply's state."
+     ::= { wwpLeosChassisPowerEntry 2 }
+
+ wwpLeosChassisPowerSupplyType  OBJECT-TYPE
+     SYNTAX       INTEGER  {
+                       ac(1),
+                       dc(2),
+                       unequipped(3)                       
+                  }
+      MAX-ACCESS  read-only
+      STATUS      current
+      DESCRIPTION
+              "Specifies the power supply type."
+      ::= { wwpLeosChassisPowerEntry 3 }
+
+ wwpLeosChassisPowerSupplyRedundantState  OBJECT-TYPE
+     SYNTAX  INTEGER  {
+                  protected(1),
+                  unprotected(2)                  
+             }
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+             "Specfiies power supply redundant state."
+     ::= { wwpLeosChassisPowerEntry 4 }
+
+ wwpLeosChassisRedPowerSupplyNotifEnabled OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable  indicates  whether  the  system
+             generates the wwpLeosChassisRedPowerSupplyNotification. 
+             A false value prevents this notifications
+             from being generated by this system."
+    DEFVAL { true }
+    ::= { wwpLeosChassisPowerSupplyModule 2 }
+
+ --
+ --  The Fan module group
+ --
+ wwpLeosChassisFanModuleTable  OBJECT-TYPE
+     SYNTAX      SEQUENCE OF WwpLeosChassisFanModuleEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "A list of fan module entries."
+     ::= { wwpLeosChassisFanModule 1 }
+
+ wwpLeosChassisFanModuleEntry  OBJECT-TYPE
+     SYNTAX         WwpLeosChassisFanModuleEntry
+     MAX-ACCESS     not-accessible
+     STATUS         current
+     DESCRIPTION
+             "An entry in the fan module Table providing objects for a
+             fan module."
+     INDEX  { wwpLeosChassisFanModuleNum }
+     ::= { wwpLeosChassisFanModuleTable 1 }
+
+ WwpLeosChassisFanModuleEntry ::=  SEQUENCE  {
+     wwpLeosChassisFanModuleNum          Integer32,
+     wwpLeosChassisFanModuleType         INTEGER,
+     wwpLeosChassisFanModuleStatus       INTEGER,
+     wwpLeosChassisFanAvgSpeed           Integer32,
+     wwpLeosChassisFanCurrentSpeed       Integer32,
+     wwpLeosChassisFanMinSpeed           Integer32
+ }
+
+ wwpLeosChassisFanModuleNum  OBJECT-TYPE
+     SYNTAX        Integer32 (1..2147483647)
+     MAX-ACCESS    read-only 
+     STATUS        current
+     DESCRIPTION
+             "Denotes the Fan module."
+     ::= { wwpLeosChassisFanModuleEntry 1 }
+
+ wwpLeosChassisFanModuleType OBJECT-TYPE
+     SYNTAX        INTEGER  {
+                        fixed(1),
+                        hotSwappable(2),
+                        unequipped(3)                        
+                   }
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+             "Denotes the fan modules type.
+	      'fixed' means fan is fixed and cannot be removed.
+	      'hotswappable' means fan can be removed and inserted 
+	      whenever required.
+	      'unequipped' means fan is not installed."
+     ::= { wwpLeosChassisFanModuleEntry 2 }
+ 
+ wwpLeosChassisFanModuleStatus OBJECT-TYPE
+     SYNTAX        INTEGER  {
+                        ok(1),
+                        pending(2),
+                        failure(3)                        
+                   }
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+             "Denotes the fan modules status. 
+	      'ok' means fan is operational,
+	      'pending' means fan is installed but stats
+	      are not yet available,
+	      'failure' means fan is not working."
+     ::= { wwpLeosChassisFanModuleEntry 3 }
+
+ wwpLeosChassisFanAvgSpeed OBJECT-TYPE
+     SYNTAX        Integer32 (0..2147483647)
+     UNITS         "rpm"
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+             "The fans average speed in RPM.  The average is calculated
+	     on a continuous basis from system startup."
+     ::= { wwpLeosChassisFanModuleEntry 4 }
+
+ wwpLeosChassisFanCurrentSpeed OBJECT-TYPE
+     SYNTAX        Integer32 (0..2147483647)
+     UNITS         "rpm"
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+    	     "The current speed of the fan in RPM."
+     ::= { wwpLeosChassisFanModuleEntry 5 }
+
+ wwpLeosChassisFanMinSpeed OBJECT-TYPE
+     SYNTAX        Integer32 (0..2147483647)
+     UNITS         "rpm"
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+    	     "The minimum speed of the fan in RPM."
+     ::= { wwpLeosChassisFanModuleEntry 6 }
+ 
+ 
+ wwpLeosChassisFanModuleNotifEnabled OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable  indicates  whether  the  system
+             generates the wwpLeosChassisFanModuleNotification. 
+             A false value prevents this notifications
+             from being generated by this system."
+    DEFVAL { true }
+    ::= { wwpLeosChassisFanModule 2 }
+
+ --
+ --  The Temp module group
+ --
+ wwpLeosChassisTempSensorTable  OBJECT-TYPE
+     SYNTAX      SEQUENCE OF WwpLeosChassisTempSensorEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "A list of Temp Sensors entries."
+     ::= { wwpLeosChassisTempSensor 1 }
+
+ wwpLeosChassisTempSensorEntry  OBJECT-TYPE
+     SYNTAX         WwpLeosChassisTempSensorEntry
+     MAX-ACCESS     not-accessible
+     STATUS         current
+     DESCRIPTION
+             "An entry in the Temp Sensor Table providing objects for a
+             Temp Sensor."
+     INDEX  { wwpLeosChassisTempSensorNum }
+     ::= { wwpLeosChassisTempSensorTable 1 }
+
+ WwpLeosChassisTempSensorEntry ::=  SEQUENCE  {
+     wwpLeosChassisTempSensorNum               Integer32,
+     wwpLeosChassisTempSensorValue             Integer32,
+     wwpLeosChassisTempSensorHighThreshold     Integer32,
+     wwpLeosChassisTempSensorLowThreshold      Integer32,
+     wwpLeosChassisTempSensorState             INTEGER
+ }
+
+ wwpLeosChassisTempSensorNum  OBJECT-TYPE
+     SYNTAX        Integer32 (1..2147483647)
+     MAX-ACCESS    read-only 
+     STATUS        current
+     DESCRIPTION
+             "Denotes the Temp sensor module."
+     ::= { wwpLeosChassisTempSensorEntry 1 }
+
+ wwpLeosChassisTempSensorValue OBJECT-TYPE
+     SYNTAX        Integer32
+     UNITS         "degrees Celsius"
+     MAX-ACCESS    read-only
+     STATUS        current
+     DESCRIPTION
+    	     "The value of temperature measured by the sensor 
+              inside the device in degrees C."
+     ::= { wwpLeosChassisTempSensorEntry 2 }
+ 
+ wwpLeosChassisTempSensorHighThreshold   OBJECT-TYPE
+     SYNTAX       Integer32
+     UNITS        "degrees Celsius"
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+	     "The highest value that the object wwpLeosChassisTempSensorValue
+              may obtain at which a wwpLeosChassisMIBTempNotification is sent."
+     ::= { wwpLeosChassisTempSensorEntry 3 }
+
+ wwpLeosChassisTempSensorLowThreshold   OBJECT-TYPE
+     SYNTAX       Integer32
+     UNITS        "degrees Celsius"
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+	     "The Lowest value that the object wwpLeosChassisTempSensorValue
+              may obtain at which a wwpLeosChassisMIBTempNotification is sent."
+     ::= { wwpLeosChassisTempSensorEntry 4 }
+
+ wwpLeosChassisTempSensorState   OBJECT-TYPE
+     SYNTAX       INTEGER {
+                        higherThanThreshold(0),
+                        normal(1),
+                        lowerThanThreshold(2)
+                  }
+     MAX-ACCESS   read-only
+     STATUS       current
+     DESCRIPTION
+	     "The state indicates whether the current temp is greater than,
+             equal to or less than the threshold state."
+     ::= { wwpLeosChassisTempSensorEntry 5 }
+
+ wwpLeosChassisTempNotifEnabled OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable  indicates  whether  the  system
+             generates the wwpLeosChassisTempNotification. 
+             A false value prevents this notifications
+             from being generated by this system."
+    DEFVAL { true }
+    ::= { wwpLeosChassisTempSensor 2 }
+ 
+ wwpLeosChassisTempHighThreshold OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates the high temperature threshold
+	      to be used by the device when checking temperature 
+	      of the device. This object is similar to wwpLeosChassisTempSensorHighThreshold
+	      only difference is that wwpLeosChassisTempHighThreshold is 
+	      global attribute not per sensor based.
+	      wwpLeosChassisTempSensorHighThreshold will have the same value as 
+	      wwpLeosChassisTempHighThreshold at all times. 
+	      wwpLeosChassisTempSensorHighThreshold is basically redundant."
+    ::= { wwpLeosChassisTempSensor 3 }
+
+  wwpLeosChassisTempLowThreshold OBJECT-TYPE
+     SYNTAX      Integer32
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates the low temperature threshold
+	      to be used by the device when checking temperature 
+	      of the device. This object is similar to 
+	      wwpLeosChassisTempSensorLowThreshold
+	      only difference is that wwpLeosChassisTempLowThreshold is global 
+	      attribute not per sensor based.
+	      wwpLeosChassisTempSensorLowThreshold will have the same value as 
+	      wwpLeosChassisTempLowThreshold at all times.
+	      wwpLeosChassisTempSensorLowThreshold is basically redundant."
+    ::= { wwpLeosChassisTempSensor 4 }  
+
+ --
+ -- Platform Capability
+ -- 
+
+ --
+ -- notif group
+ --  
+ wwpPowerSwitchingOp OBJECT-TYPE
+     SYNTAX         INTEGER {
+                        none(0),
+                        acToBattery(1),
+                        bateryToAC(2)                     
+                    }
+     --MAX-ACCESS     accessible-for-notify
+     MAX-ACCESS     read-only
+     STATUS         current
+     DESCRIPTION
+             "The object to notify whether the input power supply is switching
+             from ac to Battery or vice versa."
+     ::= { wwpLeosChassisNotif 1 }
+
+ --
+ -- chassis battery group
+ --
+ wwpLeosChassisBatteryStatus     OBJECT-TYPE
+     SYNTAX           INTEGER {
+                           present(1),
+	                   missing(2)
+	              } 
+     MAX-ACCESS       read-only
+     STATUS           current
+     DESCRIPTION
+	     "Describes the current status of the 
+             battery. If battery is connected then the
+             status is indicated as 'present'." 
+     ::= { wwpLeosChassisBatteryModule 1 }
+  
+ wwpLeosChassisBatteryVoltageLevel     OBJECT-TYPE
+     SYNTAX           INTEGER {
+                           normal(1),
+	                   low(2)
+	              } 
+     MAX-ACCESS       read-only
+     STATUS           current
+     DESCRIPTION
+	     "Describes the current voltage level of the 
+             battery." 
+     ::= { wwpLeosChassisBatteryModule 2 }
+     
+ wwpLeosChassisBatteryCondition  OBJECT-TYPE
+     SYNTAX           INTEGER {
+                           good(1),
+	                   bad(2)
+	              } 
+     MAX-ACCESS       read-only
+     STATUS           current
+     DESCRIPTION
+	     "Describes the current condition of the battery." 
+     ::= { wwpLeosChassisBatteryModule 3 }
+     
+ wwpLeosChassisPowerSource OBJECT-TYPE
+     SYNTAX           INTEGER {
+                           primaryPower(1),
+	                   battery(2)
+	              } 
+     MAX-ACCESS       read-only
+     STATUS           current
+     DESCRIPTION
+	     "Describes the current power source for the device." 
+     ::= { wwpLeosChassisBatteryModule 4 }
+     
+ wwpLeosChassisBatteryNormalStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "The state name associated with the low state
+	     of the battery."
+     ::= { wwpLeosChassisBatteryModule 5 }
+     
+ wwpLeosChassisBatteryLowStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "The state name associated with the normal state
+	     of the battery."
+     ::= { wwpLeosChassisBatteryModule 6 }
+
+ wwpLeosChassisBatteryGoodStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "The state name associated with the good state
+	     of the battery."
+     ::= { wwpLeosChassisBatteryModule 7 }
+ 
+ wwpLeosChassisBatteryBadStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "The state name associated with the bad state
+	     of the battery."
+     ::= { wwpLeosChassisBatteryModule 8 }
+     
+ wwpLeosChassisBatteryPresentStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "The state name associated with the battery state 
+             'present'." 
+     ::= { wwpLeosChassisBatteryModule 9 }
+     
+ wwpLeosChassisBatteryMissingStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "The state name associated with the battery state 
+             'missing'." 
+     ::= { wwpLeosChassisBatteryModule 10 }
+    
+ wwpLeosChassisBatteryPowerPrimaryStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+             "The state name associated with the state when the
+              device is on primary power." 
+     ::= { wwpLeosChassisBatteryModule 11 }
+      
+ wwpLeosChassisBatteryPowerBatteryStateName     OBJECT-TYPE
+     SYNTAX           OCTET STRING (SIZE(1..128))  
+     MAX-ACCESS       read-write
+     STATUS           current
+     DESCRIPTION
+	     "The state name associated with the state when the
+             device is on battery power." 
+     ::= { wwpLeosChassisBatteryModule 12 }
+     
+ 
+      
+ wwpLeosChassisBatteryLowStateNotifEnabled OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates whether the system
+             will generate the wwpLeosChassisBatteryStatusNotification
+             in case of battery state changing from normal to low
+             or vice versa. 
+             A false value prevents this notifications
+             from being generated by this system."
+    DEFVAL { true }
+    ::= { wwpLeosChassisBatteryModule 13 }
+     
+ wwpLeosChassisBatteryBadStateNotifEnabled OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates whether the system
+             will generate the wwpLeosChassisBatteryStatusNotification
+             in case of battery state changing from good to bad
+             or vice versa.
+             A false value prevents this notifications
+             from being generated by this system."
+    DEFVAL { true }
+    ::= { wwpLeosChassisBatteryModule 14 }
+    
+ wwpLeosChassisBatteryMissingStateNotifEnabled OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates whether the system
+             will generate the wwpLeosChassisBatteryStatusNotification
+             in case of battery state changing from present to missing
+             or vice versa.
+             A false value prevents this notifications
+             from being generated by this system."
+    DEFVAL { true }
+    ::= { wwpLeosChassisBatteryModule 15 }
+    
+ wwpLeosChassisBatteryPowerNotifEnabled OBJECT-TYPE
+     SYNTAX      TruthValue
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates whether the system
+             will generate the wwpLeosChassisBatteryStatusNotification
+             in case of input power changing from primary to battery
+             or vice versa.
+             A false value prevents this notifications
+             from being generated by this system."
+    DEFVAL { true }
+    ::= { wwpLeosChassisBatteryModule 16 }         
+   
+ wwpLeosChassisPostErrorCategory OBJECT-TYPE
+     SYNTAX      INTEGER {
+     					chassis(1),
+     					blade(2),
+     					port(3)
+     				}
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates the category of post errors. This
+              object is sent out as one of the binding in Post Error
+              Notification."    
+    ::= { wwpLeosChassisNotifAttrs 1 }
+    
+  wwpLeosChassisPostErrorValue OBJECT-TYPE
+     SYNTAX      INTEGER (0..65535)
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates the value associated with category 
+              wwpLeosChassisPostErrorCategory. If this value is 0 then 
+              no value corresponds to wwpLeosChassisPostErrorCategory."
+    DEFVAL { 0 }
+    ::= { wwpLeosChassisNotifAttrs 2 }
+ 
+  wwpLeosChassisPostErrorCode OBJECT-TYPE
+     SYNTAX      Unsigned32
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates the post error code."    
+    ::= { wwpLeosChassisNotifAttrs 3 }
+    
+  wwpLeosChassisPostErrorMsg OBJECT-TYPE  	 
+     SYNTAX      DisplayString
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates the post error message 
+              associated with category wwpLeosChassisPostErrorCategory."    
+    ::= { wwpLeosChassisNotifAttrs 4 }
+
+  wwpLeosChassisRebootReasonErrorType OBJECT-TYPE  	 
+     SYNTAX      INTEGER {  
+     				unknown(1),
+     				snmp(2),
+     				powerFailure(3),
+     				appload(4),
+     				errorHandler(5),
+     				watchDog(6),
+     				upgrade(7),
+     				cli(8),
+                                resetButton(9)
+     			 }
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+             "This variable indicates the type of reboot reasons
+              included in the wwpLeosChassisRebootNotification trap."    
+    ::= { wwpLeosChassisNotifAttrs 5 }
+ 
+ --
+ -- Notifications
+ -- 
+ wwpLeosChassisPowerSupplyStatusNotification NOTIFICATION-TYPE
+	OBJECTS	{
+                wwpLeosChassisPowerSupplyNum, 
+                wwpLeosChassisPowerSupplyState,
+                wwpLeosChassisPowerSupplyType              
+		}
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisPowerSupplyStatusNotification is sent if a 
+		power supply state is changed."
+	::= { wwpLeosChassisMIBNotifications 1 }
+ 
+ wwpLeosChassisFanModuleNotification NOTIFICATION-TYPE
+	OBJECTS	{
+		wwpLeosChassisFanModuleNum,		
+		wwpLeosChassisFanModuleStatus
+		}
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisFanModuleNotification is sent if the 
+		fan state changes."
+	::= { wwpLeosChassisMIBNotifications 2 }
+
+ wwpLeosChassisTempNotification NOTIFICATION-TYPE
+	OBJECTS	{
+                wwpLeosChassisTempSensorState,
+                wwpLeosChassisTempSensorValue,
+                wwpLeosChassisTempSensorHighThreshold,
+                wwpLeosChassisTempSensorLowThreshold          
+		}
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisTempNotification is sent if the 
+		wwpLeosChassisTempSensorState is changed."
+	::= { wwpLeosChassisMIBNotifications 3 }
+
+ wwpLeosChassisPowerSwitchNotification NOTIFICATION-TYPE
+	OBJECTS	{
+                wwpPowerSwitchingOp           
+		}
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisPowerSwitchNotification is sent if the 
+		input power supply is switched to Battery from the 
+                AC power or switched from the Battery to the AC Power."
+	::= { wwpLeosChassisMIBNotifications 4 }
+
+ wwpLeosChassisBatteryStatusNotification NOTIFICATION-TYPE
+	OBJECTS	{
+	           wwpLeosChassisBatteryStatus
+                }
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisBatteryStatusNotification is sent if the 
+		Battery status changes. If the device supports the 
+                configurable battery state names, then the corresponding 
+                battery state name should also be sent with this notification." 
+	::= { wwpLeosChassisMIBNotifications 5 }
+
+ wwpLeosChassisBatteryVoltageLevelNotification NOTIFICATION-TYPE
+	OBJECTS	{
+	        wwpLeosChassisBatteryVoltageLevel
+                }
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisBatteryVoltageLevelNotification is sent if the 
+		Battery voltage level changes from normal to low or vice versa.
+                If the device supports the configurable battery state names, then 
+                the corresponding battery state name should also be sent with 
+                this notification." 
+	::= { wwpLeosChassisMIBNotifications 6 }
+ 
+ wwpLeosChassisBatteryConditionNotification NOTIFICATION-TYPE
+	OBJECTS	{
+	        wwpLeosChassisBatteryCondition
+                }
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisBatteryConditionNotification is sent if the 
+		Battery condition changes from good to bad or vice versa.
+                If the device supports the configurable battery state names, then 
+                the corresponding battery state name should also be sent with 
+                this notification." 
+	::= { wwpLeosChassisMIBNotifications 7 }
+         
+ wwpLeosChassisPowerSourceNotification NOTIFICATION-TYPE
+	OBJECTS	{
+	        wwpLeosChassisPowerSource
+                }
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisPowerSourceNotification is sent if the 
+		Battery input power source changes from battery to primary
+                power or vice versa. A device which supports 
+                wwpLeosChassisPowerSwitchNotification should not support this
+                notification. If the device supports the configurable 
+                battery state names, then the corresponding battery state 
+                name should also be sent with this notification." 
+	::= { wwpLeosChassisMIBNotifications 8 }    
+ 
+ wwpLeosChassisPostErrorNotification NOTIFICATION-TYPE
+	OBJECTS	{				
+	        	wwpLeosChassisPostErrorCategory,
+	        	wwpLeosChassisPostErrorValue,
+	        	wwpLeosChassisPostErrorCode,
+	        	wwpLeosChassisPostErrorMsg
+            }
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisPostErrorNotification is sent after cold start trap 
+		 if the device detects post errors." 
+	::= { wwpLeosChassisMIBNotifications 9 }
+
+ wwpLeosChassisRebootNotification NOTIFICATION-TYPE
+	OBJECTS	{
+				wwpLeosChassisRebootReasonErrorType				  	
+            }
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosChassisRebootNotification is sent whenever device is rebooted using CLI / SNMP." 
+	::= { wwpLeosChassisMIBNotifications 10 } 	
+ 
+  END
+
+ 

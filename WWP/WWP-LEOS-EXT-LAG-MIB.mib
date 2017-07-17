@@ -1,0 +1,211 @@
+ --
+ -- WWP-LEOS-EXT-LAG-MIB.my
+ --
+ --
+ --
+
+ WWP-LEOS-EXT-LAG-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS
+    Integer32, Unsigned32, MODULE-IDENTITY, OBJECT-TYPE
+        FROM SNMPv2-SMI
+    DisplayString, TEXTUAL-CONVENTION, RowStatus
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF   					
+    wwpModules, wwpModulesLeos
+	FROM WWP-SMI;
+
+	
+ wwpLeosExtLagMIB MODULE-IDENTITY
+	    LAST-UPDATED "200301151700Z"
+	    ORGANIZATION "World Wide Packets, Inc"
+	    CONTACT-INFO
+		    "   Mib Meister
+		  	Postal: World Wide Packets
+		        P.O. Box 950
+		        Veradale, WA 99037
+		        USA
+		 	Phone:  +1 509 242 9000
+			Email:  mib.meister@worldwidepackets.com"
+	    DESCRIPTION
+		    "This MIB module is an extension to the ieee8023-lag-mib.
+		    This MIB defines the mgmt objects for the creation and 
+		    deletion of Aggregators."  
+	    REVISION    "200301151700Z"
+	    DESCRIPTION
+		    "Initial creation."
+	    ::= { wwpModulesLeos 14 }
+ 
+ --
+ -- Node definitions
+ --	
+ 
+ wwpLeosExtLagMIBObjects OBJECT IDENTIFIER ::= { wwpLeosExtLagMIB 1 }
+ 
+ wwpLeosExtLag  OBJECT IDENTIFIER ::= { wwpLeosExtLagMIBObjects 1 }
+ 
+ -- Notifications 
+
+ wwpLeosExtLagMIBNotificationPrefix  OBJECT IDENTIFIER ::= { wwpLeosExtLagMIB 2 } 
+ wwpLeosExtLagMIBNotifications       OBJECT IDENTIFIER ::=  
+                       { wwpLeosExtLagMIBNotificationPrefix 0 }
+
+ -- Conformance information 
+ 
+ wwpLeosExtLagMIBConformance OBJECT IDENTIFIER ::= { wwpLeosExtLagMIB 3 } 
+ wwpLeosExtLagMIBCompliances OBJECT IDENTIFIER ::= { wwpLeosExtLagMIBConformance 1 } 		
+ wwpLeosExtLagMIBGroups      OBJECT IDENTIFIER ::= { wwpLeosExtLagMIBConformance 2 }
+   
+ wwpLeosMaxLags OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The maximum number of aggregators that this device
+        supports."
+    ::= { wwpLeosExtLag 1 }
+    
+ wwpLeosNumLags OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current number of Lags that are
+        configured in this device."
+    ::= { wwpLeosExtLag 2 }
+    
+ wwpLeosExtLagTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF WwpLeosExtLagEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+            "The (conceptual) table listing all the  
+	    aggregators."  
+     ::= { wwpLeosExtLag 3 }
+		
+ wwpLeosExtLagEntry OBJECT-TYPE
+     SYNTAX      WwpLeosExtLagEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+           "An entry (conceptual row) in the wwpLeosExtLagTable."
+     INDEX { wwpLeosExtAggId }
+     ::= { wwpLeosExtLagTable 1 }
+		
+ WwpLeosExtLagEntry ::=  SEQUENCE { 
+     wwpLeosExtAggId                         Integer32,
+     wwpLeosExtAggName                       DisplayString,
+     wwpLeosExtAggIndex                      Integer32,     
+     wwpLeosExtAggStatus                     RowStatus
+ }
+
+ wwpLeosExtAggId OBJECT-TYPE
+     SYNTAX     Integer32 (1..2147483647)
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+           "Object which specifies a unique entry in the
+           wwpLeosExtLagTable.  A management station wishing
+           to create a lag should use a pseudo-random value 
+	   for this object when creating an instance of a 
+           wwpLeosExtLagEntry."
+     ::= { wwpLeosExtLagEntry 1 }
+
+ wwpLeosExtAggName OBJECT-TYPE
+     SYNTAX      DisplayString (SIZE(1..32))
+     MAX-ACCESS  read-create
+     STATUS      current
+     DESCRIPTION
+           "The name assigned to this Lag by the Management
+	   station. This object can only be set while creating lag.
+	   It is not allowed to rename the agg name once it is created." 
+     ::= { wwpLeosExtLagEntry 2 }
+
+ wwpLeosExtAggIndex OBJECT-TYPE
+    SYNTAX       Integer32 (1..2147483647)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "The unique identifier allocated to this Aggregator by
+        the local System.  This attribute identifies an
+        Aggregator instance among the subordinate managed
+        objects of the containing object.
+        This value is read-only. This object refer to the 
+	dot3adAggIndex in the ieee-8023-lag-mib."
+    REFERENCE
+        "IEEE 802.3 Subclause 30.7.1.1.1"
+    ::= { wwpLeosExtLagEntry 3 }		
+	
+ wwpLeosExtAggStatus OBJECT-TYPE
+     SYNTAX       RowStatus
+     MAX-ACCESS   read-create
+     STATUS       current
+     DESCRIPTION
+	     "Used to manage the creation and deletion of the 
+	     conceptual rows in this table.
+
+             To create a row in this table, a manager must
+             set this object to 'createAndGo'. To disable
+	     the aggregator, a management should set this 
+	     object to 'notInService'."
+     ::= { wwpLeosExtLagEntry 4 }
+ 
+ wwpLeosLagModeTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF WwpLeosLagModeEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+            "The (conceptual) table listing the modes of aggregation on each port."  
+     ::= { wwpLeosExtLag 4 }
+		
+ wwpLeosLagModeEntry OBJECT-TYPE
+     SYNTAX      WwpLeosLagModeEntry
+     MAX-ACCESS  not-accessible
+     STATUS      current
+     DESCRIPTION
+           "An entry (conceptual row) in the wwpLeosLagModeTable."
+     INDEX { wwpLeosLagPhyPortId  }
+     ::= { wwpLeosLagModeTable 1 }
+		
+ WwpLeosLagModeEntry ::=  SEQUENCE {      
+     wwpLeosLagPhyPortId	INTEGER,
+     wwpLeosLagAdminMode	INTEGER,
+     wwpLeosLagOperMode		INTEGER
+ }
+
+ wwpLeosLagPhyPortId OBJECT-TYPE
+     SYNTAX      INTEGER (0..65535)
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+           "This object specifies the physical port number. 
+	    It is also used as index in the table." 
+     ::= { wwpLeosLagModeEntry 1 }
+
+ wwpLeosLagAdminMode OBJECT-TYPE
+     SYNTAX      INTEGER {
+			lacp(1),
+			manual(2)
+		 }
+     MAX-ACCESS  read-write
+     STATUS      current
+     DESCRIPTION
+           "This object specifies the administrative mode in which given port is operating." 
+     ::= { wwpLeosLagModeEntry 2 }
+ 
+ wwpLeosLagOperMode OBJECT-TYPE
+     SYNTAX      INTEGER {
+			lacp(1),
+			manual(2)
+		 }
+     MAX-ACCESS  read-only
+     STATUS      current
+     DESCRIPTION
+           "This object specifies the operation mode in which given port is operating." 
+     ::= { wwpLeosLagModeEntry 3 }
+
+ END
+ 
+
+

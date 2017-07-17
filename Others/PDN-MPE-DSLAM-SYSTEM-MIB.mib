@@ -1,0 +1,67 @@
+PDN-MPE-DSLAM-SYSTEM-MIB DEFINITIONS ::= BEGIN
+
+-- Version :  0.1 DRAFT
+-- Enterprise dslam mib (mpe support )
+-- Copyright (C) 2000 Paradyne Corporation.
+
+-- Created by : Prakash Easwar
+ 
+ IMPORTS
+ OBJECT-TYPE
+ FROM RFC-1212
+ TRAP-TYPE
+ FROM RFC-1215
+ entPhysicalIndex
+ FROM ENTITY-MIB 
+ mpeSysObjectID
+ FROM PDN-MPE-MIB2-MIB
+ mpe-dslam
+ FROM PDN-HEADER-MIB
+ ;
+
+ -- The Hotwire System MIB. This MIB is written specifically to
+ -- configure, get statistics and do diagnostic tests on the
+ -- device as a whole. 
+
+mpeSysDevDslamMIBObjects OBJECT IDENTIFIER ::= { mpe-dslam 1 }
+mpeSysDevDslamMIBTraps   OBJECT IDENTIFIER ::= { mpe-dslam 2 }
+
+--Traps
+
+mpeCcn TRAP-TYPE
+  ENTERPRISE mpeSysDevDslamMIBTraps
+  VARIABLES { entPhysicalIndex }
+  DESCRIPTION
+    "This trap signifies a Configuration change  or 
+     software upgrade in the xDSL card. This trap 
+     is of 'warning' class"
+::= 7
+
+mpeDeviceFailure TRAP-TYPE
+  ENTERPRISE mpeSysDevDslamMIBTraps
+  VARIABLES { entPhysicalIndex }
+  DESCRIPTION
+    "This trap signifies that the sending protocol's
+     device has failed and the failure was not a result
+     of a device test. 
+     Note there are no variable bindings for this trap"
+::= 15
+ 
+mpeNonSupportedMCC TRAP-TYPE
+  ENTERPRISE mpeSysDevDslamMIBTraps
+  VARIABLES { mpeSysObjectID }
+  DESCRIPTION
+    "AN has detected MCC firmware release too low to support
+     this device"
+::= 20
+
+mpeNonSupportedChassis TRAP-TYPE
+  ENTERPRISE mpeSysDevDslamMIBTraps
+  VARIABLES { mpeSysObjectID }
+  DESCRIPTION
+    "AN in slot xx has been installed in a chassis that cannot
+     support one or more of its features. "
+::= 21
+
+END
+

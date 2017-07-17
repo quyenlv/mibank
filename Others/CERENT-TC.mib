@@ -1,0 +1,150 @@
+-- ************************************************************************
+-- Cisco OTBU Textual Convention MIB module
+--
+-- This module contains the top-level TCs for Cisco OTBU products.
+--
+-- Copyright (c) 1998-1999 by Cerent Corporation, Inc.  All rights reserved.
+-- Copyright (c) 2000      by Cisco Systems, Inc.  All rights reserved.
+--
+-- ************************************************************************
+CERENT-TC DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    Unsigned32 
+                      FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+                      FROM SNMPv2-TC
+    cerentModules
+                      FROM CERENT-GLOBAL-REGISTRY;
+
+cerentTextualConventions MODULE-IDENTITY
+    LAST-UPDATED "000517000000Z" -- 2000/May/17
+    ORGANIZATION "Cisco Systems"
+    CONTACT-INFO
+        "         support@Cisco.com
+
+         Postal:  Cisco Systems
+                  1450 N. McDowell Blvd.
+                  Petaluma, CA  94954
+                  USA
+
+            Tel:  +1-877-323-7368"
+    DESCRIPTION
+        "This module provides the global registrations for all
+         other Cisco OTBU MIB modules."
+
+    REVISION "000517000000Z" -- 2000/May/17
+    DESCRIPTION
+        "This file can be used with R2.2 (Afgani)"
+
+    REVISION "000221000000Z" -- 2000/Feb/21
+    DESCRIPTION
+        "This file can be used with R2.1.1."
+
+    REVISION "000220000000Z" -- 2000/Feb/20
+    DESCRIPTION
+        "This file can be used with R2.1.0."
+
+    REVISION "000114000000Z" -- 2000/Jan/14
+    DESCRIPTION
+        "This file can be used with R2.0.3."
+
+    REVISION "000107000000Z" -- 2000/Jan/07
+    DESCRIPTION
+        "This file can be used with R2.0.2."
+
+    REVISION "990715000000Z" -- 1999/Jul/15
+    DESCRIPTION
+        "This file can be used with R2.0.1."
+
+    REVISION "990405000000Z" -- 1999/April/05
+    DESCRIPTION
+        "Inital version of this module"
+
+    ::= { cerentModules 30 }
+
+-- Not used at present. So disable it for now
+-- to avoid MIB compiler warnings
+
+-- CerentPercent ::=  TEXTUAL-CONVENTION
+--       DISPLAY-HINT "1d"
+--       STATUS current
+--       DESCRIPTION
+--             "This is the ratio shown as percentage"
+--       SYNTAX INTEGER(1..100)
+
+-- Not used at present. So disable it for now
+-- to avoid MIB compiler warnings
+
+-- CerentEnableDisable ::=  TEXTUAL-CONVENTION
+--       DISPLAY-HINT "d"
+--       STATUS current
+--       DESCRIPTION
+--             "This is the ratio shown as percentage"
+--       SYNTAX INTEGER{ disabled(1), enabled(2) }
+-- 
+CerentNotificationClass ::= TEXTUAL-CONVENTION
+      DISPLAY-HINT "1d"
+      STATUS current
+      DESCRIPTION
+            "This will indicate what is
+             the class of the notification being
+             sent out. That is,
+               crucial - Needs immediate attention and
+                         is service affecting.  May 
+                         result in node being isolated
+                         in the network.
+               administrative - A response to a operation
+                         on a control object.
+               diagnostic - A diagnostic event message. May
+                         carry data/trace in varbinds
+               cleared - This alarm has been cleared.
+               minorNonServiceAffecting - minor & NSA
+               majorNonServiceAffecting - major & NSA
+               criticalNonServiceAffecting - critical & NSA
+               minorServiceAffecting - minor & SA
+               majorServiceAffecting - major & SA
+               criticalServiceAffecting - critical & SA
+
+               other - catch-all enumeration. Will come handy
+                       if a new class should be supported
+                       before the next release of MIB."
+
+      SYNTAX INTEGER
+             { other                           (1),
+               crucial                        (10),
+               administrative                 (20),
+               diagnostic                     (30),
+               cleared                        (40), 
+               minorNonServiceAffecting       (50),
+               majorNonServiceAffecting       (60),
+               criticalNonServiceAffecting    (70),
+               minorServiceAffecting          (80),
+               majorServiceAffecting          (90),
+               criticalServiceAffecting      (100)
+             }
+
+CountryCode ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "2a"
+    STATUS       current
+    DESCRIPTION
+    "Represents the 2-letter country country assigned by the
+    International Standards Organization in IOS-3166."
+    SYNTAX       OCTET STRING (SIZE (0 | 2))
+
+Unsigned8 ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "Represents a 8-bit unsigned integer limited to the range 0..255."
+    SYNTAX       Unsigned32 (0..255)
+
+Unsigned16 ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "Represents a 16-bit unsigned integer limited to the range 0..65535."
+    SYNTAX       Unsigned32 (0..65535)
+
+END

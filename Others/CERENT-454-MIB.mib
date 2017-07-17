@@ -1,0 +1,5321 @@
+-- **************************************************************
+-- Cerent-454-MIB module
+--
+-- This module contains the objects and events for the 
+-- Cisco ONS 15454
+
+-- Copyright (c) 1998-1999 by Cerent Corporation, Inc.
+-- Copyright (c) 2000 by Cisco Systems, Inc.
+-- All rights reserved.
+--
+-- **************************************************************
+
+CERENT-454-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    OBJECT-IDENTITY,
+    NOTIFICATION-TYPE,
+    Integer32,
+    Unsigned32,
+    Counter32
+                      FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION,
+    DisplayString, 
+    TruthValue,
+    TimeStamp
+                      FROM SNMPv2-TC
+    MODULE-COMPLIANCE, 
+    OBJECT-GROUP, 
+    NOTIFICATION-GROUP 
+                      FROM SNMPv2-CONF
+    cerentProducts,
+    cerentModules
+                      FROM CERENT-GLOBAL-REGISTRY
+    CerentNotificationClass
+                      FROM CERENT-TC;
+
+cerent454MibModule MODULE-IDENTITY
+    LAST-UPDATED  "000525000000Z" -- 2000/May/25
+    ORGANIZATION "Cisco Systems, Inc."
+    CONTACT-INFO
+        "         support@Cisco.com
+
+         Postal:  Cisco Systems
+                  1450 N. McDowell Blvd.
+                  Petaluma, CA  94954
+                  USA
+
+            Tel:  +1-877-323-7368"
+    DESCRIPTION
+        "This module provides the global registrations for all
+         other Cisco OTBU MIB modules."
+
+    REVISION "000525000000Z" -- 2000/May/25
+    DESCRIPTION
+        "o) This file can be used with R2.2 (Afgani) release.
+
+         o) Two new traps, freeMemoryOnCardVeryLow and
+            freeMemoryOnCardAlmostGone have been added."
+
+    REVISION "000314000000Z" -- 2000/Mar/14
+    DESCRIPTION
+        "A new trap, pertaining to RMON's history reset has been added. "
+
+    REVISION "000221000000Z" -- 2000/Feb/21
+    DESCRIPTION
+        "This file can be used with R2.1.1 release.
+
+         o) Has no changes from the previous version"
+
+    REVISION "000220000000Z" -- 2000/Feb/20
+    DESCRIPTION
+        "This file can be used with R2.1.0 release.
+
+         o) Has no changes from the previous version"
+
+    REVISION "000114000000Z" -- 2000/Jan/14
+    DESCRIPTION
+        "This file can be used with R2.0.3 release.
+
+         o) Has no changes from the previous version"
+
+    REVISION "000107000000Z" -- 2000/Jan/07
+    DESCRIPTION
+        "This file can be used with R2.0.2 release.
+
+         o) Has no changes from the previous version"
+
+    REVISION "991124000000Z" -- 1999/Nov/24
+    DESCRIPTION
+        "This file is to be used with R2.1 release.
+
+         o) The data integrity fault trap has a more clear
+         description of the trap (99/Nov/24)"
+
+    REVISION "990922000000Z" -- 1999/Sept/22
+    DESCRIPTION
+        "This file is specifically
+         intended for R2.0.1 release."
+
+    REVISION "990405000000Z" -- 1999/April/05
+    DESCRIPTION
+        "The inital version of the module"
+
+    ::= { cerentModules 20 }
+
+cerent454Mib OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            "The is the node under which all Cisco ONS 15454
+             specific mib object are located."
+      ::= { cerentProducts 10 }
+
+cerent454Conformance OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            "This node is created compliance. Has 
+             objects as required by the RFCs"
+      ::= { cerent454Mib 10 }
+
+--  ********************************************************
+
+cerentCommonObjects OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            "The objects here are expected to be 
+             used by all Cisco OTBU Products.
+             These will be mixed with specific 
+             objects of the product-specific branch."
+      ::= { cerent454Mib 100 } 
+-- 
+cerentCommonEvents OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            "This branch is similar to cerentCommonObjects, 
+             except that this will have only events"
+      ::= { cerent454Mib 200 } 
+
+--  ********************************************************
+
+cerent454Groups OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            ""
+      ::= { cerent454Conformance 10 }
+
+cerent454Compliance OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            ""
+      ::= { cerent454Conformance 20 }
+
+-- **************************************************************
+-- Cisco ONS 15454 specific textual conventions
+-- **************************************************************
+
+Cerent454AlarmType ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS current
+   DESCRIPTION
+       "This TC is used by the NMS to map the alarm type
+        received by the trap and and display the string
+        shown in LHS."
+   SYNTAX INTEGER {
+       alarmUnknown                                      (  1 ), 
+       alarmCutoffIsInManualMode                         ( 10 ), 
+       failureDetectedexternalToTheNE                    ( 20 ),
+       externalError                                     ( 30 ), 
+       excessiveSwitching                                ( 40 ), 
+       terminationFailureSDCC                            ( 50 ), 
+       incomingFailureCondition                          ( 60 ), 
+       alarmIndicationSignal                             ( 70 ), 
+       alarmIndicationSignalLine                         ( 80 ), 
+       alarmIndicationSignalPath                         ( 90 ), 
+       alarmIndicationSignalVT                           ( 100 ),
+       channelFailureAPS                                 ( 110 ), 
+       channelByteFailureAPS                             ( 120 ), 
+       channelProtectionSwitchingChannelMatchFailureAPS  ( 130 ), 
+       channelAutomaticProtectionSwitchModeMismatchAPS   ( 140 ), 
+       channelFarEndProtectionLineFailureAPS             ( 150 ), 
+       channelBLSRInconsistentAPSCode                    ( 160 ), 
+       channelBLSRImproperAPSCodeAPS                     ( 170 ), 
+       channelBLSRNodeIdMismatchAPS                      ( 180 ), 
+       channelBLSRDefaultKAPS                            ( 190 ), 
+       channelBLSRConnectionLossAPS                      ( 200 ), 
+
+       bipolarViolation                                  ( 210 ), 
+       carrierLossOnTheLAN                               ( 220 ), 
+       concatenationErrorSTS                             ( 230 ), 
+       excessCollisionsOnTheLAN                          ( 240 ), 
+       facilityCriticalAlarmCausedByDS3FacilityFailure   ( 250 ), 
+       farEndAIS                                         ( 260 ), 
+       farEndMultipleDS1LOSDetectedOnDS3                 ( 270 ), 
+       farEndDS1EqptFailNonServiceAffecting              ( 280 ), 
+       farEndDS1EqptFailServiceAffecting                 ( 290 ), 
+       farEndSingleDS1LOS                                ( 300 ), 
+       farEndDS3EqptFailNonServiceAffecting              ( 310 ), 
+       farEndDS3EqptFailServiceAffecting                 ( 320 ), 
+       farEndCmnEqptFailNonServiceAffecting              ( 330 ), 
+       farEndIDLE                                        ( 340 ), 
+       farEndLOS                                         ( 350 ), 
+       farEndLOF                                         ( 360 ), 
+       farEndBlockError                                  ( 370 ), 
+       idleConditionDS3                                  ( 380 ), 
+       lossOfFrame                                       ( 390 ), 
+       lossOfPointer                                     ( 400 ), 
+
+       lossOfPointerPath                                 ( 410 ), 
+       lossOfPointerVT                                   ( 420 ), 
+       lossOfSignal                                      ( 430 ), 
+       outOfFrame                                        ( 440 ), 
+       pathSelectorInabilityToSwitchToAValidSignal       ( 450 ), 
+       remoteAlarmIndication                             ( 460 ), 
+       remoteFailureIndication                           ( 470 ), 
+       remoteFailureIndicationLine                       ( 480 ), 
+       remoteFailureIndicationPath                       ( 490 ), 
+       remoteFailureIndicationVT                         ( 500 ), 
+
+       facilityHasPassedBERThresholdForSignalDegrade     ( 510 ), 
+       severelyErroredFrame                              ( 520 ), 
+       facilityHasPassedBERThresholdForSignalFailure     ( 530 ), 
+       signalLabelMismatchFailuresSONET                  ( 540 ), 
+       signalLabelMismatchFailurePayloadDefectIndication ( 550 ), 
+
+       signalLabelMismatchFailurePayloadDefectIndicationPath  ( 560 ), 
+       signalLabelMismatchFailurePayloadLabelMismatchPath     ( 570 ), 
+       signalLabelMismatchFailurePayloadLabelMismatchVT       ( 580 ), 
+       signalLabelMismatchFailureUnequippedPath               ( 590 ), 
+       signalLabelMismatchFailureUnequippedVT                 ( 600 ), 
+       lossOfTimingOnSynchronizationLink                      ( 610 ), 
+       lossOfTimingOnAllSpecifiedSynchronizationLinks         ( 620 ), 
+       lossOfTimingOnPrimarySynchronizationLink               ( 630 ), 
+       lossOfTimingOnSecondarySynchronizationLink             ( 640 ), 
+       lossOfTimingOnThirdSynchronizationLink                 ( 650 ), 
+       lossOfTimingOnFourthSynchronizationLink                ( 660 ), 
+       lossOfTimingOnFifthSynchronizationLink                 ( 670 ), 
+       lossOfTimingOnSixthSynchronizationLink                 ( 680 ), 
+
+       failedToReceiveSynchronizationStatusMessage             ( 690 ),
+       synchronizationStatusMessagesAreDisabledOnThisInterface ( 700 ),
+       primaryReferenceSourceStratum1Traceable                 ( 710 ),
+       synchronizedTraceabilityUnknown                         ( 720 ),
+       stratum2Traceable                                       ( 730 ),
+       transiTNodeClockTraceable                               ( 740 ),
+
+       stratum3ETraceable                    ( 750 ),
+       stratum3Traceable                     ( 760 ),
+       minimumClockTraceableSONET            ( 770 ),
+       stratum4Traceable                     ( 780 ),
+       doNotUseForSynchronization            ( 790 ),
+       reservedForNetworkSynchronizationUse  ( 800 ),
+
+       outgoingFailureCondition          ( 810 ), 
+       remoteDefectIndicationLine        ( 820 ), 
+       remoteDefectIndicationPath        ( 830 ), 
+       freeRunningSynchronizationMode    ( 840 ), 
+       holdoverSynchronizationMode       ( 850 ), 
+       fastStartSynchronizationMode      ( 860 ), 
+       internalHardwareFaultOrFailure    ( 870 ), 
+       errorInternalToTheNEDetected      ( 880 ), 
+       internalMessageError              ( 890 ), 
+       mismatchOfEquipmentAndAttributes  ( 900 ), 
+       watchdogTimerTimeout              ( 910 ), 
+       softwareFaultOrFailure            ( 920 ), 
+       softwareFaultDataIntegrityFault   ( 930 ), 
+       programFailure                    ( 940 ), 
+
+       controlEquipmentFailure                                 ( 950 ), 
+       controlEquipmentPrimaryNonVolatileBackupMemoryFailure   ( 960 ), 
+       controlEquipmentSecondaryNonVolatileBackupMemoryFailure ( 970 ), 
+       controlEquipmentControlBusFailure                       ( 980 ), 
+       controlEquipmentControlBus1Failure                      ( 990 ), 
+       controlEquipmentControlBus2Failure                      ( 1000 ),
+
+       communicationFailureTCCAToShelfSLOT1      ( 1010 ),
+       communicationFailureTCCAToShelfSLOT2      ( 1020 ),
+       communicationFailureTCCAToShelfSLOT3      ( 1030 ),
+       communicationFailureTCCAToShelfSLOT4      ( 1040 ),
+       communicationFailureTCCAToShelfSLOT5      ( 1050 ),
+       communicationFailureTCCAToShelfSLOT6      ( 1060 ),
+       communicationFailureTCCAToShelfSLOT7      ( 1070 ),
+       communicationFailureTCCAToShelfSLOT8      ( 1080 ),
+       communicationFailureTCCAToShelfSLOT9      ( 1090 ),
+       communicationFailureTCCAToShelfSLOT10     ( 1100 ),
+       communicationFailureTCCAToShelfSLOT11     ( 1110 ),
+       communicationFailureTCCAToShelfSLOT12     ( 1120 ),
+       communicationFailureTCCAToShelfSLOT13     ( 1130 ),
+       communicationFailureTCCAToShelfSLOT14     ( 1140 ),
+       communicationFailureTCCAToShelfSLOT15     ( 1150 ),
+       communicationFailureTCCAToShelfSLOT16     ( 1160 ),
+       communicationFailureTCCAToShelfSLOT17     ( 1170 ),
+       communicationFailureTCCPAToTCCJAprocessor ( 1180 ),
+       communicationFailureTCCBToShelfSLOT1      ( 1190 ),
+       communicationFailureTCCBToShelfSLOT2      ( 1200 ),
+       communicationFailureTCCBToShelfSLOT3      ( 1210 ),
+       communicationFailureTCCBToShelfSLOT4      ( 1220 ),
+       communicationFailureTCCBToShelfSLOT5      ( 1230 ),
+       communicationFailureTCCBToShelfSLOT6      ( 1240 ),
+       communicationFailureTCCBToShelfSLOT7      ( 1250 ),
+       communicationFailureTCCBToShelfSLOT8      ( 1260 ),
+       communicationFailureTCCBToShelfSLOT9      ( 1270 ),
+       communicationFailureTCCBToShelfSLOT10     ( 1280 ),
+       communicationFailureTCCBToShelfSLOT11     ( 1290 ),
+       communicationFailureTCCBToShelfSLOT12     ( 1300 ),
+       communicationFailureTCCBToShelfSLOT13     ( 1310 ),
+       communicationFailureTCCBToShelfSLOT14     ( 1320 ),
+       communicationFailureTCCBToShelfSLOT15     ( 1330 ),
+       communicationFailureTCCBToShelfSLOT16     ( 1340 ),
+       communicationFailureTCCBToShelfSLOT17     ( 1350 ),
+       communicationFailureTCCPBToTCCJAprocessor ( 1360 ),
+
+       controlEquipmentControlCommunicationsEquipmentFailure ( 1370 ),
+       controlEquipmentControlProcessorFailure               ( 1380 ),
+       controlEquipmentWorkingMemoryFailure                  ( 1390 ),
+
+       interconnectionEquipmentFailure                     ( 1400 ),
+       interconnectionEquipmentFailurePayloadBus1Working    ( 1410 ),
+       interconnectionEquipmentFailurePayloadBus2Working    ( 1420 ),
+       interconnectionEquipmentFailurePayloadBus3Working    ( 1430 ),
+       interconnectionEquipmentFailurePayloadBus4Working    ( 1440 ),
+       interconnectionEquipmentFailurePayloadBus5Working    ( 1450 ),
+       interconnectionEquipmentFailurePayloadBus6Working    ( 1460 ),
+       interconnectionEquipmentFailurePayloadBus7Working    ( 1470 ),
+       interconnectionEquipmentFailurePayloadBus8Working    ( 1480 ),
+       interconnectionEquipmentFailurePayloadBus9Working    ( 1490 ),
+       interconnectionEquipmentFailurePayloadBus10Working   ( 1500 ),
+       interconnectionEquipmentFailurePayloadBus11Working   ( 1510 ),
+       interconnectionEquipmentFailurePayloadBus12Working   ( 1520 ),
+       interconnectionEquipmentFailurePayloadBus1Protect   ( 1530 ),
+       interconnectionEquipmentFailurePayloadBus2Protect   ( 1540 ),
+       interconnectionEquipmentFailurePayloadBus3Protect   ( 1550 ),
+       interconnectionEquipmentFailurePayloadBus4Protect   ( 1560 ),
+       interconnectionEquipmentFailurePayloadBus5Protect   ( 1570 ),
+       interconnectionEquipmentFailurePayloadBus6Protect   ( 1580 ),
+       interconnectionEquipmentFailurePayloadBus7Protect   ( 1590 ),
+       interconnectionEquipmentFailurePayloadBus8Protect   ( 1600 ),
+       interconnectionEquipmentFailurePayloadBus9Protect   ( 1610 ),
+       interconnectionEquipmentFailurePayloadBus10Protect  ( 1620 ),
+       interconnectionEquipmentFailurePayloadBus11Protect  ( 1630 ),
+       interconnectionEquipmentFailurePayloadBus12Protect  ( 1640 ),
+       interconnectionEqptTimeSlotInterchangeEqptFailure   ( 1650 ),
+
+       criticalAlarmCausedByEquipmentFailure               ( 1660 ),
+       equipmentFailureHighTemperature                     ( 1670 ),
+       equipmentFailureInvalidMACAddress                   ( 1680 ),
+       equipmentFailureBoardFailure                        ( 1690 ),
+       equipmentFailureDiagnosticsFailure                  ( 1700 ),
+       equipmentFailureMediumAccessControl                 ( 1710 ),
+       facilityTerminationEquipmentFailure                 ( 1720 ),
+       facilityTerminationEquipmentAutomaticLaserShutdown  ( 1730 ),
+       failureToReleaseFromProtection                      ( 1740 ),
+       facilityTerminationEquipmentReceiverFailure         ( 1750 ),
+       facilityTerminationEquipmentTransmitFailure         ( 1760 ),
+       facilityTerminationEquipmentReceiverMissing         ( 1770 ),
+       facilityTerminationEquipmentTransmitterMissing      ( 1780 ),
+       failureToSwitchToProtection                         ( 1790 ),
+       failureToSwitchToProtectionRing                     ( 1800 ),
+
+       failureToSwitchToProtectionSpan                     ( 1810 ),
+       failureToSwitchToProtectionPath                     ( 1820 ),
+       failureOfCoolingFanTray                             ( 1830 ),
+       equipmentUnitPlugIn                                 ( 1840 ),
+       powerFailureDetectedInternalToNE                    ( 1850 ),
+       powerFailureFuseAlarm                               ( 1860 ),
+       synchronizationUnitFailure                          ( 1870 ),
+       synchronizationSwitchingEquipmentFailure            ( 1880 ),
+       equipmentUnitUnplug                                 ( 1890 ),
+       loopback                                            ( 1900 ),
+
+       loopbackDueToFEACCommandDS1                         ( 1910 ),
+       loopbackCommandSentToFarEndDS1                      ( 1920 ),
+       loopbackDueToFEACCommandDS3                         ( 1930 ),
+       loopbackCommandSentToFarEndDS3                      ( 1940 ),
+       loopbackDueToFarEndCommandDS2                       ( 1950 ),
+       loopbackCommandSentToFarEndDS2                      ( 1960 ),
+       loopbackFacility                                    ( 1970 ),
+       loopbackNetwork                                     ( 1980 ),
+       loopbackTerminal                                    ( 1990 ),
+       manuallyCausedAbnormalCondition                     ( 2000 ),
+       newRootDiscoveredInBridgedNetwork                   ( 2010 ),
+       topologyChangeDiscoveredInBridgedNetwork            ( 2020 ),
+       normalCondition                                     ( 2030 ),
+       embeddedOperationsChannelFailureLinkDown            ( 2040 ),
+       peerStateMismatch                                   ( 2050 ),
+       proceduralError                                     ( 2060 ),
+       proceduralErrorImproperRemoval                      ( 2070 ),
+       proceduralErrorDuplicateNodeID                      ( 2080 ),
+       proceduralErrorBLSROutOfSync                        ( 2090 ),
+       resynchronizedBLSRTables                            ( 2100 ),
+       protectionUnitNotAvailable                          ( 2110 ),
+       performanceMonitorThresholdCrossingAlert            ( 2120 ),
+       occurrenceOfAProtectionSwitchingEvent               ( 2130 ),
+       recoveryOrServiceProtectionActionHasBeenInitiated   ( 2140 ),
+       automaticSystemReset                                ( 2150 ),
+       automacticUPSRSwitchCausedByAIS          ( 2160 ),
+       automacticUPSRSwitchCausedByLOP          ( 2170 ),
+       automacticUPSRSwitchCausedByUneq         ( 2180 ),
+       automacticUPSRSwitchCausedByPDI          ( 2190 ),
+       automacticUPSRSwitchCausedBySfber        ( 2200 ),
+       automacticUPSRSwitchCausedBySdber        ( 2210 ),
+       coldRestart                              ( 2220 ),
+       workingFacilityOrEqptForcedSwitchedToWorking      ( 2230 ),
+       workingFacilityOrEqptForcedSwitchedToWorkingRing  ( 2240 ),
+       workingFacilityOrEqptForcedSwitchedToWorkingSpan  ( 2250 ),
+       workingFacilityOrEqptForcedSwitchedProtectionUnit ( 2260 ),
+
+       workingFacilityOrEqptForcedSwitchedProtectionUnitRing ( 2270 ),
+       workingFacilityOrEqptForcedSwitchedProtectionUnitSpan ( 2280 ),
+       workingFacilityOrEqptForcedSwitchedProtectionUnitPath ( 2290 ),
+
+       initializationInitiated   ( 2300 ),
+       lockoutOfProtection       ( 2310 ),
+       lockoutOfProtectionRing   ( 2320 ),
+       lockoutOfProtectionSpan   ( 2330 ),
+       lockoutOfProtectionPath   ( 2340 ),
+       lockoutOfWorking          ( 2350 ),
+       lockoutOfWorkingRing      ( 2360 ),
+       lockoutOfWorkingSpan      ( 2370 ),
+
+       manualSystemReset         ( 2380 ),
+
+       manualSynchronizationSwitchToInternalClock    ( 2390 ),
+       manualSynchronizationSwitchToPrimaryRefernce  ( 2400 ),
+       manualSynchronizationSwitchToSecondRefernce   ( 2410 ),
+       manualSynchronizationSwitchToThirdRefernce    ( 2420 ),
+       manualSynchronizationSwitchToFourthRefernce   ( 2430 ),
+       manualSynchronizationSwitchToFifthRefernce    ( 2440 ),
+       manualSynchronizationSwitchToSixthRefernce    ( 2450 ),
+
+       manualSwitchOfWorkingFacilityOrEqptToProtectionRing   ( 2460 ),
+       manualSwitchOfWorkingFacilityOrEqptToProtectionSpan   ( 2470 ),
+       manualSwitchOfWorkingFacilityOrEqptToProtection       ( 2480 ),
+       manualSwitchOfWorkingFacilityOrEqptToProtectionUnit   ( 2490 ),
+       workingFacilityOrEqptManualSwitchToProtectionUnitRing ( 2500 ),
+       workingFacilityOrEqptManualSwitchToProtectionUnitSpan ( 2510 ),
+       manualSwitchOfWorkingFacilityOrEqptToProtectionPath   ( 2520 ),
+
+       powerFailureRestart        ( 2530 ),
+       ringIsSquelchingTraffic    ( 2540 ),
+       softwareDownloadInProgress ( 2550 ),
+
+       synchronizationSwitchToInternalClock   ( 2560 ),
+       synchronizationSwitchToPrimaryRefernce ( 2570 ),
+       synchronizationSwitchToSecondRefernce  ( 2580 ),
+       synchronizationSwitchToThirdRefernce   ( 2590 ),
+       synchronizationSwitchToFourthRefernce  ( 2600 ),
+       synchronizationSwitchToFifthRefernce   ( 2610 ),
+       synchronizationSwitchToSixthRefernce   ( 2620 ),
+
+       systemReboot                                        ( 2630 ),
+       workingFacilityOrEquipmentSwitchedBackToWorking     ( 2640 ),
+       workingFacilityOrEquipmentSwitchedToProtectionUnit  ( 2650 ),
+       warmRestart                                         ( 2660 ),
+       lineIsInWaitToRestoreStateSONET                     ( 2670 ),
+       manualSwitchRequestOnFacilityOrEquipment            ( 2680 ),
+       forceSwitchRequestOnFacilityOrEquipment             ( 2690 ),
+       lockoutSwitchRequestOnFacilityOrEquipment           ( 2700 ),
+       rmonHistoriesAndAlarmsReset                ( 2710 ),
+       rmonThresholdCrossingAlarm                 ( 2720 ), -- not used
+                                                            -- 2730 thru 2820 in allotted for
+                                                            -- next release
+       freeMemoryOnCardVeryLow                    ( 2830 ),
+       freeMemoryOnCardAlmostGone                 ( 2840 )
+} 
+
+-- Cerent454ObjectType ::= TEXTUAL-CONVENTION
+--    DISPLAY-HINT "d"
+--    STATUS current
+--    DESCRIPTION
+--        "Very similar to the alarm type TC, except this is
+--         used for object type display"
+--    SYNTAX INTEGER {
+--     objectNone            (   1 ), 
+--     objectEntity          (  10 ), 
+--     objectInterface       (  20 ), 
+--     objectOspf            (  30 ), 
+--     objectProtectionGroup (  40 ), 
+--     objectSdccTerm        (  50 ), 
+--     objectSync            (  60 ), 
+--     objectSecurity        (  70 ), 
+--     objectTopologyElement (  80 ), 
+--     objectSystem          (  90 ), 
+--     objectStsConnection   ( 100 ), 
+--     objectVtConnection    ( 110 ), 
+--     objectSonetPool       ( 120 ), 
+--     objectEtherBridge     ( 130 ), 
+--     objectSpanningTree    ( 140 ), 
+--     objectVlan            ( 150 ), 
+--     objectCircuit         ( 160 )
+--    }
+
+
+Cerent454EntityClass ::= TEXTUAL-CONVENTION
+   DISPLAY-HINT "d"
+   STATUS current
+   DESCRIPTION
+       "This is the TC used to find out to which cerent454EntityClass
+        an alarm belongs to. The first octet of the alarmIndex value is
+        mapped to the following enum. Look at cerent454AlarmIndex for
+        more details."
+   SYNTAX INTEGER {
+  unknownEntity   (  1 ),
+  ne              ( 10 ),
+  ccNe            ( 20 ),
+  backplane       ( 30 ),
+  ccBackplane     ( 40 ),
+  eqpt            ( 50 ),
+  ccEqpt          ( 60 ),
+  ocn             ( 70 ),
+  ccOcn           ( 80 ),
+  thOcn           ( 90 ),
+  sdcc            ( 100 ),
+  ds3             ( 110 ),
+  ccDs3           ( 120 ),
+  thDs3           ( 130 ),
+  stsMon          ( 140 ),
+  ccStsMon        ( 150 ),
+  stsTerm         ( 160 ),
+  ccStsTerm       ( 170 ),
+  thStsTerm       ( 180 ),
+  psSts           ( 190 ),
+  ccPsSts         ( 200 ),
+  xcSts           ( 210 ),
+  bits            ( 220 ),
+  ccBits          ( 230 ),
+  neSynchref      ( 240 ),
+  ccNeSynchref    ( 250 ),
+  extSynchref     ( 260 ),
+  ccExtSynchref   ( 270 ),
+  envalrm         ( 280 ),
+  envctrl         ( 290 ),
+  javaSpe         ( 300 ),
+  ringMap         ( 310 ),
+  squelchTable    ( 320 ),
+  payloadTable    ( 330 ),
+  userTable       ( 340 ),
+  routingTable    ( 350 ),
+  stsRing         ( 360 ),
+  ifGrp           ( 370 ),
+  craft           ( 380 ),
+  ds1             ( 390 ),
+  ccDs1           ( 400 ),
+  thDs1           ( 410 ),
+  vtTerm          ( 420 ),
+  ccVtTerm        ( 430 ),
+  thVtTerm        ( 440 ),
+  spareSdcc       ( 450 ),
+  ccSdcc          ( 460 ),
+  thSdcc          ( 470 ),
+  ds2             ( 480 ),
+  ccDs2           ( 490 ),
+  thDs2           ( 500 ),
+  ec112           ( 510 ),
+  ps              ( 520 ),
+  psVt            ( 530 ),
+  e100t           ( 540 ),
+  e1000f          ( 550 ),
+  etherBridge     ( 560 ),
+  entNb           ( 570 ),
+  
+  entDs1             ( 1010 ),
+  entDs3             ( 1020 ),
+  ringPort           ( 1180 ),
+  ringPath           ( 1190 ),
+  entOc3             ( 1200 ),
+  entOc12            ( 1210 ),
+  entOc48            ( 1220 ),
+  entOc192           ( 1230 ),
+  entSts1            ( 1240 ),
+  entSts3c           ( 1250 ),
+  entSts12c          ( 1260 ),
+  entSts48c          ( 1270 ),
+  entSyncn           ( 1280 ) 
+}
+
+-- **************************************************************
+cerent454Objects OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            "The cerent454 specific objects themselves" 
+      ::= { cerent454Mib 20 }
+
+-- **************************************************************
+-- All Cisco OTBU generic objects definitions
+-- These will be available for all Cisco OTBU products. Hence
+-- they are defined once under generic category.
+
+cerentCommonObjectsGroup OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            "The group to combine all the Cisco OTBU common 
+             objects" 
+      ::= { cerentCommonObjects 10 }
+
+-- cerentNotificationCategory OBJECT-TYPE
+--        SYNTAX       CerentNotificationClass
+--        MAX-ACCESS   read-only
+--        STATUS current
+--        DESCRIPTION
+--        "This object is used expressly for sending notifications.
+--         No need for anybody to access this."
+--        ::= {cerentCommonObjectsGroup 10}
+
+cerentEnableNotification   OBJECT-TYPE
+       SYNTAX      TruthValue
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION
+               "This variable indicates whether the system produces
+                notifications.  A value=FALSE will prevent notifications
+                from being sent by this system."
+       DEFVAL { true }
+       ::= { cerentCommonObjectsGroup 10 }
+
+cerentNodeTime OBJECT-TYPE
+       SYNTAX       DisplayString 
+       MAX-ACCESS   read-only
+       STATUS current
+       DESCRIPTION
+       "Indicates current local time as reflected by
+        the Cisco OTBU equipment. The format this scalar is
+        YYYYMMDDhhmmss{S/D}. E.g., 
+        20011103133453D means 1:34:53 PM PDT on 03/Nov/2001
+        19990614095436S means 9:54:36 AM PST on 14/Jun/1999.
+        If the last octet is S then the time is standard time.
+        Otherwise it is D to indicate it is daylight saving
+        time, if applicable"
+       ::= { cerentCommonObjectsGroup 20 }
+
+cerentNotificationsSent OBJECT-TYPE  
+       SYNTAX      Counter32 
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "A count of v1+v2 notifications sent out
+               by the agent. Resets to zero after
+               cold/warm start."
+       ::= { cerentCommonObjectsGroup 30 }
+
+cerentLastChangeTime OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The value of sysUpTime at the time 
+             a conceptual row is created or deleted 
+             in cerent454AlarmTable "
+    ::= { cerentCommonObjectsGroup 40 }
+
+-- **************************************************************
+-- 
+cerent454GeneralGroup OBJECT-IDENTITY
+       STATUS       current
+       DESCRIPTION
+              ""
+       ::= { cerent454Objects 20 }
+
+cerent454SoftwareVersion OBJECT-TYPE
+       SYNTAX       DisplayString
+       MAX-ACCESS   read-only
+       STATUS current
+       DESCRIPTION
+       "Indicates the version of software that is
+        used in Cisco ONS 15454. E.g., 2.2.03"
+       ::= { cerent454GeneralGroup 10 }
+
+-- cerent454LastChangeTime OBJECT-TYPE
+--     SYNTAX      TimeStamp
+--     MAX-ACCESS  read-only
+--     STATUS      current
+--     DESCRIPTION
+--             "The value of sysUpTime at the time 
+--              a conceptual row is created or deleted 
+--              in cerent454AlarmTable "
+--     ::= { cerent454GeneralGroup 20 }
+
+cerent454AlarmGroup OBJECT-IDENTITY
+       STATUS       current
+       DESCRIPTION
+              "The group that will represent all the
+               alarm info in the Cisco ONS 15454 node"
+       ::= { cerent454Objects 30 }
+
+cerent454AlarmCount       OBJECT-TYPE
+       SYNTAX       Unsigned32
+       MAX-ACCESS   read-only
+       STATUS current
+       DESCRIPTION
+           "Total number of active alarms in Cisco ONS 15454.
+            This equals the total number of rows in
+            cerent454AlarmTable at any time."
+       ::= { cerent454AlarmGroup 10 }
+
+cerent454AlarmTable       OBJECT-TYPE
+       SYNTAX SEQUENCE OF Cerent454AlarmEntry
+       MAX-ACCESS not-accessible 
+       STATUS current
+       DESCRIPTION
+              "This table holds all the current raised
+               alarms.  When an alarm is raised, it will
+               appear a new entry in the table.
+               Whenever an alarm is cleared it will be 
+               removed from the table and all the entries 
+               from below will be moved up by another row."
+       ::= { cerent454AlarmGroup 20 }
+
+cerent454AlarmEntry       OBJECT-TYPE
+       SYNTAX Cerent454AlarmEntry
+       MAX-ACCESS not-accessible
+       STATUS current
+       DESCRIPTION
+              "Row definition for cerent454AlarmTable"
+       INDEX { cerent454AlarmIndex, cerent454AlarmType }
+       ::= { cerent454AlarmTable 1 }
+
+Cerent454AlarmEntry ::= SEQUENCE {
+       cerent454AlarmIndex           Integer32,
+       cerent454AlarmObjectType      Cerent454EntityClass,
+       cerent454AlarmSlotNumber      Integer32,
+       cerent454AlarmPortNumber      Integer32,
+       cerent454AlarmLineNumber      Integer32,
+       cerent454AlarmObjectIndex     Integer32,
+       cerent454AlarmType            Cerent454AlarmType, 
+       cerent454AlarmState           CerentNotificationClass,
+       cerent454AlarmTimeStamp       TimeStamp
+       }
+
+cerent454AlarmIndex       OBJECT-TYPE
+       SYNTAX Integer32 ( 1..2147483647 ) -- all +ve values
+       MAX-ACCESS not-accessible
+       STATUS current
+       DESCRIPTION
+              "Uniquely identifies each entry in alarm table.
+               So when an alarm in the alarm table clears,
+               the alarms located below the this cleared
+               alarm will have to change their alarm index.
+               Hence there will be holes in the alarm table.
+               May not start with one and there will be some
+               missing numbers."
+       ::= { cerent454AlarmEntry 10 }
+
+cerent454AlarmObjectType       OBJECT-TYPE
+       SYNTAX Cerent454EntityClass
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "This will indicate what is the type
+               of the entity which raised this alarm.
+               ( E.g., DS3, etherBridge, VT-TERM, etc ) 
+               The NMS is expected to use this value
+               to decide which table to poll for 
+               further info about the alarm"
+       ::= { cerent454AlarmEntry 20 }
+
+cerent454AlarmSlotNumber           OBJECT-TYPE
+       SYNTAX Integer32
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "This will indicate what is the slot 
+               of the object which raised this alarm.
+               If not relevant to the alarm, will be
+               zero."
+       ::= { cerent454AlarmEntry 30 }
+
+cerent454AlarmPortNumber          OBJECT-TYPE
+       SYNTAX Integer32
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "This will indicate what is the port
+               of the object which raised this alarm.
+               If not relevant to the alarm, will be
+               zero."
+       ::= { cerent454AlarmEntry 40 }
+ 
+cerent454AlarmLineNumber           OBJECT-TYPE
+       SYNTAX Integer32
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "This will indicate what is the port
+               of the object which raised this alarm.
+               If not relevant to the alarm, will be
+               zero."
+       ::= { cerent454AlarmEntry 50 }
+
+cerent454AlarmObjectIndex       OBJECT-TYPE
+       SYNTAX Integer32
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "Every alarm is raised by an object and 
+               this object is an entry in a specific 
+               table. This is the index of the object
+               in that table E.g., if the alarm is interface
+               related, this index is the index of the
+               interface in the interface table."
+       ::= { cerent454AlarmEntry 60 }
+
+cerent454AlarmType       OBJECT-TYPE
+       SYNTAX Cerent454AlarmType
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "Indicates what the exact nature of the
+               alarm. See the Cerent454AlarmType TC
+               for mapping details "
+       ::= {cerent454AlarmEntry  70 }
+
+cerent454AlarmState OBJECT-TYPE  
+       SYNTAX        CerentNotificationClass
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "Specifies alarm severity and service 
+               affecting status ( SA/NSA ). Only 
+               {minor|major|critical}+{NA|NSA} will be 
+               represented here."
+       ::= { cerent454AlarmEntry 80 }
+
+cerent454AlarmTimeStamp OBJECT-TYPE  
+       SYNTAX   TimeStamp
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+              "Indicates when the alarm occurred.
+               The value is number of ticks
+               that has lasped since 1/1/1970 "
+       ::= { cerent454AlarmEntry 90 }
+
+--  All Cisco ONS 15454 Notifications definitions.
+
+cerent454Events OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+            "Place holder for all notifications of Cisco ONS 15454"
+      ::= { cerent454Mib 30 }
+
+cerent454V2Events OBJECT-IDENTITY
+      STATUS      current
+      DESCRIPTION
+                 "The sub-identifier has to be zero, as part
+                  of the interoperability agreement between
+                  SNMPv1 and SNMPv2 worlds."
+      ::= { cerent454Events 0  } 
+
+-- ---------------------------------------------
+-- All the Cisco ONS 15454 notifications definitions
+-- ---------------------------------------------
+
+-- object and event groups
+
+alarmUnknown
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+        cerentNodeTime, 
+        cerent454AlarmState, 
+        cerent454AlarmObjectType, 
+        cerent454AlarmObjectIndex,
+        cerent454AlarmSlotNumber, 
+        cerent454AlarmPortNumber, 
+        cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "alarm unknown" 
+    ::= { cerent454V2Events  1 } 
+
+alarmCutoffIsInManualMode
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "alarm cutoff is in manual mode" 
+    ::= { cerent454V2Events 10 }
+ 
+failureDetectedExternalToTheNE
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failure detected External to the NE" 
+    ::= { cerent454V2Events 20 }
+
+externalError
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "external error" 
+    ::= { cerent454V2Events 30 }
+ 
+excessiveSwitching
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "excessive switching" 
+    ::= { cerent454V2Events 40 }
+ 
+terminationFailureSDCC
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "SDCC Termination failure" 
+    ::= { cerent454V2Events 50 }
+ 
+incomingFailureCondition
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "incoming failure condition" 
+    ::= { cerent454V2Events 60 }
+ 
+alarmIndicationSignal       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "alarm indication signal" 
+    ::= { cerent454V2Events 70 }
+ 
+alarmIndicationSignalLine
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "alarm indication signal LINE" 
+    ::= { cerent454V2Events 80 }
+ 
+alarmIndicationSignalPath  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "alarm indication signal Path" 
+    ::= { cerent454V2Events 90 }
+ 
+alarmIndicationSignalVT    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "alarm indication signal VT" 
+    ::= { cerent454V2Events 100 }
+
+channelFailureAPS           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel failure APS" 
+    ::= { cerent454V2Events 110 }
+ 
+channelByteFailureAPS      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel Byte failure APS" 
+    ::= { cerent454V2Events 120 }
+ 
+channelProtectionSwitchingChannelMatchFailureAPS   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel Protection Switching Channel Match failure APS" 
+    ::= { cerent454V2Events 130 }
+ 
+channelAutomaticProtectionSwitchModeMismatchAPS    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel Automatic Protection Switch Mode Mismatch APS" 
+    ::= { cerent454V2Events 140 }
+ 
+channelFarEndProtectionLineFailureAPS              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel far end protection line failure APS" 
+    ::= { cerent454V2Events 150 }
+ 
+channelBLSRInconsistentAPSCode       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel BLSR inconsistent APS code" 
+    ::= { cerent454V2Events 160 }
+ 
+channelBLSRImproperAPSCodeAPS       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel BLSR Improper APS code APS" 
+    ::= { cerent454V2Events 170 }
+ 
+channelBLSRNodeIdMismatchAPS        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel BLSR Node Id Mismatch APS" 
+    ::= { cerent454V2Events 180 }
+ 
+channelBLSRDefaultKAPS    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel BLSR Default K APS" 
+    ::= { cerent454V2Events 190 }
+ 
+channelBLSRConnectionLossAPS         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "channel BLSR Connection loss APS" 
+    ::= { cerent454V2Events 200 }
+ 
+bipolarViolation             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "bipolar Violation" 
+    ::= { cerent454V2Events 210 }
+ 
+carrierLossOnTheLAN       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "carrier Loss on the LAN" 
+    ::= { cerent454V2Events 220 }
+ 
+concatenationErrorSTS       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "concatenation error STS" 
+    ::= { cerent454V2Events 230 }
+ 
+excessCollisionsOnTheLAN  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "excess collisions on the LAN" 
+    ::= { cerent454V2Events 240 }
+ 
+facilityCriticalAlarmCausedByDS3FacilityFailure   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility critical alarm caused by DS3 facility failure" 
+    ::= { cerent454V2Events 250 }
+ 
+farEndAIS   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end AIS" 
+    ::= { cerent454V2Events 260 }
+ 
+farEndMultipleDS1LOSDetectedOnDS3 
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end Multiple DS1 LOS detected on DS3" 
+    ::= { cerent454V2Events 270 }
+ 
+farEndDS1EqptFailNonServiceAffecting              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end DS1 eqpt fail non service affecting" 
+    ::= { cerent454V2Events 280 }
+ 
+farEndDS1EqptFailServiceAffecting  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end DS1 Eqpt fail service affecting" 
+    ::= { cerent454V2Events 290 }
+ 
+farEndSingleDS1LOS        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end Single DS1 LOS" 
+    ::= { cerent454V2Events 300 }
+ 
+farEndDS3EqptFailNonServiceAffecting              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end DS3 Eqpt failure non service affecting" 
+    ::= { cerent454V2Events 310 }
+ 
+farEndDS3EqptFailServiceAffecting  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end DS3 Eqpt failure service affecting" 
+    ::= { cerent454V2Events 320 }
+ 
+farEndCmnEqptFailNonServiceAffecting              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end common Eqpt failure non service affecting" 
+    ::= { cerent454V2Events 330 }
+ 
+farEndIDLE  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end IDLE" 
+    ::= { cerent454V2Events 340 }
+ 
+farEndLOS   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end LOS" 
+    ::= { cerent454V2Events 350 }
+ 
+farEndLOF   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far end LOF" 
+    ::= { cerent454V2Events 360 }
+ 
+farEndBlockError           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "far End Block Error" 
+    ::= { cerent454V2Events 370 }
+ 
+idleConditionDS3            
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "idle Condition DS3" 
+    ::= { cerent454V2Events 380 }
+ 
+lossOfFrame 
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of Frame" 
+    ::= { cerent454V2Events 390 }
+ 
+lossOfPointer               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of Pointer" 
+    ::= { cerent454V2Events 400 }
+ 
+lossOfPointerPath
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of Pointer Path " 
+    ::= { cerent454V2Events 410 }
+ 
+lossOfPointerVT            
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of Pointer VT" 
+    ::= { cerent454V2Events 420 }
+ 
+lossOfSignal                
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of Signal" 
+    ::= { cerent454V2Events 430 }
+ 
+outOfFrame  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "out of Frame" 
+    ::= { cerent454V2Events 440 }
+ 
+pathSelectorInabilityToSwitchToAValidSignal      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "path Selector inability to swtich to a valid signal" 
+    ::= { cerent454V2Events 450 }
+ 
+remoteAlarmIndication       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "remote Alarm Indication" 
+    ::= { cerent454V2Events 460 }
+ 
+remoteFailureIndication     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "remote Failure Indication" 
+    ::= { cerent454V2Events 470 }
+ 
+remoteFailureIndicationLine           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "remote Failure Indication LINE" 
+    ::= { cerent454V2Events 480 }
+ 
+remoteFailureIndicationPath           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "remote Failure Indication Path" 
+    ::= { cerent454V2Events 490 }
+ 
+remoteFailureIndicationVT  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "remote Failure Indication VT" 
+    ::= { cerent454V2Events 500 }
+ 
+facilityHasPassedBERThresholdForSignalDegrade     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility has passed BER Threshold for Signal Degrade" 
+    ::= { cerent454V2Events 510 }
+ 
+severelyErroredFrame        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "severely Errored Frame" 
+    ::= { cerent454V2Events 520 }
+ 
+facilityHasPassedBERThresholdForSignalFailure     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility has passed BER threshold for Signal Failure" 
+    ::= { cerent454V2Events 530 }
+ 
+signalLabelMismatchFailuresSONET     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "signal Label Mismatch Failures SONET" 
+    ::= { cerent454V2Events 540 }
+ 
+signalLabelMismatchFailurePayloadDefectIndication  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "signal Label Mismatch Failure Payload Defect Indication" 
+    ::= { cerent454V2Events 550 }
+ 
+signalLabelMismatchFailurePayloadDefectIndicationPath   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "signal Label Mismatch Failure Payload Defect Indication Path" 
+    ::= { cerent454V2Events 560 }
+ 
+signalLabelMismatchFailurePayloadLabelMismatchPath      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "signal Label Mismatch Failure Payload Label Mismatch Path" 
+    ::= { cerent454V2Events 570 }
+ 
+signalLabelMismatchFailurePayloadLabelMismatchVT        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "signal Label Mismatch Failure Payload Label Mismatch VT" 
+    ::= { cerent454V2Events 580 }
+ 
+signalLabelMismatchFailureUnequippedPath  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "signal Label Mismatch Failure Unequipped Path" 
+    ::= { cerent454V2Events 590 }
+ 
+signalLabelMismatchFailureUnequippedVT    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "signal Label Mismatch Failure Unequipped VT" 
+    ::= { cerent454V2Events 600 }
+ 
+lossOfTimingOnSynchronizationLink         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on Synchronization link" 
+    ::= { cerent454V2Events 610 }
+ 
+lossOfTimingOnAllSpecifiedSynchronizationLinks          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on all specified synchronization links" 
+    ::= { cerent454V2Events 620 }
+ 
+lossOfTimingOnPrimarySynchronizationLink 
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on primary synchronization link" 
+    ::= { cerent454V2Events 630 }
+ 
+lossOfTimingOnSecondarySynchronizationLink               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on secondary synchronization link" 
+    ::= { cerent454V2Events 640 }
+ 
+lossOfTimingOnThirdSynchronizationLink   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on third synchronization link" 
+    ::= { cerent454V2Events 650 }
+ 
+lossOfTimingOnFourthSynchronizationLink  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on fourth synchronization link" 
+    ::= { cerent454V2Events 660 }
+ 
+lossOfTimingOnFifthSynchronizationLink   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on fifth synchronization link" 
+    ::= { cerent454V2Events 670 }
+ 
+lossOfTimingOnSixthSynchronizationLink   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loss of timing on sixth synchronization link" 
+    ::= { cerent454V2Events 680 }
+ 
+failedToReceiveSynchronizationStatusMessage 
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failed to receive Synchronization Status Message" 
+    ::= { cerent454V2Events 690 }
+
+synchronizationStatusMessagesAreDisabledOnThisInterface   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Status Messages are disabled on this interface" 
+    ::= { cerent454V2Events 700 }
+
+primaryReferenceSourceStratum1Traceable     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "primary Reference Source Stratum 1 Traceable" 
+    ::= { cerent454V2Events 710 }
+
+synchronizedTraceabilityUnknown     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronized Traceability Unknown" 
+    ::= { cerent454V2Events 720 }
+
+stratum2Traceable   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "stratum 2 Traceable " 
+    ::= { cerent454V2Events 730 }
+
+transitNodeClockTraceable          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "transit Node clock Traceable" 
+    ::= { cerent454V2Events 740 }
+
+stratum3ETraceable  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "stratum 3E Traceable" 
+    ::= { cerent454V2Events 750 }
+
+stratum3Traceable   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "stratum 3 Traceable" 
+    ::= { cerent454V2Events 760 }
+
+minimumClockTraceableSONET        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "SONET Minimum clock Traceable" 
+    ::= { cerent454V2Events 770 }
+
+stratum4Traceable   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "stratum 4 Traceable" 
+    ::= { cerent454V2Events 780 }
+
+doNotUseForSynchronization        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "do not Use for Synchronization" 
+    ::= { cerent454V2Events 790 }
+
+reservedForNetworkSynchronizationUse         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "reserved for Network Synchronization Use" 
+    ::= { cerent454V2Events 800 }
+
+outgoingFailureCondition            
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "outgoing failure condition" 
+    ::= { cerent454V2Events 810 }
+ 
+remoteDefectIndicationLine         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "remote Defect Indication LINE" 
+    ::= { cerent454V2Events 820 }
+ 
+remoteDefectIndicationPath         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "remote Defect Indication Path" 
+    ::= { cerent454V2Events 830 }
+ 
+freeRunningSynchronizationMode     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "free Running Synchronization mode" 
+    ::= { cerent454V2Events 840 }
+ 
+holdoverSynchronizationMode         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "holdover synchronization mode" 
+    ::= { cerent454V2Events 850 }
+ 
+fastStartSynchronizationMode       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "fast Start synchronization mode" 
+    ::= { cerent454V2Events 860 }
+ 
+internalHardwareFaultOrFailure    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "internal hardware fault or failure" 
+    ::= { cerent454V2Events 870 }
+ 
+errorInternalToTheNEDetected     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "error Internal to the NE Detected" 
+    ::= { cerent454V2Events 880 }
+ 
+internalMessageError                
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "internal Message Error" 
+    ::= { cerent454V2Events 890 }
+ 
+mismatchOfEquipmentAndAttributes  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "mismatch of Equipment and Attributes" 
+    ::= { cerent454V2Events 900 }
+ 
+watchdogTimerTimeout                
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "watchdog Timer Timeout" 
+    ::= { cerent454V2Events 910 }
+ 
+softwareFaultOrFailure             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "software Fault or failure" 
+    ::= { cerent454V2Events 920 }
+ 
+softwareFaultDataIntegrityFault   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "software Fault -  Data integrity fault :
+                 The newly added provisioning or hardware has 
+                 caused the database to grow beyond its limit. 
+                 That is, the newly added object(s) in the system 
+                 has(have) enough memory to exist onboard but
+                 too large to be saved in the database." 
+    ::= { cerent454V2Events 930 }
+ 
+programFailure       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "program failure " 
+    ::= { cerent454V2Events 940 }
+ 
+controlEquipmentFailure            
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment failure" 
+    ::= { cerent454V2Events 950 }
+ 
+controlEquipmentPrimaryNonVolatileBackupMemoryFailure    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Primary non volatile Backup Memory failure" 
+    ::= { cerent454V2Events 960 }
+ 
+controlEquipmentSecondaryNonVolatileBackupMemoryFailure  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Secondary non volatile Backup Memory failure" 
+    ::= { cerent454V2Events 970 }
+ 
+controlEquipmentControlBusFailure           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Control Bus failure" 
+    ::= { cerent454V2Events 980 }
+ 
+controlEquipmentControlBus1Failure         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Control Bus 1 failure" 
+    ::= { cerent454V2Events 990 }
+ 
+controlEquipmentControlBus2Failure         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Control Bus 2 failure" 
+    ::= { cerent454V2Events 1000 }
+
+communicationFailureTCCAToShelfSLOT1       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 1" 
+    ::= { cerent454V2Events 1010 }
+
+communicationFailureTCCAToShelfSLOT2       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 2" 
+    ::= { cerent454V2Events 1020 }
+
+communicationFailureTCCAToShelfSLOT3       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 3" 
+    ::= { cerent454V2Events 1030 }
+
+communicationFailureTCCAToShelfSLOT4       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 4" 
+    ::= { cerent454V2Events 1040 }
+
+communicationFailureTCCAToShelfSLOT5       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 5" 
+    ::= { cerent454V2Events 1050 }
+
+communicationFailureTCCAToShelfSLOT6       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 6" 
+    ::= { cerent454V2Events 1060 }
+
+communicationFailureTCCAToShelfSLOT7       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 7 " 
+    ::= { cerent454V2Events 1070 }
+
+communicationFailureTCCAToShelfSLOT8       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 8" 
+    ::= { cerent454V2Events 1080 }
+
+communicationFailureTCCAToShelfSLOT9       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 9" 
+    ::= { cerent454V2Events 1090 }
+
+communicationFailureTCCAToShelfSLOT10      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 10" 
+    ::= { cerent454V2Events 1100 }
+
+communicationFailureTCCAToShelfSLOT11      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 11" 
+    ::= { cerent454V2Events 1110 }
+
+communicationFailureTCCAToShelfSLOT12      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 12" 
+    ::= { cerent454V2Events 1120 }
+
+communicationFailureTCCAToShelfSLOT13      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 13" 
+    ::= { cerent454V2Events 1130 }
+
+communicationFailureTCCAToShelfSLOT14      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 14" 
+    ::= { cerent454V2Events 1140 }
+
+communicationFailureTCCAToShelfSLOT15      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 15" 
+    ::= { cerent454V2Events 1150 }
+
+communicationFailureTCCAToShelfSLOT16      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 16" 
+    ::= { cerent454V2Events 1160 }
+
+communicationFailureTCCAToShelfSLOT17      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC A to Shelf SLOT 17 " 
+    ::= { cerent454V2Events 1170 }
+
+communicationFailureTCCPAToTCCJAprocessor  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCCP A to TCCJ A processor" 
+    ::= { cerent454V2Events 1180 }
+
+communicationFailureTCCBToShelfSLOT1       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 1 " 
+    ::= { cerent454V2Events 1190 }
+
+communicationFailureTCCBToShelfSLOT2       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 2" 
+    ::= { cerent454V2Events 1200 }
+
+communicationFailureTCCBToShelfSLOT3       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 3" 
+    ::= { cerent454V2Events 1210 }
+
+communicationFailureTCCBToShelfSLOT4       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 4" 
+    ::= { cerent454V2Events 1220 }
+
+communicationFailureTCCBToShelfSLOT5       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 5" 
+    ::= { cerent454V2Events 1230 }
+
+communicationFailureTCCBToShelfSLOT6       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 6" 
+    ::= { cerent454V2Events 1240 }
+
+communicationFailureTCCBToShelfSLOT7       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 7" 
+    ::= { cerent454V2Events 1250 }
+
+communicationFailureTCCBToShelfSLOT8       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 8" 
+    ::= { cerent454V2Events 1260 }
+
+communicationFailureTCCBToShelfSLOT9       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 9" 
+    ::= { cerent454V2Events 1270 }
+
+communicationFailureTCCBToShelfSLOT10      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 10" 
+    ::= { cerent454V2Events 1280 }
+
+communicationFailureTCCBToShelfSLOT11      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 11" 
+    ::= { cerent454V2Events 1290 }
+
+communicationFailureTCCBToShelfSLOT12      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 12" 
+    ::= { cerent454V2Events 1300 }
+
+communicationFailureTCCBToShelfSLOT13      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 13" 
+    ::= { cerent454V2Events 1310 }
+
+communicationFailureTCCBToShelfSLOT14      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 14" 
+    ::= { cerent454V2Events 1320 }
+
+communicationFailureTCCBToShelfSLOT15      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 15" 
+    ::= { cerent454V2Events 1330 }
+
+communicationFailureTCCBToShelfSLOT16      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 16" 
+    ::= { cerent454V2Events 1340 }
+
+communicationFailureTCCBToShelfSLOT17      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCC B to Shelf SLOT 17" 
+    ::= { cerent454V2Events 1350 }
+
+communicationFailureTCCPBToTCCJAprocessor  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "communication failure TCCP B to TCCJ A processor" 
+    ::= { cerent454V2Events 1360 }
+
+controlEquipmentControlCommunicationsEquipmentFailure  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Control Communications equipment failure" 
+    ::= { cerent454V2Events 1370 }
+
+controlEquipmentControlProcessorFailure 
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Control processor failure" 
+    ::= { cerent454V2Events 1380 }
+
+controlEquipmentWorkingMemoryFailure    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "control Equipment Working memory failure" 
+    ::= { cerent454V2Events 1390 }
+
+interconnectionEquipmentFailure         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure" 
+    ::= { cerent454V2Events 1400 }
+
+interconnectionEquipmentFailurePayloadBus1Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 1 Working" 
+    ::= { cerent454V2Events 1410 }
+
+interconnectionEquipmentFailurePayloadBus2Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 2 Working" 
+    ::= { cerent454V2Events 1420 }
+
+interconnectionEquipmentFailurePayloadBus3Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 3 Working" 
+    ::= { cerent454V2Events 1430 }
+
+interconnectionEquipmentFailurePayloadBus4Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 4 Working" 
+    ::= { cerent454V2Events 1440 }
+
+interconnectionEquipmentFailurePayloadBus5Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 5 Working" 
+    ::= { cerent454V2Events 1450 }
+
+interconnectionEquipmentFailurePayloadBus6Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 6 Working" 
+    ::= { cerent454V2Events 1460 }
+
+interconnectionEquipmentFailurePayloadBus7Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 7 Working" 
+    ::= { cerent454V2Events 1470 }
+
+interconnectionEquipmentFailurePayloadBus8Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 8 Working" 
+    ::= { cerent454V2Events 1480 }
+
+interconnectionEquipmentFailurePayloadBus9Working               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 9 Working" 
+    ::= { cerent454V2Events 1490 }
+
+interconnectionEquipmentFailurePayloadBus10Working              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 10 Working" 
+    ::= { cerent454V2Events 1500 }
+
+interconnectionEquipmentFailurePayloadBus11Working              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 11 Working" 
+    ::= { cerent454V2Events 1510 }
+
+interconnectionEquipmentFailurePayloadBus12Working              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 12 Working" 
+    ::= { cerent454V2Events 1520 }
+
+interconnectionEquipmentFailurePayloadBus1Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 1 Protect" 
+    ::= { cerent454V2Events 1530 }
+
+interconnectionEquipmentFailurePayloadBus2Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 2 Protect" 
+    ::= { cerent454V2Events 1540 }
+
+interconnectionEquipmentFailurePayloadBus3Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 3 Protect" 
+    ::= { cerent454V2Events 1550 }
+
+interconnectionEquipmentFailurePayloadBus4Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 4 Protect" 
+    ::= { cerent454V2Events 1560 }
+
+interconnectionEquipmentFailurePayloadBus5Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 5 Protect" 
+    ::= { cerent454V2Events 1570 }
+
+interconnectionEquipmentFailurePayloadBus6Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 6 Protect" 
+    ::= { cerent454V2Events 1580 }
+
+interconnectionEquipmentFailurePayloadBus7Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 7 Protect" 
+    ::= { cerent454V2Events 1590 }
+
+interconnectionEquipmentFailurePayloadBus8Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 8 Protect" 
+    ::= { cerent454V2Events 1600 }
+
+interconnectionEquipmentFailurePayloadBus9Protect              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 9 Protect" 
+    ::= { cerent454V2Events 1610 }
+
+interconnectionEquipmentFailurePayloadBus10Protect             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 10 Protect" 
+    ::= { cerent454V2Events 1620 }
+
+interconnectionEquipmentFailurePayloadBus11Protect             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 11 Protect" 
+    ::= { cerent454V2Events 1630 }
+
+interconnectionEquipmentFailurePayloadBus12Protect             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Equipment failure Payload Bus 12 Protect" 
+    ::= { cerent454V2Events 1640 }
+
+interconnectionEqptTimeSlotInterchangeEqptFailure              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "interconnection Eqpt Time slot interchange eqpt failure" 
+    ::= { cerent454V2Events 1650 }
+
+criticalAlarmCausedByEquipmentFailure           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "critical alarm caused by equipment failure" 
+    ::= { cerent454V2Events 1660 }
+
+equipmentFailureHighTemperature        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "equipment failure High temperature" 
+    ::= { cerent454V2Events 1670 }
+
+equipmentFailureInvalidMACAddress     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "equipment failure Invalid MAC Address" 
+    ::= { cerent454V2Events 1680 }
+
+equipmentFailureBoardFailure           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "equipment failure Board Failure" 
+    ::= { cerent454V2Events 1690 }
+
+equipmentFailureDiagnosticsFailure     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "equipment failure Diagnostics Failure" 
+    ::= { cerent454V2Events 1700 }
+
+equipmentFailureMediumAccessControl   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "equipment failure Medium Access Control" 
+    ::= { cerent454V2Events 1710 }
+
+facilityTerminationEquipmentFailure    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility Termination equipment failure" 
+    ::= { cerent454V2Events 1720 }
+
+facilityTerminationEquipmentAutomaticLaserShutdown              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility Termination Equipment Automatic Laser Shutdown" 
+    ::= { cerent454V2Events 1730 }
+
+failureToReleaseFromProtection        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failure To Release from protection" 
+    ::= { cerent454V2Events 1740 }
+
+facilityTerminationEquipmentReceiverFailure      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility Termination equipment Receiver failure" 
+    ::= { cerent454V2Events 1750 }
+
+facilityTerminationEquipmentTransmitFailure      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility Termination equipment Transmit failure" 
+    ::= { cerent454V2Events 1760 }
+
+facilityTerminationEquipmentReceiverMissing      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility Termination equipment Receiver missing" 
+    ::= { cerent454V2Events 1770 }
+
+facilityTerminationEquipmentTransmitterMissing   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "facility Termination equipment Transmitter missing" 
+    ::= { cerent454V2Events 1780 }
+
+failureToSwitchToProtection           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failure To Switch to protection" 
+    ::= { cerent454V2Events 1790 }
+
+failureToSwitchToProtectionRing      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failure To Switch to protection Ring" 
+    ::= { cerent454V2Events 1800 }
+
+failureToSwitchToProtectionSpan      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failure To Switch to protection Span" 
+    ::= { cerent454V2Events 1810 }
+
+failureToSwitchToProtectionPath      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failure to Switch to protection Path" 
+    ::= { cerent454V2Events 1820 }
+
+failureOfCoolingFanTray               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "failure of cooling fan tray" 
+    ::= { cerent454V2Events 1830 }
+
+equipmentUnitPlugIn    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "equipment unit plug in" 
+    ::= { cerent454V2Events 1840 }
+
+powerFailureDetectedInternalToNE     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "power failure detected internal to NE" 
+    ::= { cerent454V2Events 1850 }
+
+powerFailureFuseAlarm  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "power failure Fuse Alarm" 
+    ::= { cerent454V2Events 1860 }
+
+synchronizationUnitFailure              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization unit failure" 
+    ::= { cerent454V2Events 1870 }
+
+synchronizationSwitchingEquipmentFailure          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization switching Equipment failure" 
+    ::= { cerent454V2Events 1880 }
+
+equipmentUnitUnplug    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "equipment unit un plug" 
+    ::= { cerent454V2Events 1890 }
+
+loopback                 
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loop back" 
+    ::= { cerent454V2Events 1900 }
+
+loopbackDueToFEACCommandDS1          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loopback due to FEAC command DS1" 
+    ::= { cerent454V2Events 1910 }
+
+loopbackCommandSentToFarEndDS1      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loopback Command sent to Far End DS1" 
+    ::= { cerent454V2Events 1920 }
+
+loopbackDueToFEACCommandDS3          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loopback due to FEAC command DS3" 
+    ::= { cerent454V2Events 1930 }
+
+loopbackCommandSentToFarEndDS3      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loopback Command sent to Far End DS3" 
+    ::= { cerent454V2Events 1940 }
+
+loopbackDueToFarEndCommandDS2       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loopback due to Far End Command DS2" 
+    ::= { cerent454V2Events 1950 }
+
+loopbackCommandSentToFarEndDS2      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loopback Command sent to Far End DS2" 
+    ::= { cerent454V2Events 1960 }
+
+loopbackFacility        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loop back facility" 
+    ::= { cerent454V2Events 1970 }
+
+loopbackNetwork         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loop back Network" 
+    ::= { cerent454V2Events 1980 }
+
+loopbackTerminal        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "loop back Terminal" 
+    ::= { cerent454V2Events 1990 }
+
+manuallyCausedAbnormalCondition        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manually caused abnormal condition" 
+    ::= { cerent454V2Events 2000 }
+
+newRootDiscoveredInBridgedNetwork    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "new Root discovered in bridged network" 
+    ::= { cerent454V2Events 2010 }
+
+topologyChangeDiscoveredInBridgedNetwork        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "topology change discovered in bridged network" 
+    ::= { cerent454V2Events 2020 }
+
+normalCondition          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "normal condition" 
+    ::= { cerent454V2Events 2030 }
+
+embeddedOperationsChannelFailureLinkDown        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "embedded Operations Channel failure link down" 
+    ::= { cerent454V2Events 2040 }
+
+peerStateMismatch       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "peer state mismatch" 
+    ::= { cerent454V2Events 2050 }
+
+proceduralError          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "procedural Error" 
+    ::= { cerent454V2Events 2060 }
+
+proceduralErrorImproperRemoval         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "procedural Error Improper Removal" 
+    ::= { cerent454V2Events 2070 }
+
+proceduralErrorDuplicateNodeID        
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "procedural Error Duplicate Node ID" 
+    ::= { cerent454V2Events 2080 }
+
+proceduralErrorBLSROutOfSync         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "procedural Error BLSR out of sync" 
+    ::= { cerent454V2Events 2090 }
+
+resynchronizedBLSRTables
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "BLSR tables resynchronized" 
+    ::= { cerent454V2Events 2100 }
+
+protectionUnitNotAvailable             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "protection unit not available" 
+    ::= { cerent454V2Events 2110 }
+
+performanceMonitorThresholdCrossingAlert         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "performance Monitor Threshold Crossing Alert" 
+    ::= { cerent454V2Events 2120 }
+
+occurrenceOfAProtectionSwitchingEvent           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "occurrence of a protection switching event" 
+    ::= { cerent454V2Events 2130 }
+
+recoveryOrServiceProtectionActionHasBeenInitiated             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "recovery or service protection action has been initiated" 
+    ::= { cerent454V2Events 2140 }
+
+automaticSystemReset    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "automatic system Reset" 
+    ::= { cerent454V2Events 2150 }
+
+automacticUPSRSwitchCausedByAIS      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "automactic UPSR switch caused by AIS" 
+    ::= { cerent454V2Events 2160 }
+
+automacticUPSRSwitchCausedByLOP      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "automactic UPSR switch caused by Lop" 
+    ::= { cerent454V2Events 2170 }
+
+automacticUPSRSwitchCausedByUneq     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "automactic UPSR switch caused by Uneq" 
+    ::= { cerent454V2Events 2180 }
+
+automacticUPSRSwitchCausedByPDI      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "automactic UPSR switch caused by PDI" 
+    ::= { cerent454V2Events 2190 }
+
+automacticUPSRSwitchCausedBySfber    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "automactic UPSR switch caused by Sfber" 
+    ::= { cerent454V2Events 2200 }
+
+automacticUPSRSwitchCausedBySdber    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "automactic UPSR switch caused by Sdber"
+    ::= { cerent454V2Events 2210 }
+
+coldRestart              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "cold Restart" 
+    ::= { cerent454V2Events 2220 }
+
+workingFacilityOrEqptForcedSwitchedToWorking       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt forced switched to working" 
+    ::= { cerent454V2Events 2230 }
+
+workingFacilityOrEqptForcedSwitchedToWorkingRing  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt forced switched to working Ring" 
+    ::= { cerent454V2Events 2240 }
+
+workingFacilityOrEqptForcedSwitchedToWorkingSpan  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt forced switched to working Span" 
+    ::= { cerent454V2Events 2250 }
+
+workingFacilityOrEqptForcedSwitchedProtectionUnit  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt forced switched protection unit" 
+    ::= { cerent454V2Events 2260 }
+
+workingFacilityOrEqptForcedSwitchedProtectionUnitRing  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt forced switched protection unit Ring" 
+    ::= { cerent454V2Events 2270 }
+
+workingFacilityOrEqptForcedSwitchedProtectionUnitSpan  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt forced switched protection unit Span" 
+    ::= { cerent454V2Events 2280 }
+
+workingFacilityOrEqptForcedSwitchedProtectionUnitPath  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt forced switched protection unit Path" 
+    ::= { cerent454V2Events 2290 }
+
+initializationInitiated      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "initialization initiated" 
+    ::= { cerent454V2Events 2300 }
+
+lockoutOfProtection         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout of Protection" 
+    ::= { cerent454V2Events 2310 }
+
+lockoutOfProtectionRing    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout of Protection Ring" 
+    ::= { cerent454V2Events 2320 }
+
+lockoutOfProtectionSpan    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout of Protection Span" 
+    ::= { cerent454V2Events 2330 }
+
+lockoutOfProtectionPath    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout of Protection Path" 
+    ::= { cerent454V2Events 2340 }
+
+lockoutOfWorking            
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout of working" 
+    ::= { cerent454V2Events 2350 }
+
+lockoutOfWorkingRing       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout of working Ring" 
+    ::= { cerent454V2Events 2360 }
+
+lockoutOfWorkingSpan       
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout of working Span" 
+    ::= { cerent454V2Events 2370 }
+
+manualSystemReset           
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual system Reset" 
+    ::= { cerent454V2Events 2380 }
+
+manualSynchronizationSwitchToInternalClock     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual synchronization switch to internal clock" 
+    ::= { cerent454V2Events 2390 }
+
+manualSynchronizationSwitchToPrimaryRefernce   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual synchronization Switch To Primary refernce" 
+    ::= { cerent454V2Events 2400 }
+
+manualSynchronizationSwitchToSecondRefernce    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual synchronization Switch To Second refernce" 
+    ::= { cerent454V2Events 2410 }
+
+manualSynchronizationSwitchToThirdRefernce     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual synchronization Switch To Third refernce" 
+    ::= { cerent454V2Events 2420 }
+
+manualSynchronizationSwitchToFourthRefernce    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual synchronization Switch To Fourth refernce" 
+    ::= { cerent454V2Events 2430 }
+
+manualSynchronizationSwitchToFifthRefernce     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual synchronization Switch To Fifth refernce" 
+    ::= { cerent454V2Events 2440 }
+
+manualSynchronizationSwitchToSixthRefernce     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual synchronization Switch To Sixth refernce" 
+    ::= { cerent454V2Events 2450 }
+
+manualSwitchOfWorkingFacilityOrEqptToProtectionRing    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manualSwitch of working facility or eqpt to protection Ring" 
+    ::= { cerent454V2Events 2460 }
+
+manualSwitchOfWorkingFacilityOrEqptToProtectionSpan    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manualSwitch of working facility or eqpt to protection Span" 
+    ::= { cerent454V2Events 2470 }
+
+manualSwitchOfWorkingFacilityOrEqptToProtection         
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manualSwitch of working facility or eqpt to protection" 
+    ::= { cerent454V2Events 2480 }
+
+manualSwitchOfWorkingFacilityOrEqptToProtectionUnit    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manualSwitch of Working facility or eqpt to Protection unit" 
+    ::= { cerent454V2Events 2490 }
+
+workingFacilityOrEqptManualSwitchToProtectionUnitRing  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt manualSwitch to Protection unit Ring" 
+    ::= { cerent454V2Events 2500 }
+
+workingFacilityOrEqptManualSwitchToProtectionUnitSpan  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or eqpt manualSwitch to Protection unit Span" 
+    ::= { cerent454V2Events 2510 }
+
+manualSwitchOfWorkingFacilityOrEqptToProtectionPath    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manualSwitch of working facility or eqpt to Protection Path" 
+    ::= { cerent454V2Events 2520 }
+
+powerFailureRestart          
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "power failure Restart" 
+    ::= { cerent454V2Events 2530 }
+
+ringIsSquelchingTraffic     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "ring is squelching traffic" 
+    ::= { cerent454V2Events 2540 }
+
+softwareDownloadInProgress  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "software download in progress"
+    ::= { cerent454V2Events 2550 }
+
+synchronizationSwitchToInternalClock    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Switch To Internal clock" 
+    ::= { cerent454V2Events 2560 }
+
+synchronizationSwitchToPrimaryRefernce  
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Switch To Primary refernce" 
+    ::= { cerent454V2Events 2570 }
+
+synchronizationSwitchToSecondRefernce   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Switch To Second refernce" 
+    ::= { cerent454V2Events 2580 }
+
+synchronizationSwitchToThirdRefernce    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Switch To Third refernce" 
+    ::= { cerent454V2Events 2590 }
+
+synchronizationSwitchToFourthRefernce   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Switch To Fourth refernce" 
+    ::= { cerent454V2Events 2600 }
+
+synchronizationSwitchToFifthRefernce    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Switch To Fifth refernce" 
+    ::= { cerent454V2Events 2610 }
+
+synchronizationSwitchToSixthRefernce    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "synchronization Switch To Sixth refernce" 
+    ::= { cerent454V2Events 2620 }
+
+systemReboot    
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "system reboot" 
+    ::= { cerent454V2Events 2630 }
+
+workingFacilityOrEquipmentSwitchedBackToWorking      
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or equipment switched back to working" 
+    ::= { cerent454V2Events 2640 }
+
+workingFacilityOrEquipmentSwitchedToProtectionUnit   
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "working facility or equipment switched to protection unit" 
+    ::= { cerent454V2Events 2650 }
+
+warmRestart     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "warm Restart" 
+    ::= { cerent454V2Events 2660 }
+
+isInWaitToRestoreStateSONETLine     
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "SONET line is in Wait To Restore state " 
+    ::= { cerent454V2Events 2670 }
+
+manualSwitchRequestOnFacilityOrEquipment              
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "manual switch request on facility or equipment" 
+    ::= { cerent454V2Events 2680 }
+
+forceSwitchRequestOnFacilityOrEquipment               
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "force switch request on facility or equipment" 
+    ::= { cerent454V2Events 2690 }
+
+lockoutSwitchRequestOnFacilityOrEquipment             
+  NOTIFICATION-TYPE 
+    OBJECTS { 
+      cerentNodeTime, 
+      cerent454AlarmState, 
+      cerent454AlarmObjectType, 
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber, 
+      cerent454AlarmPortNumber, 
+      cerent454AlarmLineNumber 
+    }
+    STATUS current 
+    DESCRIPTION "lockout switch request on facility or equipment" 
+    ::= { cerent454V2Events 2700 } 
+
+rmonHistoriesAndAlarmsReset
+  NOTIFICATION-TYPE
+    OBJECTS {
+      cerentNodeTime,
+      cerent454AlarmState,
+      cerent454AlarmObjectType,
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber,
+      cerent454AlarmPortNumber,
+      cerent454AlarmLineNumber
+    }
+    STATUS current
+    DESCRIPTION "RMON histories and alarms have been reset due to chipset reboot"
+    ::= { cerent454V2Events 2710 }
+
+-- rmonThresholdCrossingAlarm
+--   NOTIFICATION-TYPE
+--     OBJECTS {
+--       cerentNodeTime,
+--       cerent454AlarmState,
+--       cerent454AlarmObjectType,
+--       cerent454AlarmObjectIndex,
+--       cerent454AlarmSlotNumber,
+--       cerent454AlarmPortNumber,
+--       cerent454AlarmLineNumber
+--    }
+--    STATUS current
+--     DESCRIPTION "Crossing of Falling/Rising Threshold detected"
+--     ::= { cerent454V2Events 2720 }
+
+freeMemoryOnCardVeryLow
+  NOTIFICATION-TYPE
+    OBJECTS {
+      cerentNodeTime,
+      cerent454AlarmState,
+      cerent454AlarmObjectType,
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber,
+      cerent454AlarmPortNumber,
+      cerent454AlarmLineNumber
+    }
+    STATUS current
+    DESCRIPTION "Free memory on the card is very low"
+    ::= { cerent454V2Events 2830 }
+
+freeMemoryOnCardAlmostGone
+  NOTIFICATION-TYPE
+    OBJECTS {
+      cerentNodeTime,
+      cerent454AlarmState,
+      cerent454AlarmObjectType,
+      cerent454AlarmObjectIndex,
+      cerent454AlarmSlotNumber,
+      cerent454AlarmPortNumber,
+      cerent454AlarmLineNumber
+    }
+    STATUS current
+    DESCRIPTION "Free memory on the card is almost gone"
+    ::= { cerent454V2Events 2840 }
+
+nodeGroup OBJECT-GROUP
+        OBJECTS { 
+          cerent454SoftwareVersion }
+        STATUS current
+        DESCRIPTION
+          "The group for node related objects"
+        ::= { cerent454Groups 10 }
+        
+alarmGroup OBJECT-GROUP
+        OBJECTS {
+          cerent454AlarmCount,
+          cerent454AlarmObjectIndex,
+          cerent454AlarmObjectType,
+          cerent454AlarmSlotNumber,
+          cerent454AlarmPortNumber,
+          cerent454AlarmLineNumber,
+          cerent454AlarmType,
+          cerent454AlarmState,
+          cerent454AlarmTimeStamp 
+        }
+        STATUS current
+        DESCRIPTION
+          "The group for node related objects"
+        ::= { cerent454Groups 20 }
+        
+eventGroup NOTIFICATION-GROUP
+     NOTIFICATIONS {
+       alarmUnknown,
+       alarmCutoffIsInManualMode,
+       failureDetectedExternalToTheNE,
+       externalError,
+       excessiveSwitching,
+       terminationFailureSDCC,
+       incomingFailureCondition,
+       alarmIndicationSignal,
+       alarmIndicationSignalLine,
+       alarmIndicationSignalPath,
+       alarmIndicationSignalVT,
+       channelFailureAPS,
+       channelByteFailureAPS,
+       channelProtectionSwitchingChannelMatchFailureAPS,
+       channelAutomaticProtectionSwitchModeMismatchAPS,
+       channelFarEndProtectionLineFailureAPS,
+       channelBLSRInconsistentAPSCode,
+       channelBLSRImproperAPSCodeAPS,
+       channelBLSRNodeIdMismatchAPS,
+       channelBLSRDefaultKAPS,
+       channelBLSRConnectionLossAPS,
+       bipolarViolation,
+       carrierLossOnTheLAN,
+       concatenationErrorSTS,
+       excessCollisionsOnTheLAN,
+       facilityCriticalAlarmCausedByDS3FacilityFailure,
+       farEndAIS,
+       farEndMultipleDS1LOSDetectedOnDS3,
+       farEndDS1EqptFailNonServiceAffecting,
+       farEndDS1EqptFailServiceAffecting,
+       farEndSingleDS1LOS,
+       farEndDS3EqptFailNonServiceAffecting,
+       farEndDS3EqptFailServiceAffecting,
+       farEndCmnEqptFailNonServiceAffecting,
+       farEndIDLE,
+       farEndLOS,
+       farEndLOF,
+       farEndBlockError,
+       idleConditionDS3,
+       lossOfFrame,
+       lossOfPointer,
+       lossOfPointerPath,
+       lossOfPointerVT,
+       lossOfSignal,
+       outOfFrame,
+       pathSelectorInabilityToSwitchToAValidSignal,
+       remoteAlarmIndication,
+       remoteFailureIndication,
+       remoteFailureIndicationLine,
+       remoteFailureIndicationPath,
+       remoteFailureIndicationVT,
+       facilityHasPassedBERThresholdForSignalDegrade,
+       severelyErroredFrame,
+       facilityHasPassedBERThresholdForSignalFailure,
+       signalLabelMismatchFailuresSONET,
+       signalLabelMismatchFailurePayloadDefectIndication,
+       signalLabelMismatchFailurePayloadDefectIndicationPath,
+       signalLabelMismatchFailurePayloadLabelMismatchPath,
+       signalLabelMismatchFailurePayloadLabelMismatchVT,
+       signalLabelMismatchFailureUnequippedPath,
+       signalLabelMismatchFailureUnequippedVT,
+       lossOfTimingOnSynchronizationLink,
+       lossOfTimingOnAllSpecifiedSynchronizationLinks,
+       lossOfTimingOnPrimarySynchronizationLink,
+       lossOfTimingOnSecondarySynchronizationLink,
+       lossOfTimingOnThirdSynchronizationLink,
+       lossOfTimingOnFourthSynchronizationLink,
+       lossOfTimingOnFifthSynchronizationLink,
+       lossOfTimingOnSixthSynchronizationLink,
+       failedToReceiveSynchronizationStatusMessage,
+       synchronizationStatusMessagesAreDisabledOnThisInterface,
+       primaryReferenceSourceStratum1Traceable,
+       synchronizedTraceabilityUnknown,
+       stratum2Traceable,
+       transitNodeClockTraceable,
+       stratum3ETraceable,
+       stratum3Traceable,
+       minimumClockTraceableSONET,
+       stratum4Traceable,
+       doNotUseForSynchronization,
+       reservedForNetworkSynchronizationUse,
+       outgoingFailureCondition,
+       remoteDefectIndicationLine,
+       remoteDefectIndicationPath,
+       freeRunningSynchronizationMode,
+       holdoverSynchronizationMode,
+       fastStartSynchronizationMode,
+       internalHardwareFaultOrFailure,
+       errorInternalToTheNEDetected,
+       internalMessageError,
+       mismatchOfEquipmentAndAttributes,
+       watchdogTimerTimeout,
+       softwareFaultOrFailure,
+       softwareFaultDataIntegrityFault,
+       programFailure,
+       controlEquipmentFailure,
+       controlEquipmentPrimaryNonVolatileBackupMemoryFailure,
+       controlEquipmentSecondaryNonVolatileBackupMemoryFailure,
+       controlEquipmentControlBusFailure,
+       controlEquipmentControlBus1Failure,
+       controlEquipmentControlBus2Failure,
+       communicationFailureTCCAToShelfSLOT1,
+       communicationFailureTCCAToShelfSLOT2,
+       communicationFailureTCCAToShelfSLOT3,
+       communicationFailureTCCAToShelfSLOT4,
+       communicationFailureTCCAToShelfSLOT5,
+       communicationFailureTCCAToShelfSLOT6,
+       communicationFailureTCCAToShelfSLOT7,
+       communicationFailureTCCAToShelfSLOT8,
+       communicationFailureTCCAToShelfSLOT9,
+       communicationFailureTCCAToShelfSLOT10,
+       communicationFailureTCCAToShelfSLOT11,
+       communicationFailureTCCAToShelfSLOT12,
+       communicationFailureTCCAToShelfSLOT13,
+       communicationFailureTCCAToShelfSLOT14,
+       communicationFailureTCCAToShelfSLOT15,
+       communicationFailureTCCAToShelfSLOT16,
+       communicationFailureTCCAToShelfSLOT17,
+       communicationFailureTCCPAToTCCJAprocessor,
+       communicationFailureTCCBToShelfSLOT1,
+       communicationFailureTCCBToShelfSLOT2,
+       communicationFailureTCCBToShelfSLOT3,
+       communicationFailureTCCBToShelfSLOT4,
+       communicationFailureTCCBToShelfSLOT5,
+       communicationFailureTCCBToShelfSLOT6,
+       communicationFailureTCCBToShelfSLOT7,
+       communicationFailureTCCBToShelfSLOT8,
+       communicationFailureTCCBToShelfSLOT9,
+       communicationFailureTCCBToShelfSLOT10,
+       communicationFailureTCCBToShelfSLOT11,
+       communicationFailureTCCBToShelfSLOT12,
+       communicationFailureTCCBToShelfSLOT13,
+       communicationFailureTCCBToShelfSLOT14,
+       communicationFailureTCCBToShelfSLOT15,
+       communicationFailureTCCBToShelfSLOT16,
+       communicationFailureTCCBToShelfSLOT17,
+       communicationFailureTCCPBToTCCJAprocessor,
+       controlEquipmentControlCommunicationsEquipmentFailure,
+       controlEquipmentControlProcessorFailure,
+       controlEquipmentWorkingMemoryFailure,
+       interconnectionEquipmentFailure,
+       interconnectionEquipmentFailurePayloadBus1Working,
+       interconnectionEquipmentFailurePayloadBus2Working,
+       interconnectionEquipmentFailurePayloadBus3Working,
+       interconnectionEquipmentFailurePayloadBus4Working,
+       interconnectionEquipmentFailurePayloadBus5Working,
+       interconnectionEquipmentFailurePayloadBus6Working,
+       interconnectionEquipmentFailurePayloadBus7Working,
+       interconnectionEquipmentFailurePayloadBus8Working,
+       interconnectionEquipmentFailurePayloadBus9Working,
+       interconnectionEquipmentFailurePayloadBus10Working,
+       interconnectionEquipmentFailurePayloadBus11Working,
+       interconnectionEquipmentFailurePayloadBus12Working,
+       interconnectionEquipmentFailurePayloadBus1Protect,
+       interconnectionEquipmentFailurePayloadBus2Protect,
+       interconnectionEquipmentFailurePayloadBus3Protect,
+       interconnectionEquipmentFailurePayloadBus4Protect,
+       interconnectionEquipmentFailurePayloadBus5Protect,
+       interconnectionEquipmentFailurePayloadBus6Protect,
+       interconnectionEquipmentFailurePayloadBus7Protect,
+       interconnectionEquipmentFailurePayloadBus8Protect,
+       interconnectionEquipmentFailurePayloadBus9Protect,
+       interconnectionEquipmentFailurePayloadBus10Protect,
+       interconnectionEquipmentFailurePayloadBus11Protect,
+       interconnectionEquipmentFailurePayloadBus12Protect,
+       interconnectionEqptTimeSlotInterchangeEqptFailure,
+       criticalAlarmCausedByEquipmentFailure,
+       equipmentFailureHighTemperature,
+       equipmentFailureInvalidMACAddress,
+       equipmentFailureBoardFailure,
+       equipmentFailureDiagnosticsFailure,
+       equipmentFailureMediumAccessControl,
+       facilityTerminationEquipmentFailure,
+       facilityTerminationEquipmentAutomaticLaserShutdown,
+       failureToReleaseFromProtection,
+       facilityTerminationEquipmentReceiverFailure,
+       facilityTerminationEquipmentTransmitFailure,
+       facilityTerminationEquipmentReceiverMissing,
+       facilityTerminationEquipmentTransmitterMissing,
+       failureToSwitchToProtection,
+       failureToSwitchToProtectionRing,
+       failureToSwitchToProtectionSpan,
+       failureToSwitchToProtectionPath,
+       failureOfCoolingFanTray,
+       equipmentUnitPlugIn,
+       powerFailureDetectedInternalToNE,
+       powerFailureFuseAlarm,
+       synchronizationUnitFailure,
+       synchronizationSwitchingEquipmentFailure,
+       equipmentUnitUnplug,
+       loopback,
+       loopbackDueToFEACCommandDS1,
+       loopbackCommandSentToFarEndDS1,
+       loopbackDueToFEACCommandDS3,
+       loopbackCommandSentToFarEndDS3,
+       loopbackDueToFarEndCommandDS2,
+       loopbackCommandSentToFarEndDS2,
+       loopbackFacility,
+       loopbackNetwork,
+       loopbackTerminal,
+       manuallyCausedAbnormalCondition,
+       newRootDiscoveredInBridgedNetwork,
+       topologyChangeDiscoveredInBridgedNetwork,
+       normalCondition,
+       embeddedOperationsChannelFailureLinkDown,
+       peerStateMismatch,
+       proceduralError,
+       proceduralErrorImproperRemoval,
+       proceduralErrorDuplicateNodeID,
+       proceduralErrorBLSROutOfSync,
+       resynchronizedBLSRTables,
+       protectionUnitNotAvailable,
+       performanceMonitorThresholdCrossingAlert,
+       occurrenceOfAProtectionSwitchingEvent,
+       recoveryOrServiceProtectionActionHasBeenInitiated,
+       automaticSystemReset,
+       automacticUPSRSwitchCausedByAIS,
+       automacticUPSRSwitchCausedByLOP,
+       automacticUPSRSwitchCausedByUneq,
+       automacticUPSRSwitchCausedByPDI,
+       automacticUPSRSwitchCausedBySfber,
+       automacticUPSRSwitchCausedBySdber,
+       coldRestart,
+       workingFacilityOrEqptForcedSwitchedToWorking,
+       workingFacilityOrEqptForcedSwitchedToWorkingRing,
+       workingFacilityOrEqptForcedSwitchedToWorkingSpan,
+       workingFacilityOrEqptForcedSwitchedProtectionUnit,
+       workingFacilityOrEqptForcedSwitchedProtectionUnitRing,
+       workingFacilityOrEqptForcedSwitchedProtectionUnitSpan,
+       workingFacilityOrEqptForcedSwitchedProtectionUnitPath,
+       initializationInitiated,
+       lockoutOfProtection,
+       lockoutOfProtectionRing,
+       lockoutOfProtectionSpan,
+       lockoutOfProtectionPath,
+       lockoutOfWorking,
+       lockoutOfWorkingRing,
+       lockoutOfWorkingSpan,
+       manualSystemReset,
+       manualSynchronizationSwitchToInternalClock,
+       manualSynchronizationSwitchToPrimaryRefernce,
+       manualSynchronizationSwitchToSecondRefernce,
+       manualSynchronizationSwitchToThirdRefernce,
+       manualSynchronizationSwitchToFourthRefernce,
+       manualSynchronizationSwitchToFifthRefernce,
+       manualSynchronizationSwitchToSixthRefernce,
+       manualSwitchOfWorkingFacilityOrEqptToProtectionRing,
+       manualSwitchOfWorkingFacilityOrEqptToProtectionSpan,
+       manualSwitchOfWorkingFacilityOrEqptToProtection,
+       manualSwitchOfWorkingFacilityOrEqptToProtectionUnit,
+       workingFacilityOrEqptManualSwitchToProtectionUnitRing,
+       workingFacilityOrEqptManualSwitchToProtectionUnitSpan,
+       manualSwitchOfWorkingFacilityOrEqptToProtectionPath,
+       powerFailureRestart,
+       ringIsSquelchingTraffic,
+       softwareDownloadInProgress,
+       synchronizationSwitchToInternalClock,
+       synchronizationSwitchToPrimaryRefernce,
+       synchronizationSwitchToSecondRefernce,
+       synchronizationSwitchToThirdRefernce,
+       synchronizationSwitchToFourthRefernce,
+       synchronizationSwitchToFifthRefernce,
+       synchronizationSwitchToSixthRefernce,
+       systemReboot,
+       workingFacilityOrEquipmentSwitchedBackToWorking,
+       workingFacilityOrEquipmentSwitchedToProtectionUnit,
+       warmRestart,
+       isInWaitToRestoreStateSONETLine,
+       manualSwitchRequestOnFacilityOrEquipment,
+       forceSwitchRequestOnFacilityOrEquipment,
+       lockoutSwitchRequestOnFacilityOrEquipment,
+       rmonHistoriesAndAlarmsReset,
+       freeMemoryOnCardVeryLow,
+       freeMemoryOnCardAlmostGone
+     }
+        STATUS current
+        DESCRIPTION
+          "The notifications for Cisco ONS 15454"
+        ::= { cerent454Groups 30 }
+
+-- This definition of group will move to a cerentCommon modules
+-- eventually. 
+        
+cerentCommonGroup OBJECT-GROUP
+        OBJECTS {
+--          cerentNotificationCategory,
+          cerentEnableNotification,
+          cerentNodeTime,
+          cerentNotificationsSent,
+          cerentLastChangeTime   
+          }
+        STATUS current
+        DESCRIPTION
+          "The objects for storing all the current alarms"
+        ::= { cerent454Groups 40 }
+
+-- the compliance specification for agent developers
+
+cerent454BasicCompliance MODULE-COMPLIANCE
+       STATUS current
+       DESCRIPTION
+         "The basic implementation requirements for Cisco ONS 15454 MIB"
+       MODULE
+         MANDATORY-GROUPS {
+           nodeGroup,
+           eventGroup
+        }
+       ::= { cerent454Compliance 10 }
+          
+END

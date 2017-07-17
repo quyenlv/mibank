@@ -1,0 +1,330 @@
+MSTP-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        Counter, enterprises            FROM RFC1155-SMI
+        TimeTicks,
+        MODULE-IDENTITY,OBJECT-TYPE     FROM SNMPv2-SMI
+        swL2MgmtMIB                     FROM SWL2MGMT-MIB;
+
+    swL2MgmtMSTP MODULE-IDENTITY
+	    LAST-UPDATED "200007150000Z"
+	    ORGANIZATION "D-Link, Inc."
+	    CONTACT-INFO
+	        "   D-Link Customer Service
+
+		    Postal: No. 20,Park Ave, II, Science-based
+			        Industrial Park, Hsinchu, taiwan, R.O.C.
+
+		       Tel: 886-3-577-9966
+
+		    E-mail: "
+	    DESCRIPTION
+		    "The Network Management Information of Multiple Spanning Tree for the
+		    D-Link enterprise."
+        ::= { swL2MgmtMIB 15}
+
+    BridgeId ::= OCTET STRING (SIZE (8))   -- the
+                                           -- Bridge-Identifier
+                                           -- as used in the
+                                           -- Spanning Tree
+
+    Timeout ::= INTEGER -- a STP timer in units of 1/100 seconds
+
+-- ********************************************************************
+--  swL2MgmtMSTP             OBJECT IDENTIFIER ::= { swL2MgmtMIB 15 }
+-- ********************************************************************
+
+          -- extend the dot1dStp group to support multiple spanning tree
+
+          -- Implementation of the dot1dStp group is optional.  It is
+          -- implemented by those bridges that support the Spanning Tree
+          -- Protocol.
+
+          swL2MgmtDefaultStpId OBJECT-TYPE
+              SYNTAX  INTEGER (1..12)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "This id is used to identify the default STP.
+                      And the associated STP will be present under dot1dStp
+                      (1.3.6.1.2.1.17.2) in rfc1493."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 6.8.2.1.2"
+              ::= { swL2MgmtMSTP 1 }
+
+          -- The Spanning Tree Groups
+
+          swL2MgmtStpTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF SwL2MgmtStpEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table that contains all the information
+                      for the Multiple Spanning Tree Protocol."
+              ::= { swL2MgmtMSTP 2 }
+
+          swL2MgmtStpEntry OBJECT-TYPE
+              SYNTAX  SwL2MgmtStpEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A list of information maintained every STP
+                      information."
+              INDEX   { swL2MgmtStpId }
+              ::= { swL2MgmtStpTable 1 }
+
+          SwL2MgmtStpEntry ::=
+              SEQUENCE {
+                  swL2MgmtStpId
+                      INTEGER,
+                  swL2MgmtStpProtocolSpecification
+                      INTEGER,
+                  swL2MgmtStpPriority
+                      INTEGER,
+                  swL2MgmtStpTimeSinceTopologyChange
+                      TimeTicks,
+                  swL2MgmtStpTopChanges
+                      Counter,
+                  swL2MgmtStpDesignatedRoot
+                      BridgeId,
+                  swL2MgmtStpRootCost
+                      INTEGER,
+                  swL2MgmtStpRootPort
+                      INTEGER,
+                  swL2MgmtStpMaxAge
+                      Timeout,
+                  swL2MgmtStpHelloTime
+                      Timeout,
+                  swL2MgmtStpHoldTime
+                      INTEGER,
+                  swL2MgmtStpForwardDelay
+                      Timeout,
+                  swL2MgmtStpBridgeMaxAge
+                      Timeout,
+                  swL2MgmtStpBridgeHelloTime
+                      Timeout,
+                  swL2MgmtStpBridgeForwardDelay
+                      Timeout
+              }
+
+          swL2MgmtStpId OBJECT-TYPE
+              SYNTAX  INTEGER
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The id is used to identify each STP."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 6.8.2.1.2"
+              ::= { swL2MgmtStpEntry 1 }
+
+          swL2MgmtStpProtocolSpecification OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          unknown(1),
+                          decLb100(2),
+                          ieee8021d(3)
+                      }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "An indication of what version of the Spanning
+                      Tree Protocol is being run.  The value
+                      'decLb100(2)' indicates the DEC LANbridge 100
+                      Spanning Tree protocol.  IEEE 802.1d
+                      implementations will return 'ieee8021d(3)'.  If
+                      future versions of the IEEE Spanning Tree Protocol
+                      are released that are incompatible with the
+                      current version a new value will be defined."
+              ::= { swL2MgmtStpEntry 2 }
+
+          swL2MgmtStpPriority OBJECT-TYPE
+              SYNTAX  INTEGER (0..65535)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The value of the write-able portion of the Bridge
+                      ID, i.e., the first two octets of the (8 octet
+                      long) Bridge ID.  The other (last) 6 octets of the
+                      Bridge ID are given by the value of
+                      dot1dBaseBridgeAddress."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.7"
+              ::= { swL2MgmtStpEntry 3 }
+
+          swL2MgmtStpTimeSinceTopologyChange OBJECT-TYPE
+              SYNTAX  TimeTicks
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The time (in hundredths of a second) since the
+                      last time a topology change was detected by the
+                      bridge entity."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 6.8.1.1.3"
+              ::= { swL2MgmtStpEntry 4 }
+
+          swL2MgmtStpTopChanges OBJECT-TYPE
+              SYNTAX  Counter
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The total number of topology changes detected by
+                      this bridge since the management entity was last
+                      reset or initialized."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 6.8.1.1.3"
+              ::= { swL2MgmtStpEntry 5 }
+
+          swL2MgmtStpDesignatedRoot OBJECT-TYPE
+              SYNTAX  BridgeId
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The bridge identifier of the root of the spanning
+                      tree as determined by the Spanning Tree Protocol
+                      as executed by this node.  This value is used as
+                      the Root Identifier parameter in all Configuration
+                      Bridge PDUs originated by this node."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.1"
+              ::= { swL2MgmtStpEntry 6 }
+
+          swL2MgmtStpRootCost OBJECT-TYPE
+              SYNTAX  INTEGER
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The cost of the path to the root as seen from
+                      this bridge."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.2"
+              ::= { swL2MgmtStpEntry 7 }
+
+          swL2MgmtStpRootPort OBJECT-TYPE
+              SYNTAX  INTEGER
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The port number of the port which offers the
+                      lowest cost path from this bridge to the root
+                      bridge."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.3"
+              ::= { swL2MgmtStpEntry 8 }
+
+          swL2MgmtStpMaxAge OBJECT-TYPE
+              SYNTAX  Timeout
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The maximum age of Spanning Tree Protocol
+                      information learned from the network on any port
+                      before it is discarded, in units of hundredths of
+                      a second.  This is the actual value that this
+                      bridge is currently using."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.4"
+              ::= { swL2MgmtStpEntry 9 }
+
+          swL2MgmtStpHelloTime OBJECT-TYPE
+              SYNTAX  Timeout
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The amount of time between the transmission of
+                      Configuration bridge PDUs by this node on any port
+                      when it is the root of the spanning tree or trying
+                      to become so, in units of hundredths of a second.
+                      This is the actual value that this bridge is
+                      currently using."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.5"
+              ::= { swL2MgmtStpEntry 10 }
+
+          swL2MgmtStpHoldTime OBJECT-TYPE
+              SYNTAX  INTEGER
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "This time value determines the interval length
+                      during which no more than two Configuration bridge
+                      PDUs shall be transmitted by this node, in units
+                      of hundredths of a second."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.14"
+              ::= { swL2MgmtStpEntry 11 }
+
+          swL2MgmtStpForwardDelay OBJECT-TYPE
+              SYNTAX  Timeout
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "This time value, measured in units of hundredths
+                      of a second, controls how fast a port changes its
+                      spanning state when moving towards the Forwarding
+                      state.  The value determines how long the port
+                      stays in each of the Listening and Learning
+                      states, which precede the Forwarding state.  This
+                      value is also used, when a topology change has
+                      been detected and is underway, to age all dynamic
+                      entries in the Forwarding Database.  [Note that
+                      this value is the one that this bridge is
+                      currently using, in contrast to
+                      dot1dStpBridgeForwardDelay which is the value that
+                      this bridge and all others would start using
+                      if/when this bridge were to become the root.]"
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.6"
+              ::= { swL2MgmtStpEntry 12 }
+
+          swL2MgmtStpBridgeMaxAge OBJECT-TYPE
+              SYNTAX  Timeout (600..4000)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The value that all bridges use for MaxAge when
+                      this bridge is acting as the root.  Note that
+                      802.1D-1990 specifies that the range for this
+                      parameter is related to the value of
+                      dot1dStpBridgeHelloTime. The granularity of this
+                      timer is specified by 802.1D-1990 to be 1 second.
+                      An agent may return a badValue error if a set is
+                      attempted to a value which is not a whole number
+                      of seconds."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.8"
+              ::= { swL2MgmtStpEntry 13 }
+
+          swL2MgmtStpBridgeHelloTime OBJECT-TYPE
+              SYNTAX  Timeout (100..1000)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The value that all bridges use for HelloTime when
+                      this bridge is acting as the root.  The
+                      granularity of this timer is specified by 802.1D-
+                      1990 to be 1 second.  An agent may return a
+                      badValue error if a set is attempted to a value
+                      which is not a whole number of seconds."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.9"
+              ::= { swL2MgmtStpEntry 14 }
+
+          swL2MgmtStpBridgeForwardDelay OBJECT-TYPE
+              SYNTAX  Timeout (400..3000)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The value that all bridges use for ForwardDelay
+                      when this bridge is acting as the root.  Note that
+                      802.1D-1990 specifies that the range for this
+                      parameter is related to the value of
+                      dot1dStpBridgeMaxAge.  The granularity of this
+                      timer is specified by 802.1D-1990 to be 1 second.
+                      An agent may return a badValue error if a set is
+                      attempted to a value which is not a whole number
+                      of seconds."
+              REFERENCE
+                      "IEEE 802.1D-1990: Section 4.5.3.10"
+              ::= { swL2MgmtStpEntry 15 }
+
+END

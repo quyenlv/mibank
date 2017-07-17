@@ -1,0 +1,81 @@
+----------------------------------------------------------------------
+-- ACMEPACKET-PRODUCTS-MIB:  Acme packet Product Information
+--
+-- Copyright by Acme Packet, Inc.
+-- All rights reserved.
+------------------------------------------------------------------------
+
+ACMEPACKET-PRODUCTS DEFINITIONS ::= BEGIN
+
+IMPORTS
+        acmepacket
+                FROM ACMEPACKET-SMI
+
+	OBJECT-IDENTITY, MODULE-IDENTITY
+		FROM SNMPv2-SMI;
+
+acmepacketProducts MODULE-IDENTITY
+	LAST-UPDATED "200704031500Z"
+	ORGANIZATION "Acme Packet, Inc."
+	CONTACT-INFO
+		"		Customer Service
+		 Postal:  	Acme Packet, Inc
+				71 Third Avenue
+				Burlington, MA 01803
+				US
+		 Tel:		1-781-328-4400
+		 E-mail:	support@acmepacket.com"
+	DESCRIPTION
+		"Products supported at Acme Packet."
+	REVISION      "200704031500Z"
+	DESCRIPTION
+		"Initial version of this MIB module."
+	::= { acmepacket 1 }	-- assigned by IANA
+
+
+apNetNet4000Series OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"This is subtree contains all product lines supported in
+                 the Net-Net 4000 Series product line." 
+	::= { acmepacketProducts 1 }
+
+apNetNet4250 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The Net-Net 4250 product." 
+	::= { apNetNet4000Series 1 }
+
+apNetNet4500 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The Net-Net 4500 product." 
+	::= { apNetNet4000Series 2 }
+
+apNetNet9000Series OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"This is subtree contains all product lines supported in
+                 the Net-Net 9000 Series product line." 
+	::= { acmepacketProducts 2 }
+
+apNetNet9200 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The Net-Net 9200 product." 
+	::= { apNetNet9000Series 1 }
+
+apNetNet3000Series OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"This is subtree contains all product lines supported in
+                 the Net-Net 3000 Series product line." 
+	::= { acmepacketProducts 3 }
+
+apNetNet3800 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The Net-Net 3800 product." 
+	::= { apNetNet3000Series 1 }
+
+END

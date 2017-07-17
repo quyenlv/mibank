@@ -1,0 +1,320 @@
+-- =================================================================
+-- Copyright (C) 2002 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:the huawei device mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--	
+-- =================================================================
+
+	HUAWEI-DEVICE-MIB DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			HWFrameType, HWPCBType, HWSubPCBType, HWPortType			
+				FROM HUAWEI-TC-MIB			
+			TimeTicks, IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY			
+				FROM SNMPv2-SMI			
+			DisplayString, DateAndTime, RowStatus			
+				FROM SNMPv2-TC;
+	
+	
+		hwDev MODULE-IDENTITY
+			LAST-UPDATED "200208170900Z"
+			ORGANIZATION
+				"HAUWEI MIB Standard community"
+			CONTACT-INFO
+				"
+				ADDR£ºHUAWEI TECHNOLOGY CO.,LTD,SHEZHEN CHINA
+				Tel£º 86-755-26540808
+				"      
+			DESCRIPTION
+				 "Add some traps"
+			REVISION "200207090900Z"
+			DESCRIPTION
+				 "V01_02"
+			REVISION "200206061700Z"
+			DESCRIPTION
+				""
+			REVISION "200204220900Z"
+			DESCRIPTION
+				"V01_01"
+			::= { huaweiUtility 3 }
+		
+	
+		hwSlotConf OBJECT IDENTIFIER ::= { hwDev 3 }
+		
+		hwFrameTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwFrameEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Frame description table,describe basic information of a frame."
+			::= { hwSlotConf 1 }
+		
+		hwFrameEntry OBJECT-TYPE
+			SYNTAX HwFrameEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Frame description table entity"
+			INDEX { hwFrameIndex }
+			::= { hwFrameTable 1 }
+		
+		HwFrameEntry ::=
+			SEQUENCE { 
+				hwFrameIndex
+					INTEGER,
+				hwFrameType
+					HWFrameType,
+				hwFrameDesc
+					OCTET STRING,
+				hwSlots
+					Integer32,
+				hwFrameOperStatus
+					INTEGER,
+				hwFrameAdminStatus
+					INTEGER,
+				hwFrameRowStatus
+					RowStatus
+			 }
+
+		hwFrameIndex OBJECT-TYPE
+			SYNTAX INTEGER (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Frame Index,the number of the frame in the device."
+			::= { hwFrameEntry 1 }
+		
+		hwFrameType OBJECT-TYPE
+			SYNTAX HWFrameType
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Frame type,one kind of the frame type defined in HW-TC table."
+			::= { hwFrameEntry 2 }
+		
+		hwFrameDesc OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..64))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Frame description,the maximum length of the character 
+				string is 64.Used to describe some extra information.        
+				For example,to facilitate management,describe the frame 
+				is located in XX frame XX apparatus room."
+			::= { hwFrameEntry 3 }
+		
+		hwSlots OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Slot number of the frame,point to the physical 
+				slot number of the frame,which depends on the 
+				frame type and has nothing to with the slot number
+				of slots placed in the frame.        
+				"
+			::= { hwFrameEntry 4 }
+		
+		hwFrameOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				fault(2),
+				other(3),
+				discovery(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Frame operation status,to indicate whether the
+				frame works in a normal status."
+			::= { hwFrameEntry 5 }
+		
+		hwFrameAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enable(2),
+				reset(3),
+				test(4),
+				confirm(5),
+				delete(6)       
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Frame administration status. "
+			::= { hwFrameEntry 6 }
+		
+		hwFrameRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Row status of the frame:mainly to support the
+				offline configuration of addition and deletion.
+				"
+			::= { hwFrameEntry 7 }
+		
+		hwSlotTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwSlotEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Slot description table,describe detailed information 
+				of all boards in each slot."
+			::= { hwSlotConf 2 }
+		
+		hwSlotEntry OBJECT-TYPE
+			SYNTAX HwSlotEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Slot description table entity"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwSlotTable 1 }
+		
+		HwSlotEntry ::=
+			SEQUENCE { 
+				hwSlotIndex
+					INTEGER,
+				hwSlotType
+					HWPCBType,
+				hwSlotDesc
+					OCTET STRING,
+				hwSlotPcbVersion
+					OCTET STRING,
+				hwSlotVersion
+					OCTET STRING,
+				hwSlotWorkMode
+					INTEGER,
+				hwSubSlots
+					Integer32,
+				hwSlotOperStatus
+					INTEGER,
+				hwSlotAdminStatus
+					INTEGER,
+				hwSlotRowStatus
+					RowStatus
+			 }
+
+		hwSlotIndex OBJECT-TYPE
+			SYNTAX INTEGER (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Slot index,identity the physical position of a slot.
+				If there is no board in the slot,the necessary 
+				information of the slot also must be reported. "
+			::= { hwSlotEntry 1 }
+		
+		hwSlotType OBJECT-TYPE
+			SYNTAX HWPCBType
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Slot type,the slot type defined in HW-TC table is recommended.
+				Note:when the slot is empty,the type must be <empty>"
+			::= { hwSlotEntry 2 }
+		
+		hwSlotDesc OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..64))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Slot information description,to describe extra information of the slot."
+			::= { hwSlotEntry 3 }
+		
+		hwSlotPcbVersion OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..64))
+			MAX-ACCESS read-only
+			STATUS deprecated
+			DESCRIPTION
+				"slot pcb version"
+			::= { hwSlotEntry 4 }
+		
+		hwSlotVersion OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..512))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Board version information"
+			::= { hwSlotEntry 5 }
+		
+		hwSlotWorkMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				main(1),
+				standby(2),
+				other(255)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Board working mode,describe whether the board is 
+				working in main state or in standby state."
+			::= { hwSlotEntry 6 }
+		
+		hwSubSlots OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The number of the subslot can be attached in the board.
+				The number is determined on the board's being been made."
+			::= { hwSlotEntry 7 }
+		
+		hwSlotOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				uninstall(1),
+				normal(2),
+				fault(3),
+				forbidden(4),
+				discovery(5),
+				config(6),
+				offline(7),
+				abnormal(8)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Operation status of the board."
+			::= { hwSlotEntry 8 }
+		
+		hwSlotAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enable(2),
+				reset(3),
+				test(4),
+				confirm(5),
+				switch(6),
+				delete(7), 
+				forbidden(8),
+				unforbidden(9)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Administration status of the board."
+			::= { hwSlotEntry 9 }
+		
+		hwSlotRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Row status:mainly to support the offline 
+				configuration of board addition and deletion."
+			::= { hwSlotEntry 10 }
+		
+
+	END
+

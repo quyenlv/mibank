@@ -1,0 +1,3003 @@
+-- 
+-- Modified based on comments from Niraj Gupta (Shariq)
+-- Version Dated: 05-31-96
+--
+-- 
+-- MIB Revision : 1.0 dated 1-17-97
+-- Change Desc. : None. 
+-- 
+-- MIB Revision : 1.1 dated 3-20-97
+-- Change Desc. : Specified ranges for different objects. 
+-- 
+-- 
+-- MIB Revision : 1.2 dated 4-9-97
+-- Change Desc. : Removed object sapCircGetNearestServerReply from SAPCircTable. 
+-- 
+-- MIB Revision : 1.3 dated 4-23-97 by Shridhar.
+-- Change Desc. : Add capabilities to objects.
+--
+-- MIB Revision : 1.4 dated 5-21-97
+-- Change Desc. : Removed 2 parameters, In/Out Compressed Discarded from the
+--                ipx system advanced table. -A. Llanes
+-- 
+-- MIB Revision : 1.5 dated 9-25-97
+-- Change Desc. : Minor syntax corrections. -B. Jafari
+-- 
+-- *** RELEASE 3.0 ***
+-- MIB Revision : 1.6 dated 6-26-98
+-- Change Desc. : Removed and/or replaced "4400" with 
+--				  "access device" wherever possible.
+--				  Obsoleted the following counter reset 
+--				  tables and object:
+--					ipxCntrZeroTable 
+--					ipxCounterZeroTable - A. Llanes 
+--
+-- MIB Revision : 1.7 dated 7-1-98
+-- Change Desc. : Obsoleted the nvmipxCircOperState and 
+--                nvmipxCircStaticStatus objects. S. Gaur
+-- 
+
+
+IPX DEFINITIONS ::= BEGIN
+
+-- This MIB defines the management information for a system using the IPX
+-- protocol.  The MIB consists of four groups:
+--
+--    1.  System Group - contains general information about all instances
+--                       of IPX on the system
+--
+--    2.  Circuit Group - contains information about all circuits used by
+--                        IPX on the system
+--
+--    3.  Forwarding Group - contains generic routing information that
+--                           must be provided by any IPX routing protocol.
+--
+--    4.  Services Group - contains information about all known services.
+--
+-- The MIB is designed to support multiple instances of the IPX
+-- protocol on one system via a system instance identifier which is the
+-- primary index for every table in this MIB.
+--
+-- This MIB is designed to provide a basic framework for the management
+-- of systems implementing the IPX protocol.  Additional MIBs may be
+-- created (especially in the area of IPX routing protocols) to contain
+-- more specific information.  Whenever possible, these additional MIBs
+-- should follow the format of this IPX MIB.  Information in these MIBs
+-- should be linked to this MIB via the use of the system instance 
+-- identifier mentioned above.
+
+
+IMPORTS
+        DisplayString
+                FROM RFC1213-MIB
+        Counter
+                FROM RFC1155-SMI
+        OBJECT-TYPE
+                FROM RFC-1212
+	micom-oscar 
+	    	FROM MICOM-OSCAR-MIB
+        PhysAddress
+                FROM RFC1213-MIB;
+
+   mcmIpx     		OBJECT IDENTIFIER ::= { micom-oscar 4 }
+
+
+-- Groups
+
+ipxSystem OBJECT IDENTIFIER 		::= {mcmIpx 1}
+ipxCircuit OBJECT IDENTIFIER 		::= {mcmIpx 2}
+ipxForwarding OBJECT IDENTIFIER 	::= {mcmIpx 3}
+ipxServices OBJECT IDENTIFIER 	::= {mcmIpx 4}
+ripsap OBJECT IDENTIFIER 			::= {mcmIpx 5}
+ripsapSystem OBJECT IDENTIFIER 	::= {ripsap 1}
+ripsapCircuit OBJECT IDENTIFIER 	::= {ripsap 2}
+nvmIpx OBJECT IDENTIFIER 			::= {mcmIpx 6}
+nvmSystem OBJECT IDENTIFIER 		::= {nvmIpx 1}
+nvmCircuit OBJECT IDENTIFIER 		::= {nvmIpx 2}
+nvmForwarding OBJECT IDENTIFIER 	::= {nvmIpx 3}
+ipxCntr OBJECT IDENTIFIER 			::= {mcmIpx 7}
+
+-- Types
+
+NetNumber       ::= OCTET STRING (SIZE(4))
+OctetStringSiz2 ::= OCTET STRING (SIZE(2))
+
+-- System Group
+--   This group contains global information about each instance of IPX
+--   running on one system.
+
+-- Basic System Table
+--   This table contains one entry for each instance of IPX running on
+--   the system.  It contains the management information that should
+--   be made available by all implementations of the IPX protocol.
+
+ipxBasicSysTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF IPXBasicSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX System Table - basic Information.;;
+	   HELP = ;
+	   CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ipxSystem 1}
+
+ipxBasicSysEntry OBJECT-TYPE
+	SYNTAX      IPXBasicSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one instance \
+                  of IPX running on the system.;;
+	   HELP = ;
+	   CAPABILITIES = ;"
+   	INDEX       {ipxBasicSysInstance}
+   ::= {ipxBasicSysTable 1}
+
+IPXBasicSysEntry ::= SEQUENCE {
+                        ipxBasicSysInstance
+                           INTEGER,
+                        ipxBasicSysExistState
+                           INTEGER,
+                        ipxBasicSysNetNumber
+                           NetNumber,
+                        ipxBasicSysNode
+                           OCTET STRING,
+                        ipxBasicSysName
+			   DisplayString,
+                        ipxBasicSysInReceives
+                           Counter,
+                        ipxBasicSysInHdrErrors
+                           Counter,
+                        ipxBasicSysInUnknownSockets
+                           Counter,
+                        ipxBasicSysInDiscards
+                           Counter,
+                        ipxBasicSysInBadChecksums
+                           Counter,
+                        ipxBasicSysInDelivers
+                           Counter,
+                        ipxBasicSysNoRoutes
+                           Counter,
+                        ipxBasicSysOutRequests
+                           Counter,
+                        ipxBasicSysOutMalformedRequests
+                           Counter,
+                        ipxBasicSysOutDiscards
+                           Counter,
+                        ipxBasicSysOutPackets
+                           Counter,
+                        ipxBasicSysConfigSockets
+                           Counter,
+                        ipxBasicSysOpenSocketFails
+                           Counter,
+                        ipxBasicSysRouter
+                           INTEGER,
+                        ipxBasicSysSpoofing
+                           INTEGER,
+                        ipxBasicSysSpoofDataLinkType
+                           INTEGER,
+                        ipxBasicSysWanOptimize
+                           INTEGER
+                    }
+                           
+ipxBasicSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this row corresponds.; 
+           HELP = This value may be written only when \
+		  creating a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 1}
+
+ipxBasicSysExistState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The validity of this entry in the IPX \
+		  system table.; 
+           HELP = Setting this field to off indicates that this \
+                  entry may be deleted from the system table at \
+		  the IPX implementation's discretion.;
+	   CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 2}
+
+ipxBasicSysNetNumber OBJECT-TYPE
+	SYNTAX      NetNumber
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The network number portion of the IPX \
+		  address of this system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 3}
+
+ipxBasicSysNode OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(6))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The node number portion of the IPX address \
+		  of this system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 4}
+
+ipxBasicSysName OBJECT-TYPE
+	SYNTAX      DisplayString(SIZE(0..48))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The readable name for this system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 5}
+
+ipxBasicSysInReceives OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The total number of IPX packets received, \
+		  including those received in error.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 6}
+
+ipxBasicSysInHdrErrors OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets discarded \
+		  due to errors in their headers, including \
+		  any IPX packet with a size less than \
+		  the minimum of 30 bytes.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 7}
+
+ipxBasicSysInUnknownSockets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets discarded \
+		  because the destination socket was \
+		  not open.;
+	   HELP = ; 
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 8}
+
+ipxBasicSysInDiscards OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets received but \
+		  discarded .;
+           HELP = This is due to reasons other than those \	
+	          accounted for by ipxBasicSysInHdrErrors, \
+		  and ipxBasicSysInUnknownSockets.;
+	   CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 9}
+
+ipxBasicSysInBadChecksums OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets received with \
+		  incorrect checksums.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 10}
+
+ipxBasicSysInDelivers OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The total number of IPX packets delivered \
+		  locally, including packets from local \
+		  applications.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 11}
+
+ipxBasicSysNoRoutes OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of times no route to a destination \
+		  was found.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 12}
+
+ipxBasicSysOutRequests OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets supplied locally \
+		  for transmission, not including any \
+		  packets counted in ipxAdvForwPackets.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 13}
+
+ipxBasicSysOutMalformedRequests OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets supplied locally \
+		  that contained errors in their structure.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 14}
+
+ipxBasicSysOutDiscards OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of outgoing IPX packets discarded \
+		  due to reasons other than those accounted \
+		  for in ipxBasicSysOutMalformedRequests, \
+		  ipxAdvSysOutFiltered, and \
+		  ipxAdvSysOutCompressDiscards.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 15}
+
+ipxBasicSysOutPackets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The total number of IPX packets transmitted.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 16}
+
+ipxBasicSysConfigSockets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The configured maximum number of IPX \
+		  sockets that may be open at one time.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 17}
+
+ipxBasicSysOpenSocketFails OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX socket open calls \
+		  which failed.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 18}
+
+ipxBasicSysRouter OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        enabled(1),
+                        disabled(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Is the IPX being routed for this instance.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 19}
+
+ipxBasicSysSpoofing OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        enabled(1),
+                        disabled(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Is the IPX spoofing enabled for this \
+		  instance.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 20}
+
+ipxBasicSysSpoofDataLinkType OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        raw(1),
+                        type8023(2),
+                        type2(3),
+                        type8022(4)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The DataLink type to Spoof on.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 21}
+
+ipxBasicSysWanOptimize OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        enabled(1),
+                        disabled(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Is the WAN optimization enabled for \
+		  IPX for this instance.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxBasicSysEntry 22}
+
+
+-- Advanced System Table
+--   This table contains one entry for each instance of IPX running on
+--   the system.  It contains the advanced management information that
+--   may not be available from all implementations of the IPX protocol.
+
+ipxAdvSysTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF IPXAdvSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX System table - advanced information.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ipxSystem 2}
+
+ipxAdvSysEntry OBJECT-TYPE
+	SYNTAX      IPXAdvSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one instance \
+		  of IPX running on the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	INDEX       {ipxAdvSysInstance}
+   ::= {ipxAdvSysTable 1}
+
+IPXAdvSysEntry ::= SEQUENCE {
+                     ipxAdvSysInstance
+                        INTEGER,
+                     ipxAdvSysMaxPathSplits
+                        INTEGER,
+                     ipxAdvSysMaxHops
+                        INTEGER,
+                     ipxAdvSysInTooManyHops
+                        Counter,
+                     ipxAdvSysInFiltered
+                        Counter,
+                     ipxAdvSysNETBIOSPackets
+                        Counter,
+                     ipxAdvSysForwPackets
+                        Counter,
+                     ipxAdvSysOutFiltered
+                        Counter,
+                     ipxAdvSysCircCount
+                        Counter,
+                     ipxAdvSysDestCount
+                        Counter,
+                     ipxAdvSysServCount
+                        Counter
+                    }
+                           
+ipxAdvSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this row corresponds.; 
+           HELP = This value may be written only when \
+		  creating a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 1}
+
+ipxAdvSysMaxPathSplits OBJECT-TYPE
+	SYNTAX      INTEGER (1..32)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The maximum number of paths with equal \
+		  routing metric value which this instance \
+		  of the IPX may split between when forwarding \
+		  packets.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	DEFVAL      { 1 }
+   ::= {ipxAdvSysEntry 2}
+
+ipxAdvSysMaxHops OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The maximum number of hops a packet \
+		  may take.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	DEFVAL      { 16 }
+   ::= {ipxAdvSysEntry 3}
+
+ipxAdvSysInTooManyHops OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets discarded \
+		  due to exceeding the maximum hop count.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 4}
+
+ipxAdvSysInFiltered OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of incoming IPX packets discarded \
+		  due to filtering.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 5}
+
+ipxAdvSysNETBIOSPackets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of NETBIOS packets received.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 6}
+
+ipxAdvSysForwPackets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of IPX packets forwarded.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 7}
+
+ipxAdvSysOutFiltered OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of outgoing IPX packets discarded \
+		  due to filtering.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 8}
+
+ipxAdvSysCircCount OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of circuits known to this \
+		  instance of IPX.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 9}
+
+ipxAdvSysDestCount OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of currently reachable destinations \
+		  known to this instance of IPX.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 10}
+
+ipxAdvSysServCount OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of services known to this \
+		  instance of IPX.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxAdvSysEntry 11}
+
+
+-- Circuit Group
+--   This group contains management information for each circuit known
+--   to this system.
+
+-- Circuit Table
+--   The Circuit table contains an entry for each circuit known to the
+--   system.
+
+ipxCircTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF IPXCircEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The Circuit table.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ipxCircuit 1}
+
+ipxCircEntry OBJECT-TYPE
+	SYNTAX      IPXCircEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one circuit \
+		  known to the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	INDEX       {
+                ipxCircSysInstance,
+                ipxCircIndex
+               }
+   ::= {ipxCircTable 1}
+
+IPXCircEntry ::= SEQUENCE {
+                     ipxCircSysInstance
+                        INTEGER,
+                     ipxCircIndex
+                        INTEGER,
+                     ipxCircExistState
+                        INTEGER,
+                     ipxCircOperState
+                        INTEGER,
+                     ipxCircIfIndex
+                        INTEGER,
+                     ipxCircName
+                        OCTET STRING,
+                     ipxCircType
+                        INTEGER,
+                     ipxCircDataLinkType
+                        INTEGER,
+                     ipxCircDialName
+                        OCTET STRING,
+                     ipxCircLocalMaxPacketSize
+                        INTEGER,
+                     ipxCircCompressState
+                        INTEGER,
+                     ipxCircCompressSlots
+                        INTEGER,
+                     ipxCircStaticStatus
+                        INTEGER,
+                     ipxCircCompressedSent
+                        Counter,
+                     ipxCircCompressedInitSent
+                        Counter,
+                     ipxCircCompressedRejectsSent
+                        Counter,
+                     ipxCircUncompressedSent
+                        Counter,
+                     ipxCircCompressedReceived
+                        Counter,
+                     ipxCircCompressedInitReceived
+                        Counter,
+                     ipxCircCompressedRejectsReceived
+                        Counter,
+                     ipxCircUncompressedReceived
+                        Counter,
+                     ipxCircMediaType
+                        OctetStringSiz2,
+                     ipxCircNetNumber
+                        NetNumber,
+                     ipxCircStateChanges
+                        Counter,
+                     ipxCircInitFails
+                        Counter,
+                     ipxCircDelay
+                        INTEGER,
+                     ipxCircThroughput
+                        INTEGER,
+                     ipxCircNeighRouterName
+                        OCTET STRING,
+                     ipxCircNeighInternalNetNum
+                        NetNumber
+                    }
+
+ipxCircSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this entry corresponds. \
+           HELP = This value may be  written only when \
+		  creating a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {ipxCircEntry 1}
+
+ipxCircIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The identifier of this circuit, unique \
+		  within the instance of IPX.  This value \
+		  may be written only when creating a \
+		  new entry in the table.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 2}
+
+ipxCircExistState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The validity of this circuit entry. \
+		  A circuit with this value set to off \
+		  is deleted from the table.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 3}
+
+ipxCircOperState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        down(1),
+                        up(2),
+                        sleeping(3)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The operational state of the circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 4}
+
+ipxCircIfIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The value of ifIndex for the interface \
+		  used by this circuit.  This value may \
+		  be written only when creating a new \
+		  entry in the table.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 5}
+
+ipxCircName OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(0..48))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The readable name for the circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 6}
+
+ipxCircType OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        other(1),
+                        broadcast(2),
+                        ptToPt(3),
+                        wanRIP(4),
+                        unnumberedRIP(5),
+                        dynamic(6),
+                        wanWS(7)
+                       }
+   	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The type of the circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 7}
+
+ipxCircDataLinkType OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        raw(1),
+                        snap(2),
+                        type2(3),
+                        type8022(4)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The type of Data Link on this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 8}
+
+ipxCircDialName OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(0..48))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The symbolic name used to refernce the \
+		  dialing information used to create \
+		  this circuit.  This value may be written \
+		  only when creating a new entry in \
+		  the table.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 9}
+
+ipxCircLocalMaxPacketSize OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The maximum size (including header), \
+		  in bytes, that the system supports \
+		  locally on this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 10}
+
+ipxCircCompressState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The compression state on this circuit. \
+		  This value may  be written only when \
+		  creating a new entry in the table.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	DEFVAL      { off }
+   ::= {ipxCircEntry 11}
+
+ipxCircCompressSlots OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of compression slots available \
+		  on this  circuit.  This value may be \
+		  written only when creating a new entry \
+		  in the table.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	DEFVAL      { 16 }
+   ::= {ipxCircEntry 12}
+
+ipxCircStaticStatus OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        unknown(1),
+                        current(2),
+                        changed(3),
+                        read(4),
+                        reading(5),
+                        write(6),
+                        writing(7)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Indicates whether the information about \
+		  static routes and services reached \
+		  via this circuit matches that saved \
+		  in permanent storage (current).;
+           HELP = Setting the value to write when it had the \
+		  value changed will write the currently \
+		  in use information to permanent storage, \
+		  if supported.  Setting the value to \
+		  read when it had the value changed \
+		  will replace any routes and services \	
+		  currently defined for the circuit with \
+		  those read from permanent storage, \
+		  if supported.;
+	   CAPABILITIES = ;"
+   ::= {ipxCircEntry 13}
+
+ipxCircCompressedSent OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of compressed packets sent.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 14}
+
+ipxCircCompressedInitSent OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of compression initialization \
+		  packets sent.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 15}
+
+ipxCircCompressedRejectsSent OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of compressed packet rejected \
+		  packets sent.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 16}
+
+ipxCircUncompressedSent OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of packets sent without being \
+		  compressed even though compression \
+		  was turned on for this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 17}
+
+ipxCircCompressedReceived OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of compressed packets received.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 18}
+
+ipxCircCompressedInitReceived OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of compression initialization \
+		  packets received.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 19}
+
+ipxCircCompressedRejectsReceived OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of compressed packet rejected \
+		  packets received.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 20}
+
+ipxCircUncompressedReceived OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of packets received without \
+		  having been compressed even though \
+		  compression was turned on for this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 21}
+
+ipxCircMediaType OBJECT-TYPE
+	SYNTAX      OctetStringSiz2    
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The media type used on this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 22}
+
+ipxCircNetNumber OBJECT-TYPE
+	SYNTAX      NetNumber
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number of this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 23}
+
+ipxCircStateChanges OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of times the circuit has \
+		  changed state.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 24}
+
+ipxCircInitFails OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of times that initialization \
+		  of this circuit has failed.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 25}
+
+ipxCircDelay OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The period of time, in milliseconds, \
+		  that it takes to transmit one byte \
+		  of data.;
+           HELP = This is excluding protocol headers to a destination \
+                  on the other end of the circuit, if the circuit \
+                  is free of other traffic.;
+	   CAPABILITIES = ;"
+   ::= {ipxCircEntry 26}
+
+ipxCircThroughput OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The amount of data, in bits per second, \
+		  that may flow through the circuit if \
+		  there is no other traffic.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 27}
+
+ipxCircNeighRouterName OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(0..48))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The name of the neighboring router on \
+		  a WAN circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 28}
+
+ipxCircNeighInternalNetNum OBJECT-TYPE
+	SYNTAX      NetNumber
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The internal network number of the neighboring \
+		  router on a WAN circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxCircEntry 29}
+
+
+
+-- Forwarding Group
+--   This group provides a representation of the forwarding database used
+--   by all instances of IPX on the system.
+
+-- Destination Table
+--   The Destination table contains information about all known
+--   destinations.  The routing information shown in this table represents
+--   the path currently being used to reach the destination.
+
+ipxDestTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF IPXDestEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The Destination table contains information \
+		  about all known destinations.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ipxForwarding 1}
+
+ipxDestEntry OBJECT-TYPE
+	SYNTAX      IPXDestEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one destination.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	INDEX       {
+                ipxDestSysInstance,
+                ipxDestNetNum
+               }
+   ::= {ipxDestTable 1}
+
+IPXDestEntry ::= SEQUENCE {
+                     ipxDestSysInstance
+                        INTEGER,
+                     ipxDestNetNum
+                        NetNumber,
+                     ipxDestProtocol
+                        INTEGER,
+                     ipxDestTicks
+                        INTEGER,
+                     ipxDestHopCount
+                        INTEGER,
+                     ipxDestNextHopCircIndex
+                        INTEGER,
+                     ipxDestNextHopNICAddress
+                        PhysAddress,
+                     ipxDestNextHopNetNum
+                        NetNumber
+                    }
+
+ipxDestSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this row corresponds.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 1}
+
+ipxDestNetNum OBJECT-TYPE
+	SYNTAX      NetNumber
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number of the destination.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 2}
+
+ipxDestProtocol OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        other(1),
+                        local(2),
+                        rip(3),
+                        nlsp(4),
+                        static(5)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The routing protocol from which knowledge \
+		  of this destination was obtained.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 3}
+
+ipxDestTicks OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The delay in ticks to reach this destination.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 4}
+
+ipxDestHopCount OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of hops necessary to reach \
+		  the destination.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 5}
+
+ipxDestNextHopCircIndex OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the circuit \
+		  used to reach the  next hop.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 6}
+
+ipxDestNextHopNICAddress OBJECT-TYPE
+	SYNTAX      PhysAddress
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The NIC address of the next hop.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 7}
+
+ipxDestNextHopNetNum OBJECT-TYPE
+	SYNTAX      NetNumber
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number of the next hop.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestEntry 8}
+
+
+-- Static Routes Table
+--   This table contains the information about all the static routes
+--   defined.  There may be more than one static route to any given
+--   destination.  Only the route currently being used will also be
+--   present in the Destination Table defined above.
+
+ipxStaticRouteTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF IPXStaticRouteEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The Static Routes table contains information \
+		  about all destinations reached via \
+		  statically configured routes.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ipxForwarding 2}
+
+ipxStaticRouteEntry OBJECT-TYPE
+	SYNTAX      IPXStaticRouteEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one static \
+		  route.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {
+                ipxStaticRouteSysInstance,
+                ipxStaticRouteCircIndex,
+                ipxStaticRouteNetNum
+               }
+   ::= {ipxStaticRouteTable 1}
+
+IPXStaticRouteEntry ::= SEQUENCE {
+                           ipxStaticRouteSysInstance
+                              INTEGER,
+                           ipxStaticRouteCircIndex
+                              INTEGER,
+                           ipxStaticRouteNetNum
+                              NetNumber,
+                           ipxStaticRouteExistState
+                              INTEGER,
+                           ipxStaticRouteTicks
+                              INTEGER,
+                           ipxStaticRouteHopCount
+                              INTEGER,
+                           ipxStaticRouteNextHopNICAddress
+                              PhysAddress
+                          }
+
+ipxStaticRouteSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this row corresponds.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxStaticRouteEntry 1}
+
+ipxStaticRouteCircIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+        ACCESS      read-only
+        STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the circuit \
+		  used to reach the first hop in the \
+		  static route.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxStaticRouteEntry 2}
+
+ipxStaticRouteNetNum OBJECT-TYPE
+	SYNTAX      NetNumber
+        ACCESS      read-only
+        STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number of the route's \
+		  destination.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxStaticRouteEntry 3}
+
+ipxStaticRouteExistState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The validity of this static route.  \
+		  Entries with the value set to off are \
+		  deleted from the table.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxStaticRouteEntry 4}
+
+ipxStaticRouteTicks OBJECT-TYPE
+	SYNTAX      INTEGER (1..1000)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The delay, in ticks, to reach the route's \
+		  destination.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxStaticRouteEntry 5}
+
+ipxStaticRouteHopCount OBJECT-TYPE
+	SYNTAX      INTEGER (1..14)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of hops necessary to reach \
+		  the destination.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxStaticRouteEntry 6}
+
+ipxStaticRouteNextHopNICAddress OBJECT-TYPE
+	SYNTAX      PhysAddress
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The NIC address of the next hop.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxStaticRouteEntry 7}
+
+
+-- Services Group
+--   The Services group contains management information for all known
+--   services.
+
+-- Services Table
+--    This table contains the services information indexed by service
+--    name and type.
+
+ipxServTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF IPXServEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The table of services, indexed by name \
+		  and type.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ipxServices 1}
+
+ipxServEntry OBJECT-TYPE
+	SYNTAX      IPXServEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {
+                ipxServSysInstance,
+                ipxServType,
+                ipxServName
+               }
+   ::= {ipxServTable 1}
+
+IPXServEntry ::= SEQUENCE {
+                     ipxServSysInstance
+                        INTEGER,
+                     ipxServType
+                        OCTET STRING,
+                     ipxServName
+                        OCTET STRING,
+                     ipxServProtocol
+                        INTEGER,
+                     ipxServNetNum
+                        NetNumber,
+                     ipxServNode
+                        OCTET STRING,
+                     ipxServSocket
+                        OCTET STRING,
+                     ipxServHopCount
+                        INTEGER
+                    }
+
+ipxServSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this entry corresponds.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 1}
+
+ipxServType OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(2))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The service type.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 2}
+
+ipxServName OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(1..48))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The service name.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 3}
+
+ipxServProtocol OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        other(1),
+                        local(2),
+                        nlsp(4),
+                        static(5),
+                        sap(6)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The protocol from which knowledge of \
+		  this service was obtained.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 4}
+
+ipxServNetNum OBJECT-TYPE
+	SYNTAX      NetNumber
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number portion of the \
+		  IPX address of the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 5}
+
+ipxServNode OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(6))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The node portion of the IPX address \
+		  of the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 6}
+
+ipxServSocket OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(2))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The socket portion of the IPX address \
+		  of the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 7}
+
+ipxServHopCount OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of hops to the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxServEntry 8}
+
+
+-- Destination Services Table
+--   This table contains the services information indexed by address, 
+--   name, and type.
+
+ipxDestServTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF IPXDestServEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The table of services, indexed by address, \
+		  name, and type.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ipxServices 2}
+
+ipxDestServEntry OBJECT-TYPE
+	SYNTAX      IPXDestServEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {
+                ipxDestServSysInstance,
+                ipxDestServNetNum,
+                ipxDestServNode,
+                ipxDestServSocket,
+                ipxDestServName,
+                ipxDestServType
+               }
+   ::= {ipxDestServTable 1}
+
+IPXDestServEntry ::= SEQUENCE {
+                        ipxDestServSysInstance
+                           INTEGER,
+                        ipxDestServNetNum
+                           NetNumber,
+                        ipxDestServNode
+                           OCTET STRING,
+                        ipxDestServSocket
+                           OCTET STRING,
+                        ipxDestServName
+                           OCTET STRING,
+                        ipxDestServType
+                           OCTET STRING,
+                        ipxDestServProtocol
+                           INTEGER,
+                        ipxDestServHopCount
+                           INTEGER
+                       }
+
+ipxDestServSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this entry corresponds.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 1}
+
+ipxDestServNetNum OBJECT-TYPE
+	SYNTAX      NetNumber
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number portion of the \
+		  IPX address of the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 2}
+
+ipxDestServNode OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(6))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The node portion of the IPX address \
+		  of the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 3}
+
+ipxDestServSocket OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(2))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The socket portion of the IPX address \
+		  of the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 4}
+
+ipxDestServName OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(1..48))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The service name.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 5}
+
+ipxDestServType OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(2))
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The service type.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 6}
+
+ipxDestServProtocol OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        other(1),
+                        local(2),
+                        nlsp(4),
+                        static(5),
+                        sap(6)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The protocol from which knowledge of \
+		  this service was obtained.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 7}
+
+ipxDestServHopCount OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of hops to the service.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ipxDestServEntry 8}
+
+ripSysTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF RIPSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The RIP system table.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ripsapSystem 1}
+
+ripSysEntry OBJECT-TYPE
+	SYNTAX      RIPSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one instance \
+		  of RIP running on the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {ripSysInstance}
+   ::= {ripSysTable 1}
+
+RIPSysEntry ::= SEQUENCE {
+                        ripSysInstance
+                           INTEGER,
+                        ripSysState
+                           INTEGER,
+                        ripSysIncorrectPackets
+                           Counter
+                       }
+                           
+ripSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of RIP to which this row corresponds.; 
+           HELP = This value links the instance of RIP \
+		  to an instance of IPX running on the system \
+		  (i.e. the value of ripSysInstance \
+		  should be the same as a value of \
+		  ipxSysInstance). \
+		  This value may be written only when \
+		  creating a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {ripSysEntry 1}
+
+ripSysState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Indicates the operational state of this \
+		  instance of RIP.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ripSysEntry 2}
+
+ripSysIncorrectPackets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of times that an incorrectly \
+		  formatted RIP packet was received.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ripSysEntry 3}
+
+
+-- SAP System Table
+--   This table contains an entry for each instance of SAP
+--   running on the system.
+
+sapSysTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF SAPSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The SAP system table.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ripsapSystem 2}
+
+sapSysEntry OBJECT-TYPE
+	SYNTAX      SAPSysEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one instance \
+		  of SAP running on the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {sapSysInstance}
+   ::= {sapSysTable 1}
+
+SAPSysEntry ::= SEQUENCE {
+                        sapSysInstance
+                           INTEGER,
+                        sapSysState
+                           INTEGER,
+                        sapSysIncorrectPackets
+                           Counter
+                       }
+                           
+sapSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of SAP to which this row corresponds.; 
+	   HELP = This value links the instance of SAP \
+		  to an instance of IPX running on the system \
+		  (i.e. the value of SApSysInstance \
+		  should be the same as a value of \
+		  ipxSysInstance). \
+		  This value may be written only when \
+		  creating a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {sapSysEntry 1}
+
+sapSysState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Indicates the operational state of this \
+		  instance of SAP.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {sapSysEntry 2}
+
+sapSysIncorrectPackets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of times that an incorrectly \
+		  formatted SAP packet was received.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {sapSysEntry 3}
+
+
+-- Circuit Group
+--   This group contains RIP and SAP management information for each
+--   circuit known to this system.
+
+-- RIP Circuit Table
+--   The RIP Circuit table contains an entry for the RIP information for
+--   each circuit known to the system.
+
+ripCircTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF RIPCircEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The RIP Circuit table.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ripsapCircuit 1}
+
+ripCircEntry OBJECT-TYPE
+	SYNTAX      RIPCircEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one circuit \
+		  known to the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   	INDEX       {
+       	         ripCircSysInstance,
+       	         ripCircIndex
+       	        }
+   ::= {ripCircTable 1}
+
+RIPCircEntry ::= SEQUENCE {
+                        ripCircSysInstance
+                           INTEGER,
+                        ripCircIndex
+                           INTEGER,
+                        ripCircState
+                           INTEGER,
+                        ripCircPace
+                           INTEGER,
+                        ripCircUpdate
+                           INTEGER,
+                        ripCircAgeMultiplier
+                           INTEGER,
+                        ripCircPacketSize
+                           INTEGER,
+                        ripCircOutPackets
+                           Counter,
+                        ripCircInPackets
+                           Counter
+                       }
+
+ripCircSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of RIP and IPX (via ipxSysInstance) \
+		  to which this entry corresponds.; 
+           HELP = This value may be written only when creating \
+		  a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {ripCircEntry 1}
+
+ripCircIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The identifier of this circuit, unique \
+		  within the instance of RIP.  This value \
+		  corresponds to the circuit identifier \
+		  found in ipxCircIndex.;   
+           HELP = This value may be written only when creating a \
+		  new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {ripCircEntry 2}
+
+ripCircState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2),
+                        auto-on(3),
+                        auto-off(4)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Indicates whether RIP information may \
+		  be sent/received over this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   DEFVAL      { auto-off }
+   ::= {ripCircEntry 3}
+
+ripCircPace OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The maximum pace, in packets per second, \
+		  at which RIP packets may be sent on \
+		  this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ripCircEntry 4}
+
+ripCircUpdate OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The RIP periodic update interval, in \
+		  seconds.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   DEFVAL      { 60 }
+   ::= {ripCircEntry 5}
+
+ripCircAgeMultiplier OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The holding multiplier for information \
+		  received in RIP periodic updates.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   DEFVAL      { 4 }
+   ::= {ripCircEntry 6}
+
+ripCircPacketSize OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The RIP packet size used on this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ripCircEntry 7}
+
+ripCircOutPackets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of RIP packets sent on this \
+		  circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ripCircEntry 8}
+
+ripCircInPackets OBJECT-TYPE
+	SYNTAX      Counter
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of RIP packets received on \
+		  this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {ripCircEntry 9}
+
+
+-- SAP Circuit Table
+--   The SAP Circuit table contains an entry for the SAP information for
+--   each circuit known to the system.
+
+sapCircTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF SAPCircEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The SAP Circuit table.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {ripsapCircuit 2}
+
+sapCircEntry OBJECT-TYPE
+	SYNTAX      SAPCircEntry
+   	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one circuit \
+		  known to the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {
+                sapCircSysInstance,
+                sapCircIndex
+               }
+   ::= {sapCircTable 1}
+
+SAPCircEntry ::= SEQUENCE {
+                        sapCircSysInstance
+                           INTEGER,
+                        sapCircIndex
+                           INTEGER,
+                        sapCircState
+                           INTEGER,
+                        sapCircPace
+                           INTEGER,
+                        sapCircUpdate
+                           INTEGER,
+                        sapCircAgeMultiplier
+                           INTEGER,
+                        sapCircPacketSize
+                           INTEGER,
+                        sapCircOutPackets
+                           Counter,
+                        sapCircInPackets
+                           Counter
+                       }
+
+sapCircSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of SAP and IPX (via ipxSysInstance) \
+		  to which this entry corresponds.; 
+           HELP = This value may be written only when creating \
+		  a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {sapCircEntry 1}
+
+sapCircIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The identifier of this circuit, unique \
+		  within the instance of SAP.  This value \
+		  corresponds to the circuit identifier \
+		  found in ipxCircIndex.;
+           HELP = This value may be written only when creating a \
+		  new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {sapCircEntry 2}
+
+sapCircState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2),
+                        auto-on(3),
+                        auto-off(4)
+                       }
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Indicates whether SAP information may \
+		  be sent/received over this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   DEFVAL      { auto-off }
+   ::= {sapCircEntry 3}
+
+sapCircPace OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The maximum pace, in packets per second, \
+		  at which SAP packets may be sent on \
+		  this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {sapCircEntry 4}
+
+sapCircUpdate OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The SAP periodic update interval, in \
+		  seconds.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   DEFVAL      { 60 }
+   ::= {sapCircEntry 5}
+
+sapCircAgeMultiplier OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The holding multiplier for information \
+		  received in SAP periodic updates.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   DEFVAL      { 4 }
+   ::= {sapCircEntry 6}
+
+sapCircPacketSize OBJECT-TYPE
+	SYNTAX      INTEGER
+   	ACCESS      read-only
+  	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The SAP packet size used on this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {sapCircEntry 7}
+
+sapCircOutPackets OBJECT-TYPE
+	SYNTAX      Counter
+	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of SAP packets sent on this \
+		  circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {sapCircEntry 8}
+
+sapCircInPackets OBJECT-TYPE
+	SYNTAX      Counter
+	ACCESS      read-only
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of SAP packets received on \
+		  this circuit.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {sapCircEntry 9}
+
+
+nvmipxBasicSysTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF NVMIPXBasicSysEntry
+	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX System table - basic information.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {nvmSystem 1}
+
+nvmipxBasicSysEntry OBJECT-TYPE
+	SYNTAX      NVMIPXBasicSysEntry
+	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one instance \
+		  of IPX running on the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {nvmipxBasicSysInstance}
+   ::= {nvmipxBasicSysTable 1}
+
+NVMIPXBasicSysEntry ::= SEQUENCE {
+                        nvmipxBasicSysInstance
+                           INTEGER,
+                        nvmipxBasicSysExistState
+                           INTEGER,
+                        nvmipxBasicSysNetNumber
+                           NetNumber,
+                        nvmipxBasicSysName
+                           OCTET STRING,
+                        nvmipxBasicSysRouter
+                           INTEGER,
+                        nvmipxBasicSysSpoofing
+                           INTEGER,
+                        nvmipxBasicSysSpoofDataLinkType
+                           INTEGER,
+                        nvmipxBasicSysWanOptimize
+                           INTEGER
+                    }
+                           
+nvmipxBasicSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this row corresponds.;
+	   HELP = This value may be written only when \
+		  creating a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 1}
+
+nvmipxBasicSysExistState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The validity of this entry in the IPX \
+		  system table.; 
+	   HELP = Setting this field to off indicates that \ 
+                  this entry may be deleted from the system \
+                  table at the IPX implementation's discretion.; 
+	   CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 2}
+
+nvmipxBasicSysNetNumber OBJECT-TYPE
+	SYNTAX      NetNumber
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The network number portion of the IPX \
+		  address of this system. Mirror object \
+		  of ipxBasicSysNetNumber.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 3}
+
+nvmipxBasicSysName OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(0..48))
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The readable name for this system. Mirror \
+		  object of ipxBasicSysName.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 4}
+
+nvmipxBasicSysRouter OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        enabled(1),
+                        disabled(2)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Is the IPX being routed for this instance. \
+		  Mirror object of ipxBasicSysRouter.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 5}
+
+nvmipxBasicSysSpoofing OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        enabled(1),
+                        disabled(2)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Is the IPX spoofing enabled for this \
+		  instance. Mirror object of ipxBasicSysSpoofing;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 6}
+
+nvmipxBasicSysSpoofDataLinkType OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        raw(1),
+                        type8023(2),
+                        type2(3),
+                        type8022(4)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The DataLink type to Spoof on. Mirror \
+		  object of ipxBasicSysSpoofDataLinkType;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 7}
+
+nvmipxBasicSysWanOptimize OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        enabled(1),
+                        disabled(2)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Is the WAN optimization enabled for \
+		  IPX for this instance. Mirror object \
+		  of ipxBasicSysWanOptimize;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxBasicSysEntry 8}
+
+
+nvmipxCircTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF NVMIPXCircEntry
+	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The Circuit table.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {nvmCircuit 1}
+
+nvmipxCircEntry OBJECT-TYPE
+	SYNTAX      NVMIPXCircEntry
+	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one circuit \
+		  known to the system.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {
+                nvmipxCircSysInstance,
+                nvmipxCircIndex
+               }
+   ::= {nvmipxCircTable 1}
+
+NVMIPXCircEntry ::= SEQUENCE {
+                     nvmipxCircSysInstance
+                        INTEGER,
+                     nvmipxCircIndex
+                        INTEGER,
+                     nvmipxCircExistState
+                        INTEGER,
+                     nvmipxCircOperState
+                        INTEGER,
+                     nvmipxCircIfIndex
+                        INTEGER,
+                     nvmipxCircName
+                        OCTET STRING,
+                     nvmipxCircDataLinkType
+                        INTEGER,
+                     nvmipxCircStaticStatus
+                        INTEGER,
+                     nvmipxCircNetNumber
+                        NetNumber
+                    }
+
+nvmipxCircSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this entry corresponds.;
+	   HELP = This value may be  written only when \
+		  creating a new entry in the table.;
+	   CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 1}
+
+nvmipxCircIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The identifier of this circuit, unique \
+		  within the instance of IPX.; 
+           HELP = This value may be written only when creating a \
+		  new entry in the table. Mirror object \
+		  of ipxCircIndex;
+	   CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 2}
+
+nvmipxCircExistState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The validity of this circuit entry.;
+           HELP = A circuit with this value set to off \
+		  may be deleted from the table at the \
+		  IPX implementation's discretion.;
+	   CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 3}
+
+nvmipxCircOperState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        down(1),
+                        up(2),
+                        sleeping(3)
+                       }
+	ACCESS      read-write
+   	STATUS      obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = NOTE THIS OBJECT IS OBSOLETE AND WILL \
+                  NO LONGER BE SUPPORTED IN RELEASE 3.0 \
+                  AND BEYOND. \
+                  The operational state of the circuit. \
+		  Mirror object	of ipxCircOperState.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 4}
+
+nvmipxCircIfIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The value of ifIndex for the interface \
+		  used by this circuit.; 
+	   HELP = This value may be written only when creating a new \
+		  entry in the table. Mirror object of \
+		  ipxCircIfIndex.;
+	   CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 5}
+
+nvmipxCircName OBJECT-TYPE
+	SYNTAX      OCTET STRING (SIZE(0..48))
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The readable name for the circuit. Mirror \
+		  object of ipxCircName.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 6}
+
+nvmipxCircDataLinkType OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        raw(1),
+                        snap(2),
+                        type2(3),
+                        type8022(4)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The type of Data Link on this circuit. \
+		  Mirror object	of ipxCircDataLinkType.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 7}
+
+
+nvmipxCircStaticStatus OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        unknown(1),
+                        current(2),
+                        changed(3),
+                        read(4),
+                        reading(5),
+                        write(6),
+                        writing(7)
+                       }
+	ACCESS      read-write
+   	STATUS      obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = NOTE THIS OBJECT IS OBSOLETE AND NO LONGER \
+                  SUPPORTED FOR FOR RELEASE 3.0 AND BEYOND. \
+                  Indicates whether the information about static \
+		  routes and services reached via this circuit \
+		  matches that saved in permanent storage(current).;
+           HELP = Setting the value to write when it had the \
+		  value changed will write the currently \
+		  in use information to permanent storage, \
+		  if supported.  Setting the value to \
+		  read when it had the value changed \
+		  will replace any routes and services \
+		  currently defined for the circuit with \
+		  those read from permanent storage, \
+		  if supported.;
+	   CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 8}
+
+nvmipxCircNetNumber OBJECT-TYPE
+	SYNTAX      NetNumber
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number of this circuit. \
+		  Mirror object	of ipxCircNetNumber.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxCircEntry 9}
+
+
+
+nvmipxStaticRouteTable OBJECT-TYPE
+	SYNTAX      SEQUENCE OF NVMIPXStaticRouteEntry
+	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The Static Routes table contains information \
+		  about all destinations reached via \
+		  statically configured routes.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+   ::= {nvmForwarding 1}
+
+nvmipxStaticRouteEntry OBJECT-TYPE
+	SYNTAX      NVMIPXStaticRouteEntry
+	ACCESS      not-accessible
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = Each entry corresponds to one static \
+		  route.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   INDEX       {
+                nvmipxStaticRouteSysInstance,
+                nvmipxStaticRouteCircIndex,
+                nvmipxStaticRouteNetNum
+               }
+   ::= {nvmipxStaticRouteTable 1}
+
+NVMIPXStaticRouteEntry ::= SEQUENCE {
+                           nvmipxStaticRouteSysInstance
+                              INTEGER,
+                           nvmipxStaticRouteCircIndex
+                              INTEGER,
+                           nvmipxStaticRouteNetNum
+                              NetNumber,
+                           nvmipxStaticRouteExistState
+                              INTEGER,
+                           nvmipxStaticRouteTicks
+                              INTEGER,
+                           nvmipxStaticRouteHopCount
+                              INTEGER,
+									nvmipxStaticRouteNextHopNICAddress
+										PhysAddress
+                          }
+
+nvmipxStaticRouteSysInstance OBJECT-TYPE
+	SYNTAX      INTEGER (1)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the instance \
+		  of IPX to which this row corresponds. \
+		  Mirror object of ipxStaticRouteSysInstance.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxStaticRouteEntry 1}
+
+nvmipxStaticRouteCircIndex OBJECT-TYPE
+	SYNTAX      INTEGER (1..16)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The unique identifier of the circuit \
+		  used to reach the first hop in the \
+		  static route.;
+           HELP = Mirrie object of ipxStaticRouteCircIndex.;
+	   CAPABILITIES = ;"
+   ::= {nvmipxStaticRouteEntry 2}
+
+nvmipxStaticRouteNetNum OBJECT-TYPE
+	SYNTAX      NetNumber
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The IPX network number of the route's \
+		  destination.	Mirror object of \
+		  ipxStaticRouteNetNum.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxStaticRouteEntry 3}
+
+nvmipxStaticRouteExistState OBJECT-TYPE
+	SYNTAX      INTEGER {
+                        off(1),
+                        on(2)
+                       }
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The validity of this static route.;
+	   HELP = Entries with the value set to off may \
+		  be deleted from the table at the \
+		  implementation's discretion. Mirror \
+		  object of ipxStaticRouteExistState.;
+	   CAPABILITIES = ;"
+   ::= {nvmipxStaticRouteEntry 4}
+
+nvmipxStaticRouteTicks OBJECT-TYPE
+	SYNTAX      INTEGER (1..1000)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The delay, in ticks, to reach the route's \
+		  destination. Mirror object of \
+		  ipxStaticRouteTicks.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxStaticRouteEntry 5}
+
+nvmipxStaticRouteHopCount OBJECT-TYPE
+	SYNTAX      INTEGER (1..14)
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The number of hops necessary to reach \
+		  the destination. Mirror object of \
+		  ipxStaticRouteHopCount.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxStaticRouteEntry 6}
+
+nvmipxStaticRouteNextHopNICAddress OBJECT-TYPE
+	SYNTAX      PhysAddress
+	ACCESS      read-write
+   	STATUS      mandatory
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The NIC address of the next hop.;
+	   HELP = ;
+           CAPABILITIES = ;"
+   ::= {nvmipxStaticRouteEntry 7}
+
+
+  -- The Counter Reset Group
+
+
+ipxCntrZeroTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF IpxCntrZeroEntry
+        ACCESS  not-accessible
+        STATUS  obsolete 
+	DESCRIPTION
+	  "NAME = ;
+       DESC = This table was obsoleted as of release \
+	      	  3.0; and is included here only to support \
+	          backwards compatibility for software \
+	          versions prior to release 3.0. \
+	   		  A table that contains port-specific \
+		  	  information for the MICOM Port Counter \
+		  	  Zeroing.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+              ::= { ipxCntr 1 }
+
+ipxCntrZeroEntry OBJECT-TYPE
+       	SYNTAX  IpxCntrZeroEntry
+       	ACCESS  not-accessible
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = A list of information maintained by \
+		  every port about the MICOM E-type Filter \
+		  parameters for that port.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        INDEX   { ipxCntrZeroSysInstance }
+        ::= { ipxCntrZeroTable 1 }
+
+IpxCntrZeroEntry ::=
+              SEQUENCE {
+                  ipxCntrZeroSysInstance
+                      INTEGER,
+                  ipxBasicSysCounterZero
+                      INTEGER,
+                  ipxAdvSysCounterZero
+                      INTEGER,
+                  ipxRipSysCounterZero
+                      INTEGER,
+                  ipxSapSysCounterZero
+                      INTEGER
+	}
+
+
+ipxCntrZeroSysInstance OBJECT-TYPE
+	SYNTAX	INTEGER (1)
+	ACCESS	read-write
+	STATUS	obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = ;
+	   HELP = The Instance to which this entry pertains.;
+	   CAPABILITIES = ;"
+	::= { ipxCntrZeroEntry 1 }
+
+ipxBasicSysCounterZero OBJECT-TYPE
+     	SYNTAX  INTEGER { reset(1), other(2) }
+	ACCESS	write-only
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = When set to reset, the BasicSys Counters \
+		  should be zeroed out.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        ::= { ipxCntrZeroEntry 2 }
+
+ipxAdvSysCounterZero OBJECT-TYPE
+     	SYNTAX  INTEGER { reset(1), other(2) }
+	ACCESS	write-only
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = When set to reset, the AdvSys Counters \
+		  should be zeroed out.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        ::= { ipxCntrZeroEntry 3 }
+
+ipxRipSysCounterZero OBJECT-TYPE
+     	SYNTAX  INTEGER { reset(1), other(2) }
+	ACCESS	write-only
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = When set to reset, the Rip Sys Counters \
+		  should be zeroed out.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        ::= { ipxCntrZeroEntry 4 }
+
+ipxSapSysCounterZero OBJECT-TYPE
+     	SYNTAX  INTEGER { reset(1), other(2) }
+	ACCESS	write-only
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = When set to reset, the Sap Sys Counters \
+		  should be zeroed out.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        ::= { ipxCntrZeroEntry 5 }
+
+
+ipxCounterZeroTable OBJECT-TYPE
+           	SYNTAX  SEQUENCE OF IpxCounterZeroEntry
+           	ACCESS  not-accessible
+              STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+       DESC = This table was obsoleted as of release \
+	      	  3.0; and is included here only to support \
+	          backwards compatibility for software \
+	          versions prior to release 3.0. \
+	   		  A table that contains port-specific \
+		  	  information for the MICOM Port Counter \
+		  	  Zeroing.;
+	   HELP = ;
+           CAPABILITIES = NET_CFG, VPN_CFG;"
+              ::= { ipxCntr 2 }
+
+ipxCounterZeroEntry OBJECT-TYPE
+       	SYNTAX  IpxCounterZeroEntry
+       	ACCESS  not-accessible
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = A list of information maintained by \
+		  every port about the MICOM E-type Filter \
+		  parameters for that port.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        INDEX   { 
+			ipxCounterZeroSysInstance,
+			ipxCounterZeroIndex 
+		      }
+              ::= { ipxCounterZeroTable 1 }
+
+IpxCounterZeroEntry ::=
+              SEQUENCE {
+                  ipxCounterZeroSysInstance
+                      INTEGER,
+                  ipxCounterZeroIndex
+                      INTEGER,
+                  ipxCircCounterZero
+                      INTEGER,
+                  ipxRipCircCounterZero
+                      INTEGER,
+                  ipxSapCircCounterZero
+                      INTEGER
+	}
+
+
+ipxCounterZeroSysInstance OBJECT-TYPE
+	SYNTAX	INTEGER (1)
+	ACCESS	read-write
+	STATUS	obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The Instance to which this entry pertains.;
+	   HELP = ;
+           CAPABILITIES = ;"
+	::= { ipxCounterZeroEntry 1 }
+
+ipxCounterZeroIndex OBJECT-TYPE
+	SYNTAX	INTEGER (1..16)
+	ACCESS	read-write
+	STATUS	obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = The Index to which this entry pertains.;
+	   HELP = ;
+           CAPABILITIES = ;"
+	::= { ipxCounterZeroEntry 2 }
+
+ipxCircCounterZero OBJECT-TYPE
+     	SYNTAX  INTEGER { reset(1), other(2) }
+	ACCESS	write-only
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = When set to reset, the Circuit Counters \
+		  should be zeroed out.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        ::= { ipxCounterZeroEntry 3 }
+
+ipxRipCircCounterZero OBJECT-TYPE
+     	SYNTAX  INTEGER { reset(1), other(2) }
+	ACCESS	write-only
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = When set to reset, the RipCircuit Counters \
+		  should be zeroed out.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        ::= { ipxCounterZeroEntry 4 }
+
+ipxSapCircCounterZero OBJECT-TYPE
+     	SYNTAX  INTEGER { reset(1), other(2) }
+	ACCESS	write-only
+        STATUS  obsolete
+	DESCRIPTION
+	  "NAME = ;
+	   DESC = When set to reset, the SapCircuit Counters \
+		  should be zeroed out.;
+	   HELP = ;
+           CAPABILITIES = ;"
+        ::= { ipxCounterZeroEntry 5 }
+
+END
+

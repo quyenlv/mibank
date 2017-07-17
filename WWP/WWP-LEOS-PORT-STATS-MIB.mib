@@ -1,0 +1,386 @@
+ --
+ -- WWP-LEOS-PORT-STATSMIB.my
+ --
+ --
+ -- NOTE WELL
+ -- Starting from LE21X 2.0, the object wwpPortStatsReset mentioned 
+ -- in this MIB has been deprecated. The WWP products no longer
+ -- will provide the functionlaity to reset port stats.
+ -- NOTE WELL
+
+ WWP-LEOS-PORT-STATS-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS 		
+   Unsigned32, Counter32, OBJECT-TYPE, MODULE-IDENTITY			
+	    FROM SNMPv2-SMI							
+   wwpModules, wwpModulesLeos			
+	    FROM WWP-SMI;
+	
+	
+ wwpLeosPortStatsMIB MODULE-IDENTITY
+	    LAST-UPDATED "200104031700Z"
+	    ORGANIZATION "World Wide Packets, Inc"
+	    CONTACT-INFO
+		    "   Mib Meister
+		  	Postal: World Wide Packets
+		        P.O. Box 950
+		        Veradale, WA 99037
+		        USA
+		 	Phone:  +1 509 242 9000
+			Email:  mib.meister@worldwidepackets.com"
+	    DESCRIPTION
+		    "The MIB module for the WWP Port ether Stats."
+	    REVISION    "200104031700Z"
+	    DESCRIPTION
+		    "Initial creation."
+	    ::= { wwpModulesLeos 3 }
+						
+ --
+ -- Node definitions
+ --
+	
+ wwpLeosPortStatsMIBObjects OBJECT IDENTIFIER ::= { wwpLeosPortStatsMIB 1 }
+ 
+
+ -- PortStats
+ --
+ wwpLeosPortStats OBJECT IDENTIFIER ::= { wwpLeosPortStatsMIBObjects 1 }
+
+  
+ -- Notifications 
+  
+ wwpLeosPortStatsMIBNotificationPrefix  OBJECT IDENTIFIER ::= { wwpLeosPortStatsMIB 2 } 
+ wwpLeosPortStatsMIBNotifications       OBJECT IDENTIFIER ::=  
+                       { wwpLeosPortStatsMIBNotificationPrefix 0 }
+
+ -- Conformance information 
+ 
+ wwpLeosPortStatsMIBConformance OBJECT IDENTIFIER ::= { wwpLeosPortStatsMIB 3 } 
+ wwpLeosPortStatsMIBCompliances OBJECT IDENTIFIER ::= { wwpLeosPortStatsMIBConformance 1 } 		
+ wwpLeosPortStatsMIBGroups      OBJECT IDENTIFIER ::= { wwpLeosPortStatsMIBConformance 2 }
+
+
+ wwpLeosPortStatsReset OBJECT-TYPE
+    SYNTAX          INTEGER {
+                        none(0),
+	                reset(1)
+                    } 
+    MAX-ACCESS      read-write
+    STATUS          deprecated
+    DESCRIPTION
+	    "To reset the counters related to this port. A read on this object will
+            always return the 'none'."
+    ::= { wwpLeosPortStats 1 }
+		
+ wwpLeosPortStatsTable OBJECT-TYPE
+     SYNTAX       SEQUENCE OF WwpLeosPortStatsEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+	     "The table specifying the stats for the ports."
+     ::= { wwpLeosPortStats 2 }
+		
+ wwpLeosPortStatsEntry OBJECT-TYPE
+     SYNTAX       WwpLeosPortStatsEntry
+     MAX-ACCESS   not-accessible
+     STATUS       current
+     DESCRIPTION
+	     "An entry in the port stats table."
+     INDEX { wwpLeosPortStatsPortId }
+     ::= { wwpLeosPortStatsTable 1 }
+		
+ WwpLeosPortStatsEntry ::= SEQUENCE { 
+     wwpLeosPortStatsPortId                INTEGER,
+     wwpLeosPortStatsRxBytes               Counter32,
+     wwpLeosPortStatsRxPkts                Counter32,
+     wwpLeosPortStatsRxCrcErrorPkts        Counter32,
+     wwpLeosPortStatsRxBcastPkts           Counter32,
+     wwpLeosPortStatsUndersizePkts         Counter32,
+     wwpLeosPortStatsOversizePkts          Counter32,
+     wwpLeosPortStatsFragmentPkts          Counter32,
+     wwpLeosPortStatsJabberPkts            Counter32,
+     wwpLeosPortStats64BytePkts            Counter32,
+     wwpLeosPortStats65To127BytePkts       Counter32,
+     wwpLeosPortStats128To255BytePkts      Counter32,
+     wwpLeosPortStats256To511BytePkts      Counter32,
+     wwpLeosPortStats512To1023BytePkts     Counter32,
+     wwpLeosPortStats1024To1518BytePkts    Counter32,
+     wwpLeosPortStatsTxBytes               Counter32,
+     wwpLeosPortStatsTxTBytes              Counter32,
+     wwpLeosPortStatsTxPkts                Counter32,
+     wwpLeosPortStatsTxExDeferPkts         Counter32,
+     wwpLeosPortStatsTxGiantPkts           Counter32,
+     wwpLeosPortStatsTxUnderRunPkts        Counter32,
+     wwpLeosPortStatsTxCrcErrorPkts        Counter32,
+     wwpLeosPortStatsTxLCheckErrorPkts     Counter32,
+     wwpLeosPortStatsTxLOutRangePkts       Counter32,
+     wwpLeosPortStatsTxLateCollPkts        Counter32,
+     wwpLeosPortStatsTxExCollPkts          Counter32,
+     wwpLeosPortStatsTxSingleCollPkts      Counter32,
+     wwpLeosPortStatsTxCollPkts            Counter32
+ }
+
+ wwpLeosPortStatsPortId OBJECT-TYPE
+    SYNTAX       INTEGER (1..65535)
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+	    "The Id of the port for which this entry
+            contains the stats."
+    ::= { wwpLeosPortStatsEntry 1 }
+
+ wwpLeosPortStatsRxBytes OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+	    "The number of bytes received by this port."
+    ::= { wwpLeosPortStatsEntry 2 }
+
+ wwpLeosPortStatsRxPkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+	    "The number of packets received by this port."
+    ::= { wwpLeosPortStatsEntry 3 }
+	
+ wwpLeosPortStatsRxCrcErrorPkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+	    "The number of packets received with CRC errors by this port."
+    ::= { wwpLeosPortStatsEntry 4 }
+
+ wwpLeosPortStatsRxBcastPkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+	    "The number of Broadcast packets received by this port."
+    ::= { wwpLeosPortStatsEntry 5 }
+
+ wwpLeosPortStatsUndersizePkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+            "The total number of packets received that were
+            less than 64 octets long (excluding framing bits,
+            but including FCS octets) and were otherwise well
+            formed."
+    ::= { wwpLeosPortStatsEntry 6 }
+
+ wwpLeosPortStatsOversizePkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+	    "The total number of packets received that were
+            longer than 1518 octets (excluding framing bits,
+            but including FCS octets) and were otherwise
+            well formed."
+    ::= { wwpLeosPortStatsEntry 7 }
+
+ wwpLeosPortStatsFragmentPkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+            "The total number of packets received that were less
+            than 64 octets in length (excluding framing bits but
+            including FCS octets) and had either a bad Frame
+            Check Sequence (FCS) with an integral number of
+            octets (FCS Error) or a bad FCS with a non-integral
+            number of octets (Alignment Error)."
+    ::= { wwpLeosPortStatsEntry 8 }
+
+
+ wwpLeosPortStatsJabberPkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+	    "The total number of packets received that were
+            longer than 1518 octets (excluding framing bits,
+            but including FCS octets), and had either a bad
+            Frame Check Sequence (FCS) with an integral number
+            of octets (FCS Error) or a bad FCS with a
+            non-integral number of octets (Alignment Error)."
+    ::= { wwpLeosPortStatsEntry 9 }
+	
+	
+ wwpLeosPortStats64BytePkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+            "The total number of packets (including bad
+            packets) received that were 64 octets in length
+            (excluding framing bits but including FCS octets)."
+    ::= { wwpLeosPortStatsEntry 10 }
+
+	
+ wwpLeosPortStats65To127BytePkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+            "The total number of packets (including bad
+            packets) received that were between
+            65 and 127 octets in length inclusive
+            (excluding framing bits but including FCS octets)."	
+    ::= { wwpLeosPortStatsEntry 11 }
+	
+ wwpLeosPortStats128To255BytePkts OBJECT-TYPE
+    SYNTAX        Counter32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+	    "The total number of packets (including bad
+            packets) received that were between
+            128 and 255 octets in length inclusive
+            (excluding framing bits but including FCS octets)."
+    ::= { wwpLeosPortStatsEntry 12 }
+	
+ wwpLeosPortStats256To511BytePkts OBJECT-TYPE
+    SYNTAX      Counter32 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of packets (including bad
+            packets) received that were between
+            256 and 511 octets in length inclusive
+            (excluding framing bits but including FCS octets)."
+    ::= { wwpLeosPortStatsEntry 13 }
+	
+ wwpLeosPortStats512To1023BytePkts OBJECT-TYPE
+    SYNTAX      Counter32 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of packets (including bad
+            packets) received that were between
+            512 and 1023 octets in length inclusive
+            (excluding framing bits but including FCS octets)."
+    ::= { wwpLeosPortStatsEntry 14 }
+	
+ wwpLeosPortStats1024To1518BytePkts OBJECT-TYPE
+    SYNTAX      Counter32 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of packets (including bad
+            packets) received that were between
+            1024 and 1518 octets in length inclusive
+            (excluding framing bits but including FCS octets)."
+    ::= { wwpLeosPortStatsEntry 15 }
+	
+ wwpLeosPortStatsTxBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only 
+    STATUS      current
+    DESCRIPTION
+	    "The number of Octets transmitted for this port."
+    ::= { wwpLeosPortStatsEntry 16 }
+	
+ wwpLeosPortStatsTxTBytes OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only 
+    STATUS      current
+    DESCRIPTION
+	    "The total number of Octets transmitted for this port."
+    ::= { wwpLeosPortStatsEntry 17 }
+
+ wwpLeosPortStatsTxPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only 
+    STATUS      current
+    DESCRIPTION
+	    "The total number of packets transmitted for this port."
+    ::= { wwpLeosPortStatsEntry 18 }
+	
+	
+ wwpLeosPortStatsTxExDeferPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only 
+    STATUS      current
+    DESCRIPTION
+            "The transmit excessive defer packet count for a port."
+    ::= { wwpLeosPortStatsEntry 19 }
+	
+ wwpLeosPortStatsTxGiantPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	    "The transmit too big packet count for a port."
+    ::= { wwpLeosPortStatsEntry 20 }
+	
+ wwpLeosPortStatsTxUnderRunPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only 
+    STATUS      current
+    DESCRIPTION
+            "The transmit underrun packet count for a port."
+    ::= { wwpLeosPortStatsEntry 21 }
+	
+ wwpLeosPortStatsTxCrcErrorPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only 
+    STATUS      current
+    DESCRIPTION
+            "The transmit CRC error packet count for a port."
+    ::= { wwpLeosPortStatsEntry 22 }
+	
+ wwpLeosPortStatsTxLCheckErrorPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	    "The transmit length check error packet count for a port."
+    ::= { wwpLeosPortStatsEntry 23 }
+	
+ wwpLeosPortStatsTxLOutRangePkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	    "The transmit length out of range packet count for a port."
+    ::= { wwpLeosPortStatsEntry 24 }
+	
+ wwpLeosPortStatsTxLateCollPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	    "The transmit late collision packet count for a port."
+    ::= { wwpLeosPortStatsEntry 25 }
+	
+ wwpLeosPortStatsTxExCollPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	    "The transmit excessive collision packet count for a port."
+    ::= { wwpLeosPortStatsEntry 26 }
+	
+ wwpLeosPortStatsTxSingleCollPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	    "The transmit single collision packet count for a port."
+    ::= { wwpLeosPortStatsEntry 27 }
+	
+ wwpLeosPortStatsTxCollPkts OBJECT-TYPE
+    SYNTAX       Counter32
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+	    "The transmit collision packet count for a port."
+    ::= { wwpLeosPortStatsEntry 28 }
+ 
+END
+

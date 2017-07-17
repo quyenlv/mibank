@@ -1,0 +1,532 @@
+
+CTRON-IGMP-MIB DEFINITIONS ::= BEGIN
+
+        -- This module provides authoritative definitions for Cabletron's
+        -- enterprise-specific IGMP MIB.
+        --
+        -- This module will be extended, as additional sub-sections
+        -- of this naming tree are defined.
+        --
+
+        -- Cabletron Systems reserves the right to make changes in
+        -- specification and other information contained in this document
+        -- without prior notice.  The reader should consult Cabletron Systems
+        -- to determine whether any such changes have been made.
+        --
+        -- In no event shall Cabletron Systems be liable for any incidental,
+        -- indirect, special, or consequential damages whatsoever (including
+        -- but not limited to lost profits) arising out of or related to this
+        -- document or the information contained in it, even if Cabletron
+        -- Systems has been advised of, known, or should have known, the
+        -- possibility of such damages.
+        --
+        -- Cabletron grants vendors, end-users, and other interested parties
+        -- a non-exclusive license to use this Specification in connection
+        -- with the management of Cabletron products.
+
+        -- Copyright (1999-2003) Enterasys Networks
+
+        -- Note: This design of this MIB owes much to the designers of
+        -- the Internet Group Management Protocol MIB.
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, IpAddress, TimeTicks
+        FROM SNMPv2-SMI
+    RowStatus, DisplayString
+        FROM SNMPv2-TC
+    InterfaceIndex
+        FROM IF-MIB
+    PortList
+        FROM Q-BRIDGE-MIB
+    ctIGMPBranch
+        FROM CTRON-MIB-NAMES;
+
+ctIGMP  MODULE-IDENTITY
+    LAST-UPDATED "200312101456Z"  -- Wed Dec 10 14:56 GMT 2003
+    ORGANIZATION "Enterasys Networks, Inc"
+    CONTACT-INFO
+        "Postal:  Enterasys Networks
+                  50 Minuteman Rd.
+                  Andover, MA 01810-1008
+                  USA
+         Phone:   +1 978 684 1000
+         E-mail:  support@enterasys.com
+         WWW:     http://www.enterasys.com"
+    DESCRIPTION
+            "This MIB module defines a portion of the SNMP enterprise MIBs
+             under the Cabletron enterprise OID pertaining to configuration
+             of IGMP."
+
+    REVISION    "200312101456Z"  -- Wed Dec 10 14:56 GMT 2003
+    DESCRIPTION
+            "Added the ctIGMPStaticEntry Table for static multicast
+             configuration."
+    ::= { ctIGMPBranch 1 }
+
+--
+-- ctIGMP Config
+--
+ctIGMPConfig OBJECT IDENTIFIER      ::= { ctIGMP 1 }
+
+ctIGMPNewDefaultState OBJECT-TYPE
+     SYNTAX     INTEGER {
+                        enable(1),
+                        disable(2) }
+     MAX-ACCESS read-write
+     STATUS     current
+     DESCRIPTION
+          "This object defines the state in which IGMP will view new VLAN IDs 
+           added to the system.  A value of Enable (1), indicates that IGMP will
+           create entries for all new VLANs in the ENABLE state.  A value of 
+           Disable (2), indicates IGMP will create entries for all new VLANs in
+           the DISABLED or 'not in service' state."
+     DEFVAL { disable }
+     ::= { ctIGMPConfig 1 }
+
+ctIGMPMibRev OBJECT-TYPE
+     SYNTAX     Integer32
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "This object defines the revision of the IGMP MIB in the firmware."
+     ::= { ctIGMPConfig 2 }
+
+ctIGMPMibRevString OBJECT-TYPE
+     SYNTAX     DisplayString
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "This object is a textual representation of the revision of the IGMP
+           MIB in the firmware."
+     ::= { ctIGMPConfig 3 }
+
+--
+-- The ctIGMP Vlan Table
+--
+
+ctIGMPVlanTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF CtIGMPVlanEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The (conceptual) table listing the VLANS on which IGMP
+          is enabled."
+     ::= { ctIGMP 2 }
+
+ctIGMPVlanEntry OBJECT-TYPE
+     SYNTAX     CtIGMPVlanEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "An entry (conceptual row) representing a VLAN on
+          which IGMP is enabled."
+     INDEX { ctIGMPVlanId }
+     ::= { ctIGMPVlanTable 1 }
+
+CtIGMPVlanEntry      ::= SEQUENCE {
+     ctIGMPVlanId                       Integer32,
+     ctIGMPVlanQueryInterval            Integer32,
+     ctIGMPVlanStatus                   RowStatus,
+     ctIGMPVlanVersion                  INTEGER,
+     ctIGMPVlanQuerier                  IpAddress,
+     ctIGMPVlanQueryMaxResponseTime     Integer32,
+     ctIGMPVlanRobustness               Integer32,
+     ctIGMPVlanLastMembQueryIntvl       Integer32,
+     ctIGMPVlanQuerierUpTime            Integer32,
+     ctIGMPVlanQuerierExpiryTime        Integer32,
+     ctIGMPVlanQuerierIP                IpAddress
+        }
+
+ctIGMPVlanId OBJECT-TYPE
+     SYNTAX     Integer32 (1..4094)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The VlanId value of the Vlan for which IGMP is enabled."
+     ::= { ctIGMPVlanEntry 1 }
+
+ctIGMPVlanQueryInterval OBJECT-TYPE
+     SYNTAX     Integer32
+     UNITS      "seconds"
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The frequency at which IGMP Host-Query packets are
+          transmitted on this Vlan."
+     REFERENCE
+          "Network Working Group RFC2236, November 1997. Section 8.2"
+     DEFVAL { 125 }
+     ::= { ctIGMPVlanEntry 2 }
+
+ctIGMPVlanStatus OBJECT-TYPE
+     SYNTAX     RowStatus
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The activation of a row enables IGMP on the Vlan. The
+          destruction of a row disables IGMP on the Vlan."
+     ::= { ctIGMPVlanEntry 3 }
+
+ctIGMPVlanVersion OBJECT-TYPE
+     SYNTAX     INTEGER {
+                        version1(1),
+                        version2(2) }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The version of IGMP which is running on this Vlan.
+          This object can be used to configure a switch capable of
+          either value. For IGMP to function correctly, all
+          and routers on a Vlan must be configured to run the
+          same version of IGMP on that Vlan."
+     REFERENCE
+          "Network Working Group RFC2236, November 1997. Section 4"
+     DEFVAL { version2 }
+     ::= { ctIGMPVlanEntry 4 }
+
+ctIGMPVlanQuerier OBJECT-TYPE
+     SYNTAX     IpAddress
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "The address of the IGMP Querier on the Vlan to which
+          this switch is attached."
+     REFERENCE
+         "Network Working Group RFC2236, November 1997. Section 3"
+     ::= { ctIGMPVlanEntry 5 }
+
+ctIGMPVlanQueryMaxResponseTime OBJECT-TYPE
+     SYNTAX     Integer32
+     UNITS      "seconds"
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The maximum query response time advertised in IGMPv2
+          queries on this Vlan."
+     REFERENCE
+         "Network Working Group RFC2236, November 1997. Section 8.3"
+     DEFVAL { 10 }
+     ::= { ctIGMPVlanEntry 6 }
+
+
+ctIGMPVlanRobustness OBJECT-TYPE
+     SYNTAX     Integer32
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The Robustness Variable allows tuning for the expected
+          packet loss on a Vlan. If a Vlan is expected to be
+          lossy, the Robustness Variable may be increased. IGMP is
+          robust to (Robustness Variable-1) packet losses."
+     REFERENCE
+         "Network Working Group RFC2236, November 1997. Section 8.1"
+     DEFVAL { 2 }
+     ::= { ctIGMPVlanEntry 7 }
+
+ctIGMPVlanLastMembQueryIntvl OBJECT-TYPE
+     SYNTAX     Integer32
+     UNITS      "tenths of seconds"
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The Last Member Query Interval is the Max Response Time
+          inserted into Group-Specific Queries sent in response to
+          Leave Group messages, and is also the amount of time between
+          Group-Specific Query messages. This value may be tuned to
+          modify the leave latency of the network. A reduced value
+          results in reduced time to detect the loss of the last
+          member of a group."
+     REFERENCE
+         "Network Working Group RFC2236, November 1997. Section 8.8"
+     DEFVAL { 10 }
+     ::= { ctIGMPVlanEntry 8 }
+
+
+ctIGMPVlanQuerierUpTime OBJECT-TYPE
+     SYNTAX     Integer32
+     UNITS      "seconds"
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+         "The number of seconds since ctIGMPVlanQuerier was last
+         changed."
+     ::= { ctIGMPVlanEntry 9 }
+
+ctIGMPVlanQuerierExpiryTime OBJECT-TYPE
+     SYNTAX     Integer32
+     UNITS      "seconds"
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "The number of seconds remaining before the Other Querier
+          Present Timer expires. If the local system is the querier,
+          the value of this object is zero."
+     REFERENCE
+         "Network Working Group RFC2236, November 1997. Section 8.5"
+     ::= { ctIGMPVlanEntry 10 }
+
+ctIGMPVlanQuerierIP OBJECT-TYPE
+     SYNTAX     IpAddress
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The source IP address used by a switch when acting as IGMP
+           querier for a Vlan. The value chosen must be in the valid
+           IP address space for any attached routed interface(s) on
+           the Vlan. A value of 0.0.0.0 indicates that the switch will
+           not act as querier for the Vlan."
+     REFERENCE
+         "Network Working Group RFC2236, November 1997. Section 7"
+--     DEFVAL { 0.0.0.0 }
+     ::= { ctIGMPVlanEntry 11 }
+
+
+--
+-- The IGMP Cache Table
+--
+
+ctIGMPCacheTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF CtIGMPCacheEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The (conceptual) table listing the IP multicast groups for
+          vlans with members on a particular interface."
+     ::= { ctIGMP 3 }
+
+ctIGMPCacheEntry OBJECT-TYPE
+     SYNTAX     CtIGMPCacheEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "An entry (conceptual row) in the ctIGMPCacheTable."
+     INDEX { ctIGMPCacheAddress, ctIGMPCacheVlanId, ctIGMPCacheIfIndex }
+     ::= { ctIGMPCacheTable 1 }
+
+CtIGMPCacheEntry      ::= SEQUENCE {
+     ctIGMPCacheAddress                 IpAddress,
+     ctIGMPCacheVlanId                  Integer32,
+     ctIGMPCacheIfIndex                 InterfaceIndex,
+     ctIGMPCacheLastReporter            IpAddress,
+     ctIGMPCacheUpTime                  TimeTicks,
+     ctIGMPCacheExpiryTime              TimeTicks,
+     ctIGMPCacheVersion1HostTimer       Integer32
+     }
+
+ctIGMPCacheAddress OBJECT-TYPE
+     SYNTAX     IpAddress
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The IP multicast group address for which this entry
+          contains information."
+     ::= { ctIGMPCacheEntry 1 }
+
+ctIGMPCacheVlanId OBJECT-TYPE
+     SYNTAX     Integer32 (1..4094)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The VlanId for which this entry contains information."
+     ::= { ctIGMPCacheEntry 2 }
+
+ctIGMPCacheIfIndex OBJECT-TYPE
+     SYNTAX     InterfaceIndex
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The interface for which this entry contains information for
+          an IP multicast group address."
+     ::= { ctIGMPCacheEntry 3 }
+
+ctIGMPCacheLastReporter OBJECT-TYPE
+     SYNTAX     IpAddress
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "The IP address of the source of the last membership report
+          received for this IP Multicast group address on this
+          interface. If no membership report has been received, this
+          object has the value 0.0.0.0."
+     ::= { ctIGMPCacheEntry 4 }
+
+ctIGMPCacheUpTime OBJECT-TYPE
+     SYNTAX     TimeTicks
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "The time since the system joined this group address, or
+          zero if the system is not currently a member."
+     ::= { ctIGMPCacheEntry 5 }
+
+ctIGMPCacheExpiryTime OBJECT-TYPE
+     SYNTAX     TimeTicks
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "The minimum amount of time remaining before this entry will
+          be aged out."
+     ::= { ctIGMPCacheEntry 6 }
+
+ctIGMPCacheVersion1HostTimer OBJECT-TYPE
+     SYNTAX     Integer32
+     UNITS      "seconds"
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+          "The time remaining until the local switch will assume that
+          there are no longer any IGMP version 1 members on the IP
+          subnet attached to this interface.  Upon hearing any IGMPv1
+          Membership Report, this value is reset to the group
+          membership timer.  While this time remaining is non-zero,
+          the local switch ignores any IGMPv2 Leave messages for this
+          group that it receives on this interface."
+     REFERENCE
+          "Network Working Group RFC2236, November 1997. Section 8.11"
+    ::= { ctIGMPCacheEntry 7 }
+
+--
+-- The IGMP Receiver Policy Table
+--
+
+ctIGMPPolicyTable           OBJECT-TYPE
+     SYNTAX     SEQUENCE OF CtIGMPPolicyEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The (conceptual) table listing the IGMP group policy
+          for vlans with members on a particular interface."
+     ::= { ctIGMP 4 }
+
+ctIGMPPolicyEntry           OBJECT-TYPE
+     SYNTAX     CtIGMPPolicyEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "An entry (conceptual row) in the ctigmpPolicyTable."
+     INDEX { ctIGMPPolicyAddress, ctIGMPPolicyVlanId, ctIGMPPolicyIfIndex }
+     ::= { ctIGMPPolicyTable 1 }
+
+CtIGMPPolicyEntry      ::= SEQUENCE {
+             
+        ctIGMPPolicyAddress     IpAddress,
+        ctIGMPPolicyVlanId      Integer32,
+        ctIGMPPolicyIfIndex     InterfaceIndex,
+        ctIGMPPolicyStatus      RowStatus,
+        ctIGMPPolicyInclusion   INTEGER
+     }
+
+ctIGMPPolicyAddress         OBJECT-TYPE
+     SYNTAX     IpAddress
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The IP multicast group address for which this entry
+          contains information. A value of 224.0.0.0 indicates
+          all multicast groups."
+     ::= { ctIGMPPolicyEntry 1 }
+
+ctIGMPPolicyVlanId          OBJECT-TYPE
+     SYNTAX     Integer32 (1..4094)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The VlanId for which this entry contains information."
+     ::= { ctIGMPPolicyEntry 2 }
+
+ctIGMPPolicyIfIndex         OBJECT-TYPE
+     SYNTAX     InterfaceIndex
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+          "The interface for which this entry contains information for
+          an IP multicast group address. A value of zero indicates all
+          ports."
+     ::= { ctIGMPPolicyEntry 3 }
+
+ctIGMPPolicyStatus          OBJECT-TYPE
+     SYNTAX     RowStatus
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The activation of a row enables IGMP policy for this entry.
+           The destruction of a row disables any IGMP policy for this
+           entry."
+     ::= { ctIGMPPolicyEntry 4 }
+
+ctIGMPPolicyInclusion       OBJECT-TYPE
+     SYNTAX     INTEGER {
+                        include(1),
+                        exclude(2) }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+          "The IGMP policy for this entry."
+     DEFVAL { exclude }
+     ::= { ctIGMPPolicyEntry 5 }
+
+--
+-- The ctIGMPStaticEntry Table
+--
+ctIGMPStaticTable OBJECT-TYPE
+    SYNTAX        SEQUENCE OF CtIGMPStaticEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+         "The (conceptual) table listing the static IGMP entries."
+    ::= { ctIGMP 5 }
+
+ctIGMPStaticEntry OBJECT-TYPE
+    SYNTAX        CtIGMPStaticEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+         "An entry (conceptual row) representing a static entry that
+         IGMP will act upon."
+    INDEX { ctIGMPStaticGroupAddress, ctIGMPStaticVlanId }
+::= { ctIGMPStaticTable 1 }
+
+CtIGMPStaticEntry ::= SEQUENCE {
+        ctIGMPStaticGroupAddress                IpAddress,
+        ctIGMPStaticVlanId                      Integer32,
+        ctIGMPStaticOutPortList                 PortList,
+        ctIGMPStaticRowStatus                   RowStatus
+     }
+
+ctIGMPStaticGroupAddress OBJECT-TYPE
+    SYNTAX        IpAddress
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+         " The IP multicast group address for IGMP to send
+         multicast data to."
+    ::= { ctIGMPStaticEntry 1 }
+
+ctIGMPStaticVlanId OBJECT-TYPE
+    SYNTAX        Integer32 (1..4094)
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+         "The VlanId for IGMP to send multicast data to."
+    ::= { ctIGMPStaticEntry 2 }
+
+ctIGMPStaticOutPortList OBJECT-TYPE
+    SYNTAX        PortList
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+         "The set of ports configured by management for this multicast
+          group and this VLAN to which multicast group-addressed
+          data frames are to be forwarded."
+    ::= { ctIGMPStaticEntry 3 }
+
+ctIGMPStaticRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    MAX-ACCESS    read-create
+    STATUS        current
+    DESCRIPTION
+         "The activation of a row creates a static entry.
+          The destruction of a row deletes a static entry."
+    ::= { ctIGMPStaticEntry 4 }
+
+END

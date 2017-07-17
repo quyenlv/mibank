@@ -1,0 +1,5188 @@
+--=============================================================================
+--
+-- Agere Systems - Wireless Communications and Networking Division 
+-- 260 14th Street NW Suite 400
+-- Atlanta, GA 30318
+-- USA
+-- Tel:   +1.404.898.1764
+-- Fax:   +1.404.888.1181
+-- Email: dborges@agere.com
+--
+--=============================================================================
+--
+-- ORiNOCO Management Information Base
+--
+--=============================================================================
+--
+-- FILENAME:	orinoco_yymmdd.mib (yy = year, mm = month, dd = day)
+--
+-- DESIGNER:	Daniel R. Borges & Neeli R. Prasad
+--
+-- TITLE:		ORiNOCO Management Information Base
+--
+-- USED IN:		ORiNOCO Product Line for SNMP Management.  This MIB is 
+--				intended for the following products:
+--											AS-2000
+--											AP-2000
+--											RG-2000
+--											TBD
+--
+--=============================================================================
+--
+-- Document History Information
+--
+--=============================================================================
+--
+-- Version  Date	  Authors			Decription
+--
+--=============================================================================
+-- v1.00    Aug 29    DRB, Lucent		Intitial Document Creation
+--          2000
+--=============================================================================
+-- v1.10    Sept 01   DRB, Lucent		Removal of unecessary objects.
+--          2000
+--=============================================================================
+-- v1.20    Sept 04   DRB, Lucent		Correction on Ranges for IAPP 
+--          2000                        Parameters.
+--=============================================================================
+-- v1.30    Sept 07   DRB, Lucent		Appropriate values set fro the IAPP
+--          2000                        Parameters.
+--=============================================================================
+-- v1.40    Sept 08   NRP, Lucent		Updated all objects.
+--          2000
+--=============================================================================
+-- v1.50    Sept 12   DRB, Lucent		Added objects to enable/disable the
+--          2000                        trap Groups and also added new traps.
+--                                      Added Session Idle Timeout object to
+--                                      PPP Group.
+--=============================================================================
+-- v1.60    Sept 26   DRB, Lucent		Change name of group from web to HTTP.
+--          2000                        Added RG-2000 to ORiNOCO product tree.
+--=============================================================================
+-- v1.70    Oct 30    DRB, Lucent		Added trap and trap variable to inform
+--          2000                        when a software task has suspended.
+--=============================================================================
+-- v1.80    Nov 15    DRB, Lucent		Changed underscore characters to dashes
+--          2000                        and removed conflict between two trap
+--                                      variables:
+--                                           oriConfigurationTrapsStatus
+--                                           oriTrapVarTaskSuspended
+--=============================================================================
+-- v1.90    Feb 05    DRB, Lucent		Sync up between ORiNOCO MIB and AS-2000
+--          2001                        MIB objects.  The following changes
+--                                      were made:
+--                                      1. Changed the following indeces from
+--                                         non-accessible to read-only:
+--                                         - oriSNMPAccessTableIndex
+--                                         - oriSNMPTrapHostTableIndex
+--                                         - oriProtocolFilterTableIndex
+--                                         - oriAccessControlTableIndex
+--                                         - oriStaticMACAddressFilterTableIndex
+--                                         - oriLinkIntTableIndex
+--                                         - oriPPPMACtoIPTableIndex
+--                                         - oriPPPIPPoolTableIndex
+--                                         - oriDHCPServerIPPoolTableIndex
+--                                         - oriProxyAgentAPTableIndex
+--                                         - oriStormThresholdIfIndex
+--                                      2. Added the following objects:
+--                                         - oriSystemInvMgmtBSPBootloaderVersion
+--                                         - AS Client IPX Table
+--                                      3. Change to range value of 
+--                                         oriTFTPFileType, included all file
+--                                         type available on the AS-2000 
+--                                         device.  This should be reviewed 
+--                                         and decided if going to be supported
+--                                         in other ORiNOCO devices.
+--                                      4. Added the following objects the 
+--                                         the Link Test Table:
+--                                             - oriLinkTestInterface
+--                                             - oriLinkTestRadioType
+--                                      5. Added Access Server IAPP station 
+--                                         table to IAPP group.
+--                                      6. Added Traps for RADIUS Auth and 
+--                                         Acct not configured.
+--                                      7. Changed range on 
+--                                         oriPPPSessionIdleTimeout object.
+--=============================================================================
+-- v2.00    Feb 13	  DRB, Lucent		Added the following objects to sync up
+--          2001                        AS-2000 MIB:
+--										    - oriIfProfileCode
+--											- oriSystemReboot
+--											- oriSystemContactEmail
+--											- oriIfMACAddress
+--										Made Inventory Management a sub-group
+--										of System Group.
+--										Removed oriPPPNumIPPoolTableEntry from
+--										PPP group - duplicate object.
+--=============================================================================
+-- v2.01    Feb 13    DRB, Lucent		Added default value to appropriate
+--          2001                        objects.
+--=============================================================================
+-- v2.02    Mar 05    DRB, Agere		Following Changes have been made to the
+--          2001                        ORiNOCO MIB:
+--                                      1. Created Interface group and placed
+--                                         wireless and ethernet interfaces as
+--                                         sub-group.
+--                                      2. Created two tables under the
+--                                         wireless interface group for
+--                                         properties and security objects.
+--                                      3. Create IP and IPX sub-group under
+--                                         Network group.
+--                                      4. Moved DHCP Client Type into the 
+--                                         Network IP sub-group.
+--                                      5. Created Authentication and
+--                                         Accounting sub-groups under the
+--                                         RADIUS group.
+--                                      6. Created Hardware, Software,
+--                                         Firmware, and BSP/BL sub-groups
+--                                         under System Inventory Mgmt Group.
+--                                      7. Removed 
+--                                         oriIfInvMgmtRadioFirmwareDate for it
+--                                         does not exist.
+--                                      8. Renamed oriWirelessIfDeliveryTraffi-
+--                                         cIndicationMap to 
+--                                         oriWirelessIfDTIMPeriod and made
+--                                         corrections to description.
+--                                      9. Created Miscellaneous Trap group.
+--=============================================================================
+-- v2.03    Mar 14    DRB, Agere		Following Changes have been made to the
+--          2001                        ORiNOCO MIB:
+--                                      1. Add delete as an integer value to
+--                                         the following tables:
+--                                             - oriProtocolFilterTable
+--                                             - oriAccessControlTable
+--                                             - oriStaticMACAddressFilterTable
+--                                      2. Added the following object required
+--                                         for AP-2000 software:
+--                                             -  oriSystemContactPhoneNumber
+--                                             -  oriProtocolFilterProtocol-
+--                                                Comment to Protocol Table.
+--                                             -  oriHTTPUserName
+--                                      3. Fixed range for Storm Threshold
+--                                         Broadcast and Multicast Objects.
+--                                      4. Removed the 
+--                                         oriStormThresholdIfIndex from
+--                                         Storm Threshold table.  The IfIndex
+--                                         from MIB-II interface table shall
+--                                         be used.
+--                                      5. Moved Gateway IP Address, default
+--                                         lease time, maximum lease time from
+--                                         DHCP group to the DHCP IP Pool 
+--                                         Table.
+--=============================================================================
+-- v2.04    Mar 26    DRB, Agere		Removed Proxy Agent Group.
+--          2001                        Specified values for 
+--                                      oriSNMPAccessTableInterface.
+--                                      Added SNMPSetupStatus in order to
+--                                      enable/disable SNMP based Management.
+--                                      Added oriIAPPSendAnnounceRequestOnStart
+--                                      to the IAPP Group.
+--                                      Added the following objects to the 
+--                                      Systems Group:
+--                                       - oriSystemFlashUpdate
+--                                       - oriSystemFlashBackupInterval
+--                                       - oriSystemEmergencyResetToDefault
+--                                      Added the following Groups:
+--                                       - Proxy ARP (orinocoProxyARP)
+--                                       - Spanning Tree (orinocoSpanningTree)
+--                                       - PTP (orinocoPTP)
+--=============================================================================
+-- v2.05    Mar 30    DRB, Agere		Added Import of ifIndex from RFC-1213
+--          2001                        and correct object name ot ifIndex.
+--=============================================================================
+-- v2.06    Apr 03    DRB, Agere		Removed the
+--          2001                        oriSNMPTestReadWritepassword from the
+--                                      MIB.
+--=============================================================================
+-- v2.07    Apr 10    DRB, Agere		Renamed Inventory Management Objects
+--          2001                        from ComputerID to ComponentID.
+--										Defined Inventory Management Parameters
+--										for BSP/BL, ORiNOCO MIB, and Wireless
+--										Interface Cards.
+--=============================================================================
+-- v2.08    Apr 18    DRB, Agere		Added Wireless Card primary firmware
+--          2001                        inventory management objects, compID,
+--										variant, major, and minor versions.
+--=============================================================================
+-- v2.09    Apr 26    DRB, Agere		Changed PTP group name to WDS.
+--          2001                        Modified the Spanning Tree Status
+--                                      object modifying enable/disable
+--                                      enumeration.
+--=============================================================================
+-- v2.10    May 09    DRB, Agere		Added the following Traps:
+--          2001                         oriTrapZeroSizeImage
+--                                       oriTrapInvalidImage
+--                                       oriTrapImageTooLarge
+--                                       oriTrapBootPFailed
+--                                       oriTrapDHCPFailed
+--                                       oriTrapDuplicateIPAddressEncountered
+--                                       oriTrapWLCVoltageDiscrepancy
+--                                       oriTrapWLCIncompatibleVendor
+--                                       oriTrapWLCFirmwareDonwloadFailure
+--                                       oriTrapWLCIncompatibleFirmware
+--                                      Added the following Trap Variables:
+--                                       oriTrapVarUnauthorizedClientMACAddress
+--                                       oriTrapVarWirelessCard
+--                                      Added object in order to enable/disable
+--                                      the image trap group.
+--=============================================================================
+-- v2.11    May 16    DRB, Agere		Added necessary objects to support
+--          2001                        AP-2000 features/modules:
+--                                       oriWirelessIfLoadBalancing
+--                                       oriWirelessIfMediumDensityDistribution
+--                                       oriStaticMACAddressFilterComment
+--                                       oriDHCPServerIPPoolTableDNSIPAddress
+--                                      Added 802.1x group with one object to
+--                                      enable/disable this feature.
+--                                      Added the following traps:
+--                                       oriTrapIncompatibleImage
+--=============================================================================
+-- v3.00    May 18    DRB, Agere		Converted MIB Definition from SMIv1 to
+--          2001                        SMIv2.  Modified 802.1x group to
+--                                      security group and added security
+--                                      configuration object and encryption key
+--                                      length table per wireless interface.
+--=============================================================================
+-- v3.01    May 21    DRB, Agere		Added RG-1100 in the product branch as
+--          2001                        orinocoproduct number 8.  Updated
+--                                      comments to the link integrity objects.
+--                                      Corrected RADIUS shared secret from
+--                                      read-only to read-write.  Added index
+--                                      to interface table.
+--=============================================================================
+-- v3.01a   June 11   DRB, Agere	    Modified the status of these 2  
+--          2001                        objects to read-write
+--									      1.oriWirelessIfLoadBalancing
+--                                        2.oriWirelessIfMediumDensity-
+--                                                                Distribution
+--										Modified trap variables to 
+--                                      non-accessible.
+--=============================================================================
+-- v3.01b   July 12   DRB, Agere	    Added objects for the following 
+--          2001                        features:
+--										  1. HereUare
+--										  2. SpectraLink VoIP
+--										  3. Advanced Bridging Filter
+--                                      Modified Proxy ARP group to IP/ARP
+--                                      group and added required objects for
+--                                      IP/ARP filtering.
+--=============================================================================
+-- v3.01c   July 16   DRB, Agere	    Correct values for HereUare ECB Client 
+--          2001                        Status in the table.
+--                                      Modified Trap variable MAX-ACCESS from
+--                                      non-accessible to read-only.
+--=============================================================================
+-- v3.01d   August 13   DRB, Agere	    Corrected name of MAC Access Control 
+--          2001                        table elements to be consistent with
+--                                      table naming conventions.  Fixed prefix
+--                                      of WDS group to "ori".
+--=============================================================================
+-- v3.01e   August 14   DRB, Agere	    Corrected naming inconsistencies with 
+--          2001                        table objects.  Removed objects from
+--                                      DHCP table and made them scalars.
+--                                      Removed Subnet Mask in DHCP table from
+--                                      MIB.  Created object in HTTP group for 
+--                                      help link.
+--=============================================================================
+-- v3.01f   October 09   DRB, Agere	    Added Trap for Wireless Card firmware 
+--          2001                        failure.
+--=============================================================================
+-- v3.01g   October 17   DRB, Agere	    Added TFTP object that indicates the 
+--          2001                        status of the TFTP operation.
+--=============================================================================
+--
+-- COMPILER:	MG-Soft MIB Compiler
+--
+--=============================================================================
+--					 Copyright (C) 2001 Agere Systems
+--						Agere Systems - PROPRIETARY
+--		Disclosure to third parties or reproduction in any from
+--		whatsoever, without prior written consent, is strictly forbiden.
+--=============================================================================
+
+--=============================================================================
+-- Includes
+--=============================================================================
+
+--#condInclude "rfc1155.smi"
+--#condInclude "rfc1212.smi"
+--#condInclude "rfc1213.inc"
+--#condInclude "rfc1215.smi"
+
+--=============================================================================
+-- ORiNOCO MIBs Begin
+--=============================================================================
+				
+ORiNOCO-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+    IpAddress, Counter32, Gauge32, enterprises, TimeTicks, OBJECT-TYPE,
+    MODULE-IDENTITY, Integer32, NOTIFICATION-TYPE, OBJECT-IDENTITY  
+        FROM SNMPv2-SMI
+	
+	DisplayString, PhysAddress, MacAddress, TruthValue, TimeStamp, 
+	TimeInterval, DateAndTime
+	    FROM SNMPv2-TC
+
+    ifIndex
+        FROM RFC1213-MIB;
+
+--=============================================================================
+-- Definition of ORiNOCO MIB OID Tree
+--=============================================================================
+
+    lucent          OBJECT IDENTIFIER ::= { enterprises 1751 }
+	mibs            OBJECT IDENTIFIER ::= { lucent 2 }
+	orinocomibs     OBJECT IDENTIFIER ::= { mibs 4 }
+
+--=============================================================================
+-- Definition of the ORiNOCO Product Tree
+--=============================================================================
+
+    products        OBJECT IDENTIFIER ::= { lucent 1 }
+	orinocoproducts OBJECT IDENTIFIER ::= { products 4 }
+    ap1000          OBJECT IDENTIFIER ::= { orinocoproducts 1 }
+    rg1000          OBJECT IDENTIFIER ::= { orinocoproducts 2 } 
+    as1000          OBJECT IDENTIFIER ::= { orinocoproducts 3 }
+    as2000          OBJECT IDENTIFIER ::= { orinocoproducts 4 }
+    ap500           OBJECT IDENTIFIER ::= { orinocoproducts 5 }
+    ap2000          OBJECT IDENTIFIER ::= { orinocoproducts 6 }
+    rg2000          OBJECT IDENTIFIER ::= { orinocoproducts 7 }
+    rg1100          OBJECT IDENTIFIER ::= { orinocoproducts 8 }
+
+--=============================================================================
+-- ORiNOCO MIB Module Identity
+--=============================================================================
+
+    oRiNOCO-MIB MODULE-IDENTITY
+        LAST-UPDATED "0107120000Z"
+        ORGANIZATION "Agere Systems"
+        CONTACT-INFO 
+           "Daniel R. Borges
+            Agere Systems
+            Wireless Communications and Networking Division - Atlanta
+            260 14th Street NW Suite 400
+            Atlanta, GA 30318
+            Tel:   +1.404.898.1764
+            Fax:   +1.404.888.1182
+            Email: dborges@agere.com"
+        DESCRIPTION
+            "MIB Definition used in the ORiNOCO Wireless Product Line:
+             iso(1).org(3).dod(6).internet(1).private(4).enterprise(1).
+             lucent(1751).mibs(2).orinocomibs(4)"    
+        ::= { 1 3 6 1 4 1 1751 2 4 }
+
+--=============================================================================
+-- Definition of the ORiNOCO MIB Groups
+--=============================================================================
+
+    -- System Group and System Inventory Management Parameters
+    orinocoSys                    OBJECT IDENTIFIER ::= { orinocomibs 1 }
+
+    -- Interface Group
+	orinocoIf		              OBJECT IDENTIFIER ::= { orinocomibs 2 }
+	
+	-- Network Group
+	orinocoNet		              OBJECT IDENTIFIER ::= { orinocomibs 3 }
+	
+	-- SNMP Group
+	orinocoSNMP                   OBJECT IDENTIFIER ::= { orinocomibs 4 }
+	
+	-- Filtering Group
+	orinocoFiltering			  OBJECT IDENTIFIER ::= { orinocomibs 5 }
+
+    -- Remote Authentication Dial In User Service Group
+	orinocoRADIUS				  OBJECT IDENTIFIER ::= { orinocomibs 6 }
+
+    -- Telnet Group
+	orinocoTelnet				  OBJECT IDENTIFIER ::= { orinocomibs 7 }
+
+    -- TFTP Group
+	orinocoTFTP				 	  OBJECT IDENTIFIER ::= { orinocomibs 8 }
+
+    -- Serial Group
+	orinocoSerial				  OBJECT IDENTIFIER ::= { orinocomibs 9 }
+
+    -- Inter-Access Point Protocol Group
+	orinocoIAPP					  OBJECT IDENTIFIER ::= { orinocomibs 10 }
+
+    -- Link Test Group
+	orinocoLinkTest				  OBJECT IDENTIFIER ::= { orinocomibs 11 }
+
+    -- Link Integrity Group
+	orinocoLinkInt	              OBJECT IDENTIFIER ::= { orinocomibs 12 }
+
+    -- Encryption Control Protocol Group
+	orinocoECP					  OBJECT IDENTIFIER ::= { orinocomibs 13 }
+
+    -- Point to Point Group
+	orinocoPPP					  OBJECT IDENTIFIER ::= { orinocomibs 14 }
+
+    -- Dynamic Host Configuration Protocol Group
+	orinocoDHCP					  OBJECT IDENTIFIER ::= { orinocomibs 15 }
+
+    -- HTTP (web) Group
+	orinocoHTTP					  OBJECT IDENTIFIER ::= { orinocomibs 16 }
+
+	-- WDS Group
+	orinocoWDS					  OBJECT IDENTIFIER ::= { orinocomibs 17 }
+
+    -- Traps Group
+	orinocoTrap					  OBJECT IDENTIFIER ::= { orinocomibs 18 }
+
+	-- IP/ARP Group
+	orinocoIPARP				  OBJECT IDENTIFIER ::= { orinocomibs 19 }
+	
+	-- Spanning Tree Group
+	orinocoSpanningTree			  OBJECT IDENTIFIER ::= { orinocomibs 20 }
+	
+	-- Security Group
+	orinocoSecurity				  OBJECT IDENTIFIER ::= { orinocomibs 21 }
+
+	-- HereUare Group
+	orinocoHereUare				  OBJECT IDENTIFIER ::= { orinocomibs 22 }
+	
+	-- SpectraLink VoIP Group
+	orinocoSpectraLink			  OBJECT IDENTIFIER ::= { orinocomibs 23 }
+		
+--=============================================================================
+-- Definition of the ORiNOCO System Sub-Group
+--=============================================================================
+
+    -- System Inventory Management Parameters Sub-Group
+	orinocoSysInvMgmt		OBJECT IDENTIFIER ::= { orinocoSys 1 }
+	
+--=============================================================================
+-- Definition of the ORiNOCO Interface Sub-Groups
+--=============================================================================
+
+    -- Wireless Interface Sub-Group
+	orinocoWirelessIf		OBJECT IDENTIFIER ::= { orinocoIf 1 }
+
+    -- Ethernet Interface Sub-Group
+	orinocoEthernetIf       OBJECT IDENTIFIER ::= { orinocoIf 2 }
+
+--=============================================================================
+-- Definition of the ORiNOCO Network Sub-Groups
+--=============================================================================
+
+    -- IP Network Sub-Group
+	orinocoNetIP			OBJECT IDENTIFIER ::= { orinocoNet 1 }
+
+    -- IPX Network Sub-Group
+	orinocoNetIPX       	OBJECT IDENTIFIER ::= { orinocoNet 2 }
+
+--=============================================================================
+-- Definition of the ORiNOCO RADIUS Sub-Groups
+--=============================================================================
+
+    -- Authentication RADIUS Sub-Group
+	orinocoRADIUSAuth		OBJECT IDENTIFIER ::= { orinocoRADIUS 1 }
+
+    -- Accounting RADIUS Sub-Group
+	orinocoRADIUSAcct       OBJECT IDENTIFIER ::= { orinocoRADIUS 2 }
+
+--=============================================================================
+-- Definition of the ORiNOCO Filtering Sub-Group
+--=============================================================================
+
+    -- Protocol Filtering Sub-Group
+	orinocoProtocolFilter   	OBJECT IDENTIFIER ::= { orinocoFiltering 1 }
+
+    -- Access Control Filter Sub-Group
+	orinocoAccessControl    	OBJECT IDENTIFIER ::= { orinocoFiltering 2 }
+									 
+    -- Static MAC Address Filter Sub-Group
+	orinocoStaticMACAddressFilter 
+								OBJECT IDENTIFIER ::= { orinocoFiltering 3 }
+
+    -- Storm Threshold Filter Sub-Group
+    orinocoStormThreshold   	OBJECT IDENTIFIER ::= { orinocoFiltering 4 }
+
+    -- Advanced Bridging Filter Sub-Group
+    orinocoAdvancedFiltering	OBJECT IDENTIFIER ::= { orinocoFiltering 5 }
+
+--=============================================================================
+-- The ORiNOCO System Group: orinocoSys
+--=============================================================================
+
+	oriSystemAdminState    OBJECT-TYPE
+    	SYNTAX INTEGER
+			{
+	    		normal(1),
+			    maintenance(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies the device's state.  When the device is 
+			in normal mode it will accept new connections and pass traffic 
+			through normally.  When the device is in maintenance mode, it will
+			not pass traffic and will not accept new connections - it can only 
+			be managed or monitored by an SNMP based manager.  The default
+			value for this object should be normal.
+			This object is supported by the following ORiNOCO Devices:
+			    - Access Server 2000"
+		DEFVAL { normal }
+	    ::= { orinocoSys 2 }
+
+	oriSystemAdminStateTimer    OBJECT-TYPE
+    	SYNTAX Integer32 (0..3600)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is a timer used when changing the device's state 
+			from Normal to Maintenance mode.  When the device's state is 
+			changed from Normal to Maintenance mode or vice-versa this timer 
+			shall count down for the state to be changed.  This timer is in
+			seconds and can be set from 0 - 3600 seconds (0 - 60 minutes).  
+			The default value for this timer should be 15 minutes.
+			This object is supported by the following ORiNOCO Devices:
+			    - Access Server 2000"
+		DEFVAL { 900 }
+	    ::= { orinocoSys 3 }
+
+	oriSystemReboot	OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+               "This variable must be set to reboot the ORiNOCO device. The
+               value is the number of seconds to wait to do a reboot.
+               This object is supported by the following ORiNOCO Devices:
+			    - Access Server 2000
+			    - Access Point 2000"
+        ::= { orinocoSys 4 }
+
+    oriSystemContactEmail OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The textual identification of the contact person 
+            for this managed node, together with information
+            on how to contact this person.
+            This object is supported by the following ORiNOCO Devices:
+			    - Access Server 2000
+			    - Access Point 2000"
+        ::= { orinocoSys 5 }
+
+    oriSystemContactPhoneNumber OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The phone number for the contact person.
+            This object is supported by the following ORiNOCO Devices:
+			    - Access Server 2000
+			    - Access Point 2000"
+        ::= { orinocoSys 6 }
+
+	oriSystemFlashUpdate OBJECT-TYPE
+ 		SYNTAX Integer32
+   	    MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+    	  	"When this variable is set, all the parameters that are
+			to be comitted to flash will be written to flash. This
+			will be done immediately after the value is set
+			irrespective of the value that is set.
+			This object is supported by the following ORiNOCO Devices:
+			    - Access Point 2000"
+   		::= { orinocoSys 7 } 
+
+	oriSystemFlashBackupInterval OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The backup time interval for flash memory to be udpated.
+            This object is supported by the following ORiNOCO Devices:
+			    - Access Point 2000" 
+	    ::= { orinocoSys 8 } 
+
+	oriSystemEmergencyResetToDefault OBJECT-TYPE
+	    SYNTAX Integer32 (0..1)
+   	    MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "When this variable is set to 1, all the parameters shall be
+            set to default values.
+            This object is supported by the following ORiNOCO Devices:
+			    - Access Point 2000"
+	    DEFVAL { 0 }
+        ::= { orinocoSys 9 }
+        
+--=============================================================================
+-- The ORiNOCO System Inventory Management Sub Group Table
+--=============================================================================
+
+    oriSystemInvMgmtComponentTable	OBJECT-TYPE
+    	SYNTAX SEQUENCE OF OriSystemInvMgmtComponentTableEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+    		"This table contains the inventory management parameters for the
+    		various system components."
+    	::= { orinocoSysInvMgmt 1 }
+    	
+    oriSystemInvMgmtComponentTableEntry		OBJECT-TYPE
+    	SYNTAX OriSystemInvMgmtComponentTableEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+    		"This object represents an entry within the system component 
+    		table."
+    	INDEX { oriSystemInvMgmtTableComponentIndex }
+    	::= { oriSystemInvMgmtComponentTable 1 }
+    
+    OriSystemInvMgmtComponentTableEntry ::=
+    	SEQUENCE
+    		{
+    		    oriSystemInvMgmtTableComponentIndex			Integer32,
+    			oriSystemInvMgmtTableComponentSerialNumber	DisplayString,
+    			oriSystemInvMgmtTableComponentName			DisplayString,
+    			oriSystemInvMgmtTableComponentId			Integer32,
+    			oriSystemInvMgmtTableComponentVariant		Integer32,		
+                oriSystemInvMgmtTableComponentMajorVersion  Integer32,
+                oriSystemInvMgmtTableComponentMinorVersion  Integer32
+            }                                
+                	        
+	oriSystemInvMgmtTableComponentIndex    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the table index."
+    	::= { oriSystemInvMgmtComponentTableEntry 1 }
+    	
+	oriSystemInvMgmtTableComponentSerialNumber    OBJECT-TYPE
+    	SYNTAX DisplayString
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component serial
+			number."
+    	::= { oriSystemInvMgmtComponentTableEntry 2 }
+    	
+	oriSystemInvMgmtTableComponentName    OBJECT-TYPE
+    	SYNTAX DisplayString
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component name."
+    	::= { oriSystemInvMgmtComponentTableEntry 3 }
+
+	oriSystemInvMgmtTableComponentId    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component identification."
+    	::= { oriSystemInvMgmtComponentTableEntry 4 }
+
+	oriSystemInvMgmtTableComponentVariant    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component variant number."
+    	::= { oriSystemInvMgmtComponentTableEntry 5 }
+
+	oriSystemInvMgmtTableComponentMajorVersion    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component major version 
+			number."
+    	::= { oriSystemInvMgmtComponentTableEntry 6 }
+
+	oriSystemInvMgmtTableComponentMinorVersion    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component minor version 
+			number."
+    	::= { oriSystemInvMgmtComponentTableEntry 7 }
+    	
+    oriSystemInvMgmtTableComponentIfTable    OBJECT-TYPE
+    	SYNTAX SEQUENCE OF OriSystemInvMgmtTableComponentIfTableEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+    		"This table contains the inventory management parameters for the
+    		various system components."
+        ::= { orinocoSysInvMgmt 2 }
+    	    	
+    oriSystemInvMgmtTableComponentIfTableEntry		OBJECT-TYPE
+    	SYNTAX OriSystemInvMgmtTableComponentIfTableEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+    		"This object represents an entry in the component interface 
+    		table."
+    	INDEX { oriSystemInvMgmtTableComponentIndex,
+    	        oriSystemInvMgmtInterfaceTableIndex }
+    	::= { oriSystemInvMgmtTableComponentIfTable 1 }
+    	
+    OriSystemInvMgmtTableComponentIfTableEntry ::=
+        SEQUENCE
+            {
+                oriSystemInvMgmtInterfaceTableIndex			Integer32,
+                oriSystemInvMgmtInterfaceId					Integer32,
+                oriSystemInvMgmtInterfaceRole				INTEGER,
+                oriSystemInvMgmtInterfaceVariant			Integer32,
+                oriSystemInvMgmtInterfaceBottomNumber		Integer32,
+                oriSystemInvMgmtInterfaceTopNumber			Integer32
+			}
+
+	oriSystemInvMgmtInterfaceTableIndex    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the interface table index."
+    	::= { oriSystemInvMgmtTableComponentIfTableEntry 1 }
+    					    
+	oriSystemInvMgmtInterfaceId    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component interface 
+			identification."
+    	::= { oriSystemInvMgmtTableComponentIfTableEntry 2 }
+
+	oriSystemInvMgmtInterfaceRole    OBJECT-TYPE
+    	SYNTAX INTEGER
+    	    {
+    	        actor(1),
+    	        supplier(2)
+    	    }
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component interface 
+			role."
+    	::= { oriSystemInvMgmtTableComponentIfTableEntry 3 }
+    	
+	oriSystemInvMgmtInterfaceVariant    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component's interface
+			variant number."
+    	::= { oriSystemInvMgmtTableComponentIfTableEntry 4 }
+
+	oriSystemInvMgmtInterfaceBottomNumber    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component's interface
+			bottom number."
+    	::= { oriSystemInvMgmtTableComponentIfTableEntry 5 }
+
+	oriSystemInvMgmtInterfaceTopNumber    OBJECT-TYPE
+    	SYNTAX Integer32
+    	MAX-ACCESS read-only
+    	STATUS current
+    	DESCRIPTION
+			"This parameter identifies the system component's interface
+			top number."
+    	::= { oriSystemInvMgmtTableComponentIfTableEntry 6 }
+    	    	
+--=============================================================================
+-- The ORiNOCO Interface Group: orinocoIf
+--=============================================================================
+
+--=============================================================================
+-- The ORiNOCO Wireless Interface Sub-Group: orinocoWirelessIf
+--=============================================================================
+
+	oriWirelessIfPropertiesTable    OBJECT-TYPE
+    	SYNTAX SEQUENCE OF OriWirelessIfPropertiesEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+	    DESCRIPTION
+			"This table contains the information for the wireless LAN 
+			interfaces present in ORiNOCO devices.  This table contains the 
+			radio properties and capabilities of the ORiNOCO Wireless 
+			Interface.
+			This table is supported by the following ORiNOCO Devices:
+			    - Access Server 2000
+			    - Access Point 2000"
+	    ::= { orinocoWirelessIf 1 }
+
+	oriWirelessIfPropertiesEntry    OBJECT-TYPE
+    	SYNTAX OriWirelessIfPropertiesEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the entry in the interface table.  This 
+			is described below."
+	    INDEX { oriWirelessIfPropertiesIndex }
+    	::= { oriWirelessIfPropertiesTable 1 }
+
+	OriWirelessIfPropertiesEntry ::=
+	    SEQUENCE
+	    	{
+				oriWirelessIfPropertiesIndex				Integer32,
+				oriWirelessIfNetworkName					DisplayString,
+				oriWirelessIfMediumReservation				Integer32,
+				oriWirelessIfInterferenceRobustness			INTEGER,
+				oriWirelessIfDTIMPeriod						Integer32,
+				oriWirelessIfChannel						Integer32,
+				oriWirelessIfDistancebetweenAPs				INTEGER,
+				oriWirelessIfMulticastRate					INTEGER,
+				oriWirelessIfClosedSystem					INTEGER,
+				oriWirelessIfAllowedSupportedDataRates		OCTET STRING,
+				oriWirelessIfRegulatoryDomainList			OCTET STRING,
+				oriWirelessIfAllowedChannels				OCTET STRING,
+				oriWirelessIfMACAddress						PhysAddress,
+				oriWirelessIfLoadBalancing					INTEGER,
+				oriWirelessIfMediumDensityDistribution		INTEGER
+			}
+
+	oriWirelessIfPropertiesIndex    OBJECT-TYPE
+    	SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents a unique value for each interface.  The 
+			value for each interface must remain constant at least from one 
+			re-initialization of the entity's network management system to the
+			next re-initialization."
+	    ::= { oriWirelessIfPropertiesEntry 1 }
+
+	oriWirelessIfNetworkName    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the network name SSID) for this wireless 
+			interface."
+		DEFVAL { "My Wireless Network" }
+	    ::= { oriWirelessIfPropertiesEntry 2 }
+
+	oriWirelessIfMediumReservation    OBJECT-TYPE
+	    SYNTAX Integer32 (0..2347)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION                                                     
+	    
+			"This parameter identifies the medium reservation value.  The range
+			for this parameter is 0 - 2347.  The medium reservation specifies 
+			the number of octects in a frame above which a RTS/CTS handshake is
+			performed.  The default value is 2347, which disables RTS/CTS 
+			mode."
+		DEFVAL { 2347 }
+	    ::= { oriWirelessIfPropertiesEntry 3 }
+
+	oriWirelessIfInterferenceRobustness    OBJECT-TYPE
+    	SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter enables or disables the interference robustness 
+			feature.  The default value for this parameter is disable."
+		DEFVAL { disable }
+	    ::= { oriWirelessIfPropertiesEntry 4 }
+
+	oriWirelessIfDTIMPeriod    OBJECT-TYPE
+    	SYNTAX Integer32 (1..65535)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the delivery traffic indication map 
+			period.  This is the interval between the transmission of multicast
+			frames on the wireless inteface.  It is expressed in the Beacon
+			messages.  The recommended default value for this parameter is 1."
+		DEFVAL { 1 }
+        ::= { oriWirelessIfPropertiesEntry 5 }
+
+	oriWirelessIfChannel    OBJECT-TYPE
+	    SYNTAX Integer32 (1..14)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the radio frequency channel for this 
+			wireless interface.  The default value for this parameter is 3."
+		DEFVAL { 3 }
+	    ::= { oriWirelessIfPropertiesEntry 6 }
+
+	oriWirelessIfDistancebetweenAPs    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    large(1),
+			    medium(2),
+			    small(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies the distance between access points.
+			The default value for this parameter should be large."
+		DEFVAL { large }	    
+	    ::= { oriWirelessIfPropertiesEntry 7 }
+
+	oriWirelessIfMulticastRate	OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    oneMegabitPerSecond(1),
+			    twoMegabitsPerSecond(2),
+			    fivedotfiveMegabitsPerSecond(3),
+			    elevenMegabitsPerSecond(4)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies multicast rate of the wireless card. 
+			This is dependent on the distance between APs. This parameter is 
+			directly correlated with the multicast rate.  When this parameter 
+			is set to small, the multicast rates can be 11 Mbit/s, 5.5 Mbit/s,
+			2 Mbit/s, and 1 Mbit/s.  When this parameter is set to medium, the
+			allowed rates are 5.5 Mbit/s, 2 Mbit/s, 1 Mbit/s.  When this 
+			parameter is set to large, then the multicast rates can be set to 
+			2 Mbits/s or 1 Mbits/s.  The default value for this parameter
+			should be two Mbits/sec."
+		DEFVAL { twoMegabitsPerSecond }
+		::= { oriWirelessIfPropertiesEntry 8 }
+
+	oriWirelessIfClosedSystem	OBJECT-TYPE
+    	SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used as a flag which identifies whether the 
+			device will accept association requests to this interface, for 
+			client stations configured with a network name of 'ANY'.  When 
+			this parameter is disabled, it will accept association requests 
+			from client stations with a network name of 'ANY'.  If this 
+			parameter is set to enable then the interface will only accept 
+			association requests that match the interface's network name.  The
+			default value for this parameter is disable."
+		DEFVAL { disable }
+	    ::= { oriWirelessIfPropertiesEntry 9 }
+
+	oriWirelessIfAllowedSupportedDataRates	OBJECT-TYPE
+	    SYNTAX OCTET STRING
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter reflects the transmit rates supported by the 
+			physical interface or radio card."
+	    ::= { oriWirelessIfPropertiesEntry 10 }
+
+	oriWirelessIfRegulatoryDomainList	OBJECT-TYPE
+	    SYNTAX OCTET STRING
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter specifies to which regulatory domain the interface 
+			belongs to."
+	    ::= { oriWirelessIfPropertiesEntry 11 }
+
+	oriWirelessIfAllowedChannels	OBJECT-TYPE 
+	    SYNTAX OCTET STRING
+	    MAX-ACCESS read-only
+	    STATUS current	
+	    DESCRIPTION
+			"This parameter reflects the radio frequency channels that the 
+			interface supports."    
+	    ::= { oriWirelessIfPropertiesEntry 12 }
+
+	oriWirelessIfMACAddress	OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+		    "The MAC address of the ORiNOCO PC card inserted in the ORiNOCO
+		    device."
+	    ::= { oriWirelessIfPropertiesEntry 13 }
+
+	oriWirelessIfLoadBalancing	OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+		    "This object is used to configure the load balancing feature in
+		    the ORiNOCO device."
+		DEFVAL { enable }
+	    ::= { oriWirelessIfPropertiesEntry 14 }
+
+    oriWirelessIfMediumDensityDistribution    OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                enable(1),
+                disable(2)
+            }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+		    "This object is used to configure the medium density distribution
+		    feature in the ORiNOCO device."
+		DEFVAL { enable }
+	    ::= { oriWirelessIfPropertiesEntry 15 }
+	    
+	oriWirelessIfSecurityTable    OBJECT-TYPE
+    	SYNTAX SEQUENCE OF OriWirelessIfSecurityEntry
+    	MAX-ACCESS not-accessible
+    	STATUS current
+	    DESCRIPTION
+			"This table contains the information for the wireless LAN 
+			interfaces present in ORiNOCO devices.  This table contains the 
+			radio properties and capabilities of the ORiNOCO Wireless 
+			Interface.
+			This table is supported by the following ORiNOCO Devices:
+			    - Access Point 2000"
+	    ::= { orinocoWirelessIf 2 }
+
+	oriWirelessIfSecurityEntry    OBJECT-TYPE
+    	SYNTAX OriWirelessIfSecurityEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the entry in the interface table.  This 
+			is described below."
+	    INDEX { oriWirelessIfSecurityIndex }
+    	::= { oriWirelessIfSecurityTable 1 }
+
+	OriWirelessIfSecurityEntry ::=
+	    SEQUENCE
+		    {
+				oriWirelessIfSecurityIndex				Integer32,
+				oriWirelessIfEncryptionOptions			INTEGER,
+				oriWirelessIfEncryptionStatus			INTEGER,
+				oriWirelessIfEncryptionKey1				DisplayString,
+				oriWirelessIfEncryptionKey2				DisplayString,
+				oriWirelessIfEncryptionKey3				DisplayString,
+				oriWirelessIfEncryptionKey4				DisplayString,
+				oriWirelessIfEncryptionTxKey	   		INTEGER,	
+				oriWirelessIfDenyNonEncryptedData		INTEGER,
+				oriWirelessIfProfileCode				Integer32
+		    }
+	
+	oriWirelessIfSecurityIndex    OBJECT-TYPE
+    	SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents a unique value for each interface.  The 
+			value for each interface must remain constant at least from one 
+			re-initialization of the entity's network management system to the
+			next re-initialization."
+	    ::= { oriWirelessIfSecurityEntry 1 }
+
+	oriWirelessIfEncryptionOptions    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    	{
+	       	    none(1),
+	       	    wep(2),
+	       	    rcFour128(3)
+	      	}
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter reflects the physical interface's capabilities, 
+			such as WEP support."
+	    ::= { oriWirelessIfSecurityEntry 2 }
+
+	oriWirelessIfEncryptionStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    	{
+	       	    enable(1),
+	       	    disable(2)
+	      	}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION	
+			"This parameter indicates if WEP encryption is on or off for this 
+			interface."
+		DEFVAL { disable }
+	    ::= { oriWirelessIfSecurityEntry 3 }
+
+	oriWirelessIfEncryptionKey1    OBJECT-TYPE
+		SYNTAX DisplayString
+	   	MAX-ACCESS read-write
+ 	   	STATUS current
+	    DESCRIPTION
+			"This parameter represents Encryption Key 1."
+	    ::= { oriWirelessIfSecurityEntry 4 }
+
+	oriWirelessIfEncryptionKey2    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents Encryption Key 2."
+	    ::= { oriWirelessIfSecurityEntry 5 }
+
+	oriWirelessIfEncryptionKey3    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current	
+	    DESCRIPTION
+			"This parameter represents Encryption Key 3."
+	    ::= { oriWirelessIfSecurityEntry 6 }
+
+	oriWirelessIfEncryptionKey4    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current	
+	    DESCRIPTION
+			"This parameter represents Encryption Key 4."
+	    ::= { oriWirelessIfSecurityEntry 7 }
+
+	oriWirelessIfEncryptionTxKey    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    key1(1),
+			    key2(2),
+			    key3(3),
+			    key4(4)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates which Encryption key (0, 1, 2, or 3) 
+			will be used to encrypt the data sent over the air.  The default
+			value for this parameter should be key 1."
+		DEFVAL { key1 }
+	    ::= { oriWirelessIfSecurityEntry 8 }
+
+	oriWirelessIfDenyNonEncryptedData    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    	{
+	       	    enable(1),
+	       	    disable(2)
+	      	}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates if this interface will accept or deny 
+			non-encrypted data.  The default value for this parameters is
+			disabled."
+		DEFVAL { disable }
+	    ::= { oriWirelessIfSecurityEntry 9 }
+
+	oriWirelessIfProfileCode    OBJECT-TYPE
+	    SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+	    DESCRIPTION
+	        "The varible comprises of a vendor indication (Lucent or
+		    an OEM customer) and a capability indication (eg. bronze
+		    or gold)."
+        ::= { oriWirelessIfSecurityEntry 10 } 
+
+--=============================================================================
+-- The ORiNOCO Ethernet Interface Sub-Group: orinocoEthernetIf
+--=============================================================================
+
+	oriEthernetIfSettings    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    tenMegabitPerSecHalfDuplex(1),
+			    tenMegabitPerSecFullDuplex(2),
+			    tenMegabitPerSecAutoDuplex(3),
+			    onehundredMegabitPerSecHalfDuplex(4),
+			    onehundredMegabitPerSecFullDuplex(5),
+			    autoSpeedHalfDuplex(6),
+			    autoSpeedAutoDuplex(7)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable is used to configure the Ethernet settings for 
+			ORiNOCO devices.  Some ORiNOCO devices shall provide all the 
+			options listed above while others will not - this depends on the
+			Ethernet interface of the device."
+		DEFVAL { tenMegabitPerSecHalfDuplex }
+    	::= { orinocoEthernetIf 1 }
+
+--=============================================================================
+-- The ORiNOCO Network Group: orinocoNet
+--=============================================================================
+
+--=============================================================================
+-- The ORiNOCO Network IP Sub-Group: orinocoNetIP
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Server 2000
+--     - Access Point 2000
+--=============================================================================
+
+	oriNetworkIPAddress	OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP Address of the device.  The 
+			default IP address that the device is configured is 10.0.0.1."
+		DEFVAL { '0a000001'H }
+	    ::= { orinocoNetIP 1 }
+
+	oriNetworkIPSubnetMask	OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the subnet mask of the device.  The 
+			default value for this parameter should be 255.0.0.0."
+		DEFVAL { 'FF000000'H }
+	    ::= { orinocoNetIP 2 }
+
+	oriNetworkIPDefaultRouterIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP address of the gateway or router
+			on the network.  The default IP address is 10.0.0.1"
+		DEFVAL { '0a000001'H }
+	    ::= { orinocoNetIP 3 }
+
+	oriNetworkIPDefaultTTL    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The default value inserted into the Time-To-Live (TTL) field of 
+			the IP header of datagrams originated at this entity, whenever a 
+			TTL value is not supplied by the transport layer protocol.  The
+			default value for this parameter should be 64."
+		DEFVAL { 64 }
+    	::= { orinocoNetIP 4 }
+
+	oriNetworkIPAddressType    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{         
+			    static(1),
+			    dynamic(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies if the device is configured to be 
+			assigned a static or dynamic IP address."
+		DEFVAL { dynamic }
+	    ::= { orinocoNetIP 5 }
+
+--=============================================================================
+-- The ORiNOCO Network IPX Sub-Group: orinocoNetIPX
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Server 2000
+--=============================================================================
+
+	oriNetworkIPXProtocolSupport    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    ip(1),
+			    ipx(2),
+			    both(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents what protocol will be active or supported
+			by the device. For the AS-2000 device, it can be on IP mode, IPX 
+			mode, or both IP and IPX mode.  The default value for this
+			object should be IP."
+		DEFVAL { ip }
+	    ::= { orinocoNetIPX 1 }
+
+	oriNetworkIPXDefaultRouterNodeNumber    OBJECT-TYPE
+    	SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"If the source IPX network number is not equal to the destination 
+			IPX Network number in the packet from wireless side to the wired 
+			side, then replace the destination Ethernet MAC address with the 
+			value of this object (Default IPX router node number)."
+	    ::= { orinocoNetIPX 2 }
+
+	oriNetworkIPXEthernetEncapsulationFormat    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    ethII802dot3encapsulation(1),
+			    eth802dot3withSNAPHdr(2),
+			    eth802dot3withoutSNAPHdr(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the encapsulation type to be used for the 
+			IPX packets sent on the wired side."
+		DEFVAL { ethII802dot3encapsulation }
+	    ::= { orinocoNetIPX 3 }
+
+	oriNetworkIPXWiredtoWirelessBridgedPacketCount    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the number of packets bridged from the 
+			wired to wireless side."
+	    ::= { orinocoNetIPX 4 }
+
+	oriNetworkIPXWirelesstoWiredBridgedPacketCount    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the number of packets bridged from the 
+			wireless to wired side."
+	    ::= { orinocoNetIPX 5 }
+
+    oriNetworkIPXClientTable    OBJECT-TYPE
+        SYNTAX SEQUENCE OF OriNetworkIPXClientEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+           "The (conceptual) table listing the AS Clients (IPX) connected to 
+           the Access Server 2000 device."
+        ::= { orinocoNetIPX 6 }
+
+    oriNetworkIPXClientEntry    OBJECT-TYPE
+        SYNTAX OriNetworkIPXClientEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+           "An entry (conceptual row) representing a ASClient (IPX) connnected 
+           to the Access Server 2000 device."
+        INDEX { oriNetworkIPXPPPSessionId }
+        ::= { oriNetworkIPXClientTable 1 }
+
+    OriNetworkIPXClientEntry ::=
+        SEQUENCE 
+            {
+                oriNetworkIPXPPPSessionId			Integer32,
+                oriNetworkIPXClientNetworkNumber	OCTET STRING,
+                oriNetworkIPXClientMAC         		PhysAddress,
+                oriNetworkIPXClientStatus			INTEGER
+            }
+
+    oriNetworkIPXPPPSessionId   OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The PPP Session ID assigned by the Access Server 2000 to this 
+            AS Client."
+        ::= { oriNetworkIPXClientEntry 1 }
+
+    oriNetworkIPXClientNetworkNumber    OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IPX Node Number assigned by the Novell Server to 
+            this IPX client."
+        ::= { oriNetworkIPXClientEntry 2 }
+
+    oriNetworkIPXClientMAC OBJECT-TYPE
+        SYNTAX PhysAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Wireless MAC of this IPX Client."
+        ::= { oriNetworkIPXClientEntry 3 }
+
+    oriNetworkIPXClientStatus    OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                enable(1),
+                disable(2),
+                delete(3)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+           "Flag to indicate whether the IPX Client is Active or 
+            Inactive.  IPX Client status can also be 
+            disabled/enabled/deleted."
+        ::= { oriNetworkIPXClientEntry 4 }
+
+--=============================================================================
+-- The ORiNOCO SNMP Group: orinocoSNMP
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Server 2000
+--     - Access Point 2000
+--=============================================================================
+
+	oriSNMPReadPassword    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the read-only community name used in the
+			SNMP protocol.  This parameter is used for reading objects from the
+			SNMP agent.  The default value for this object should be public."
+		DEFVAL { "public" }
+	    ::= { orinocoSNMP 1 }
+
+	oriSNMPReadWritePassword    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the read-write community name used in 
+			the SNMP protocol.  This parameter is used for reading and writing
+			objects to and from the SNMP Agent.  The default value for this
+			object should be public."
+		DEFVAL { "public" }
+	    ::= { orinocoSNMP 2 }
+
+	oriSNMPAuthorizedManagerCount    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter reflects the number of entries in the SNMP IP 
+			Access Table."
+	    ::= { orinocoSNMP 3 }
+
+	oriSNMPAccessTable    OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriSNMPAccessTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the information regarding the management 
+			stations that are authorized to manage the device.  The limit of
+			this table is 20 entries."
+	    ::= { orinocoSNMP 4 }
+
+	oriSNMPAccessTableEntry    OBJECT-TYPE
+    	SYNTAX OriSNMPAccessTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies the entry in the SNMP IP Access Table.  
+			Further description on the members of this table follows."
+	    INDEX { oriSNMPAccessTableIndex }
+    	::= { oriSNMPAccessTable 1 }
+
+	OriSNMPAccessTableEntry ::=
+		SEQUENCE
+			{
+				oriSNMPAccessTableIndex			Integer32,
+				oriSNMPAccessTableIPAddress		IpAddress,
+				oriSNMPAccessTableIPMask		IpAddress,
+				oriSNMPAccessTableInterface		INTEGER,
+				oriSNMPAccessTableComment		DisplayString,
+				oriSNMPAccessTableEntryStatus	INTEGER
+		    }
+
+	oriSNMPAccessTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indexes the entries in the SNMP IP Access Table."
+	    ::= { oriSNMPAccessTableEntry 1 }
+
+	oriSNMPAccessTableIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP address of the management station
+			authorized to manage the device."
+	    ::= { oriSNMPAccessTableEntry 2 }
+
+	oriSNMPAccessTableIPMask    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP subnet mask.  This parameter can
+			be used to grant access to a complete subnet."
+	    ::= { oriSNMPAccessTableEntry 3 }
+
+	oriSNMPAccessTableInterface    OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            allInterfaces(1),
+	            ethernetIf(2),
+	            pcCardAIf(3),
+	            pcCardBIf(4)
+	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter specifies on what interface the management station
+			will be able to perform management functions on the device."
+	    ::= { oriSNMPAccessTableEntry 4 }
+
+	oriSNMPAccessTableComment    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used for an optional comment associated to the 
+			SNMP IP Access Table entry."
+	    ::= { oriSNMPAccessTableEntry 5 }
+
+	oriSNMPAccessTableEntryStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+			    delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable, disable, or delete an entry in 
+			the SNMP IP Access Table."
+	    ::= { oriSNMPAccessTableEntry 6 }
+
+	oriSNMPTrapHostTable    OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriSNMPTrapHostTableEntry
+	    MAX-ACCESS not-accessible
+    	STATUS current
+	    DESCRIPTION
+			"This table contains the information regarding the trap host that 
+			will receive SNMP traps sent by the device.  This table is limited
+			10 entries."
+	    ::= { orinocoSNMP 5 }
+
+	oriSNMPTrapHostTableEntry    OBJECT-TYPE
+	    SYNTAX OriSNMPTrapHostTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies the entry in the SNMP Trap Host Table.  
+			Further description on the members of this table follows."
+	    INDEX { oriSNMPTrapHostTableIndex }
+	    ::= { oriSNMPTrapHostTable 1 }
+
+	OriSNMPTrapHostTableEntry ::=
+		SEQUENCE
+			{
+				oriSNMPTrapHostTableIndex			Integer32,
+				oriSNMPTrapHostTableIPAddress		IpAddress,
+				oriSNMPTrapHostTablePassword		DisplayString,
+				oriSNMPTrapHostTableComment			DisplayString,
+				oriSNMPTrapHostTableEntryStatus		INTEGER
+		    }                      
+
+	oriSNMPTrapHostTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only 
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indexes the entries in the SNMP Trap Host Table."
+	    ::= { oriSNMPTrapHostTableEntry 1 }
+
+	oriSNMPTrapHostTableIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP address of the management station
+			that shall receive SNMP Traps from the device."
+	    ::= { oriSNMPTrapHostTableEntry 2 }
+
+	oriSNMPTrapHostTablePassword    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the password that is sent with the SNMP
+			trap messages to allow the host to accept or reject the messages.  
+			The trap host will only accept SNMP traps if this password matches 
+			the host's password."
+	    ::= { oriSNMPTrapHostTableEntry 3 }
+
+	oriSNMPTrapHostTableComment    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used for an optional comment associated to the 
+			SNMP Trap Host Table entry."
+	    ::= { oriSNMPTrapHostTableEntry 4 }
+
+	oriSNMPTrapHostTableEntryStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+			    delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable, disable, or delete an entry in 
+			the SNMP Trap Host Table."
+	    ::= { oriSNMPTrapHostTableEntry 5 }
+
+	oriSNMPSetupStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable or disable SNMP based management."
+		DEFVAL { enable }
+        ::= { orinocoSNMP 7 }
+        
+--=============================================================================
+-- The ORiNOCO Protocol Filtering Sub-Group: orinocoProtocolFilter
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Point 2000
+--=============================================================================
+
+	oriProtocolFilterFlag  OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			     allow(1),
+	    		 deny(2) 
+		    } 
+    	MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION 
+			"The packets with protocols listed in the protocol filter will be 
+			forwarded or dropped based on this flag."
+		DEFVAL { deny } 
+	    ::= { orinocoProtocolFilter 1 }
+
+	oriProtocolFilterTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriProtocolFilterTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the two byte hexadecimal values of the 
+			protocols. The packets whose protocol field matches with any of 
+			the entries in this table will be forwarded or dropped based on 
+			value of oriProtocolFilterFlag.  This table is limited to 256
+			ethernet protocols."
+	    ::= { orinocoProtocolFilter 2 }
+
+	oriProtocolFilterTableEntry  OBJECT-TYPE
+	    SYNTAX OriProtocolFilterTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the entry in the protocol filter table. 
+			This is described below."
+	    INDEX { oriProtocolFilterTableIndex }
+	    ::= { oriProtocolFilterTable 1 }
+
+	OriProtocolFilterTableEntry  ::=
+		SEQUENCE
+		    {
+				oriProtocolFilterTableIndex			Integer32,
+				oriProtocolFilterProtocol			OCTET STRING,
+				oriProtocolFilterProtocolComment 	DisplayString,
+				oriProtocolFilterStatus				INTEGER
+		    }
+
+	oriProtocolFilterTableIndex OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The index for protocol filter table."
+	    ::= { oriProtocolFilterTableEntry 1 }
+
+	oriProtocolFilterProtocol  OBJECT-TYPE
+	    SYNTAX OCTET STRING (SIZE(2))
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The value in the protocol field of the Ethernet packet."
+	    ::= { oriProtocolFilterTableEntry 2 }
+
+	oriProtocolFilterProtocolComment  OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"An optional comment on the ethernet protocol to be
+			filtered."
+	    ::= { oriProtocolFilterTableEntry 3 }
+
+	oriProtocolFilterStatus   OBJECT-TYPE 
+	    SYNTAX INTEGER
+		   {
+		      enable(1),
+		      disable(2),
+		      delete(3)
+		   }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable, disable, or delete the protocols 
+			in this table."
+	    ::= { oriProtocolFilterTableEntry 4 }
+
+--=============================================================================
+-- The ORiNOCO Access Control Sub-Group: orinocoAccessControl
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Point 2000
+--=============================================================================
+
+	oriAccessControlStatus  OBJECT-TYPE
+	    SYNTAX INTEGER
+		   {
+		        enable(1),
+		        disable(2)
+		   } 
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This flag determines whether access control is enabled or 
+			disabled."
+		DEFVAL { disable }
+	    ::= { orinocoAccessControl 1 } 
+
+	oriAccessControlOperationType OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+		        allow(1),       
+		        deny(2)
+		    } 
+    	MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This flag determines whether the stations with MAC addresses 
+			listed in the access control table must be allowed or denied to 
+			access the AP. This flag is used only if oriAccessControlStatus is 
+			enabled.  This table is limited to 1000 MAC Addresss entries."
+		DEFVAL { allow }
+	    ::= { orinocoAccessControl 2 }      
+
+	oriAccessControlTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriAccessControlEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the information about MAC addresses of the 
+			wireless stations that are either allowed or disallowed access 
+			(based on oriAccessControlOperation) through this Access Point. 
+			This table is used only if oriAccessControlStatus is enabled."
+	    ::= { orinocoAccessControl 3 }
+
+	oriAccessControlEntry OBJECT-TYPE
+	    SYNTAX OriAccessControlEntry	
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the entry in the access control table. 
+			This is described below."
+	    INDEX { oriAccessControlTableIndex }
+	    ::= { oriAccessControlTable 1 }
+
+	OriAccessControlEntry ::=
+		SEQUENCE
+	    	{
+				oriAccessControlTableIndex			Integer32, 
+				oriAccessControlTableMACAddress		PhysAddress, 
+		        oriAccessControlTableComment		DisplayString, 
+		        oriAccessControlTableEntryStatus	INTEGER 
+			}
+
+	oriAccessControlTableIndex OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This is an index for the access control table."
+	    ::= { oriAccessControlEntry 1 }
+
+	oriAccessControlTableMACAddress OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"MAC address of the wireless station that can access the Access 
+			Point."
+	    ::= { oriAccessControlEntry 2 }
+
+	oriAccessControlTableComment OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used for an optional comment associated to the 
+			access control table entry."
+	    ::= { oriAccessControlEntry 3 }
+
+	oriAccessControlTableEntryStatus OBJECT-TYPE 
+	    SYNTAX INTEGER
+			{
+				enable(1),
+				disable(2),
+		        delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable, disable, or delete the MAC 
+			Address in the Access Control Table."
+	    ::= { oriAccessControlEntry 4 }
+
+--=============================================================================
+-- The ORiNOCO Static MAC Address Filter Sub-Group: 
+--											orinocoStaticMACAddressFilter
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Point 2000
+--=============================================================================
+
+	oriStaticMACAddressFilterTable OBJECT-TYPE 
+	    SYNTAX SEQUENCE OF OriStaticMACAddressFilterEntry 
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table gives the MAC address of the stations on the wired and 
+			the wireless side. Both the MAC address will be given in Pair. 
+			Stations listed in the Static MAC Address filter will have no 
+			traffic forwarded by the ORiNOCO access point. This way Multicast 
+			traffic exchanged between stations or servers can be prevented, 
+			from being transmitted over the wireless medium when both stations 
+			are actually located on the wired backbone.  This table is limited
+			to 200 entries."
+	    ::= { orinocoStaticMACAddressFilter 1 }
+
+	oriStaticMACAddressFilterEntry  OBJECT-TYPE
+	    SYNTAX OriStaticMACAddressFilterEntry 
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies the entry in the Static MAC address 
+			filter table. Further description follows."
+	    INDEX { oriStaticMACAddressFilterTableIndex }
+	    ::= { oriStaticMACAddressFilterTable 1 }
+
+	OriStaticMACAddressFilterEntry ::=
+		SEQUENCE
+			{
+				oriStaticMACAddressFilterTableIndex			Integer32,
+		        oriStaticMACAddressFilterWiredAddress		PhysAddress,
+		        oriStaticMACAddressFilterWiredMask			PhysAddress,
+		        oriStaticMACAddressFilterWirelessAddress	PhysAddress,
+		        oriStaticMACAddressFilterWirelessMask		PhysAddress,
+		        oriStaticMACAddressFilterStatus				INTEGER,
+		        oriStaticMACAddressFilterComment			DisplayString 
+	    	}
+
+	oriStaticMACAddressFilterTableIndex OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This an index for the Static MAC address filter table."
+	    ::= { oriStaticMACAddressFilterEntry 1 }       
+
+	oriStaticMACAddressFilterWiredAddress OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The MAC address of the station on the wired side of the Access 
+			Point."
+	    ::= { oriStaticMACAddressFilterEntry 2 }       
+
+	oriStaticMACAddressFilterWiredMask OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-write
+	    STATUS current 
+	    DESCRIPTION
+			"This mask determines the presence of wildcard characters in the 
+			MAC address of the station on the wired side. The value F (hex 
+			digit) in the mask indicates the presence of a wildcard character 
+			and the value 0 indicates its absence."
+	    ::= { oriStaticMACAddressFilterEntry 3 }           
+
+	oriStaticMACAddressFilterWirelessAddress OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The MAC address of the station on the wireless side."
+	    ::= { oriStaticMACAddressFilterEntry 4 }
+
+	oriStaticMACAddressFilterWirelessMask OBJECT-TYPE
+    	SYNTAX PhysAddress
+		MAX-ACCESS read-write
+	    STATUS current 
+	    DESCRIPTION
+			"The mask that determines the presence of wildcard characters in 
+			the MAC address of the station on the wireless side. The value F 
+			(hex digit) indicates the presence of a wildcard character and the 
+			hex digit 0 indicates its absense."
+	    ::= { oriStaticMACAddressFilterEntry 5 }       
+
+	oriStaticMACAddressFilterStatus   OBJECT-TYPE 
+	    SYNTAX INTEGER
+			{
+				enable(1),
+			    disable(2),
+			    delete(3)
+			}
+	    MAX-ACCESS read-write
+    	STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable, disable, or delete the MAC 
+			Address in the Static MAC Address Table entry."
+	    ::= { oriStaticMACAddressFilterEntry 6 }
+
+	oriStaticMACAddressFilterComment    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used for an optional comment associated to the 
+			access control table entry."
+	    ::= { oriStaticMACAddressFilterEntry 7 }
+	    
+--=============================================================================
+-- The ORiNOCO Storm Threshold Sub-Group: orinocoStormThreshold
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Point 2000
+--=============================================================================
+
+	oriBroadcastAddressThreshold OBJECT-TYPE
+	    SYNTAX Integer32 (0..255)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION 
+			"If broadcast rate from any device (identified by its MAC address) 
+			exceeds the limit specified by this value, the access point will 
+			ignore all subsequent messages issued by the particular network 
+			device, or ignore all messages of that type. Valid values for 
+			address threshold is between 0 - 255 frames per second. Initial 
+			Value is 0 (Disable Storm Threshold Protection)."
+		DEFVAL { 0 }
+    	::= { orinocoStormThreshold 1 }
+
+	oriMulticastAddressThreshold OBJECT-TYPE
+	    SYNTAX Integer32 (0..255)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION 
+			"If multicast rate from any device (identified by its MAC address) 
+			exceeds the limit specified by this value, the access point will 
+			ignore all subsequent messages issued by the particular network 
+			device, or ignore all messages of that type. Valid values for 
+			address threshold is between 0 - 255 frames per second. Initial 
+			Value is 0 (Disable Storm Threshold Protection)."
+		DEFVAL { 0 }
+	    ::= { orinocoStormThreshold 2 }
+
+	oriStormThresholdTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriStormThresholdTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"The table containing broadcast and multicast threshold values for 
+			each interface."
+	    ::= { orinocoStormThreshold 3 }
+
+	oriStormThresholdTableEntry  OBJECT-TYPE
+	    SYNTAX OriStormThresholdTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This is the entry in the protocol filter table. Described below."
+	    INDEX { ifIndex }
+	   ::= { oriStormThresholdTable 1 }
+
+	OriStormThresholdTableEntry ::=
+		SEQUENCE
+	    	{
+				oriStormThresholdIfBroadcast	Integer32,
+	    	    oriStormThresholdIfMulticast	Integer32
+		    }
+
+	oriStormThresholdIfBroadcast  OBJECT-TYPE
+	    SYNTAX Integer32 (0..9999)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter specifies a set of Broadcast Storm thresholds for 
+			each interface/port of the access point, identifying separate 
+			values for the number of Broadcast messages/second.  Default value
+			is zero, which means disabled."
+		DEFVAL { 0 } 
+	    ::= { oriStormThresholdTableEntry 1 }
+
+	oriStormThresholdIfMulticast  OBJECT-TYPE        
+	    SYNTAX Integer32 (0..9999)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter specifies a set of Multicast Storm thresholds for 
+			each interface/port of the access point, identifying separate 
+			values for the number of Multicast messages/second.  Default value
+			is zero, which means disabled."
+		DEFVAL { 0 } 
+	    ::= { oriStormThresholdTableEntry 2 }
+
+--=============================================================================
+-- The ORiNOCO Advanced Bridge Filtering Sub-Group: orinocoAdvancedFiltering
+-- This Group is used by the following ORiNOCO Devices:
+--     - Access Point 2000
+--=============================================================================
+
+	oriBroadcastFilteringTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriBroadcastFilteringTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"The table entries for broadcast filters.  This table shall contain
+			5 entries."
+	    ::= { orinocoAdvancedFiltering 1 }
+
+	oriBroadcastFilteringTableEntry  OBJECT-TYPE
+	    SYNTAX OriBroadcastFilteringTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This object represents an entry in the broadcast filtering 
+			table."
+	    INDEX { oriBroadcastFilteringTableIndex }
+	    ::= { oriBroadcastFilteringTable 1 }
+
+
+	OriBroadcastFilteringTableEntry ::=
+		SEQUENCE
+	    	{
+				oriBroadcastFilteringTableIndex		Integer32,
+				oriBroadcastFilteringProtocolName	DisplayString,
+				oriBroadcastFilteringDirection		INTEGER,
+				oriBroadcastFilteringStatus			INTEGER
+		    }
+
+    oriBroadcastFilteringTableIndex    OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the index of the Broadcast Filtering
+            table."
+        ::= { oriBroadcastFilteringTableEntry 1 }
+
+    oriBroadcastFilteringProtocolName    OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the broadcast protocol name to
+            be filtered."
+        ::= { oriBroadcastFilteringTableEntry 2 }
+
+    oriBroadcastFilteringDirection    OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                ethernetToWireless(1),
+                wirelessToEthernet(2),
+                both(3)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object represents the direction of the broadcast fiter.
+            The filter can be enabled for Ethernet to Wireless, Wireless
+            to Ethernet, or both."
+        ::= { oriBroadcastFilteringTableEntry 3 }
+
+    oriBroadcastFilteringStatus    OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                enable(1),
+                disable(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object is used to enable or disable the broadcast filter."
+        ::= { oriBroadcastFilteringTableEntry 4 }
+		            
+--=============================================================================
+-- The ORiNOCO RADIUS Group: orinocoRADIUS
+--=============================================================================
+
+	oriRADIUSClientInvalidServerAddress	OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This counter represents the total number of RADIUS access-response
+			messages received from an unknown address since client start-up."
+		::= { orinocoRADIUS 3 }
+
+	oriRADIUSMACAccessControl	OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"Enables RADIUS ACCESS CONTROL based on stations MAC Address.  The
+			default value for this object should be disable."
+		DEFVAL { disable }
+		::= { orinocoRADIUS 4 }
+
+	oriRADIUSAuthorizationLifeTime	OBJECT-TYPE
+	    SYNTAX Integer32 (900..43200)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This object is the authorization lifetime for a certain MAC based
+			RADIUS authenticated client.  The default value for this parameter
+			is 2 hours = 7200 seconds.  The units for this object is seconds."
+		DEFVAL { 7200 }
+		::= { orinocoRADIUS 5 }
+		
+--=============================================================================
+-- The ORiNOCO RADIUS Authentication Table: orinocoRADIUSAuth
+-- This table is used by the following ORiNOCO Devices:
+--     - Access Server 2000
+--     - Access Point 2000
+--=============================================================================
+
+	oriRADIUSAuthServerTable	OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriRADIUSAuthServerTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table represents the RADIUS servers that the device will 
+			communicated with for authentication.  Usually this table should 
+			have two members representing the primary and secondary or backup 
+			RADIUS Authentication Servers."
+	    ::= { orinocoRADIUSAuth 1 }
+
+	oriRADIUSAuthServerTableEntry    OBJECT-TYPE
+	    SYNTAX OriRADIUSAuthServerTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the entry into the RADIUS Authentication
+			Server Table."
+	    INDEX { oriRADIUSAuthServerTableIndex }
+	    ::= { oriRADIUSAuthServerTable 1 }
+
+	OriRADIUSAuthServerTableEntry ::=
+		SEQUENCE
+		    {
+				oriRADIUSAuthServerTableIndex					Integer32,
+				oriRADIUSAuthServerType							INTEGER,
+				oriRADIUSAuthServerStatus						INTEGER,
+				oriRADIUSAuthServerIPAddress					IpAddress,
+				oriRADIUSAuthServerDestPort						Integer32,
+				oriRADIUSAuthServerSharedSecret					DisplayString,
+				oriRADIUSAuthServerResponseTime					Integer32,
+				oriRADIUSAuthServerMaximumRetransmission		Integer32,
+				oriRADIUSAuthClientAccessRequests				Counter32,
+				oriRADIUSAuthClientAccessRetransmissions		Counter32,
+				oriRADIUSAuthClientAccessAccepts				Counter32,
+				oriRADIUSAuthClientAccessChallenges				Counter32,
+				oriRADIUSAuthClientAccessRejects				Counter32,
+				oriRADIUSAuthClientMalformedAccessResponses		Counter32,
+				oriRADIUSAuthClientAuthInvalidAuthenticators	Counter32,
+				oriRADIUSAuthClientTimeouts						Counter32
+			}
+
+	oriRADIUSAuthServerTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents a unique value for each RADIUS table 
+			entry."
+	    ::= { oriRADIUSAuthServerTableEntry 1 }
+
+	oriRADIUSAuthServerType    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    authentication(1),
+			    accounting(2),
+			    authAndAcct(3)
+			}
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates if the RADIUS server will provide 
+			Authentication service, Accounting service, or both."
+	    ::= { oriRADIUSAuthServerTableEntry 2 }
+
+	oriRADIUSAuthServerStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+				delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies if the RADIUS server entry is enabled or
+			disabled."
+	    ::= { oriRADIUSAuthServerTableEntry 3 }
+
+	oriRADIUSAuthServerIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP address of the RADIUS server."
+	    ::= { oriRADIUSAuthServerTableEntry 4 }
+
+	oriRADIUSAuthServerDestPort    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the RADIUS server authentication port - 
+			the default value is 1812."
+		DEFVAL { 1812 }
+	    ::= { oriRADIUSAuthServerTableEntry 5 }
+
+	oriRADIUSAuthServerSharedSecret    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the shared secret between the RADIUS 
+			server and client."
+	    ::= { oriRADIUSAuthServerTableEntry 6 }
+
+	oriRADIUSAuthServerResponseTime    OBJECT-TYPE
+	    SYNTAX Integer32 (1..10)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the time, in seconds, for which the 
+			RADIUS client will wait, until another authentication request is
+			sent to the server.  The default value for this object should
+			be 3."
+		DEFVAL { 3 }
+	    ::= { oriRADIUSAuthServerTableEntry 7 }
+
+	oriRADIUSAuthServerMaximumRetransmission    OBJECT-TYPE
+	    SYNTAX Integer32 (1..4)
+	    MAX-ACCESS read-write
+    	STATUS current
+	    DESCRIPTION
+			"This parameter represents the number of retransmissions of 
+			authentication requests by the RADIUS Client to the Server. The
+			default value for this object should be 3."
+		DEFVAL { 3 }
+	    ::= { oriRADIUSAuthServerTableEntry 8 }
+
+	oriRADIUSAuthClientAccessRequests    OBJECT-TYPE
+    	SYNTAX Counter32
+	    MAX-ACCESS read-only
+    	STATUS current
+	    DESCRIPTION
+			"This parameter represents the number of RADIUS Access Requests 
+			messages transmitted from the client to the server since client 
+			startup."
+	    ::= { oriRADIUSAuthServerTableEntry 9 }
+
+	oriRADIUSAuthClientAccessRetransmissions    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION	
+			"This parameter represents the number of RADIUS Access Requests 
+			retransmitted by the client to the server since client startup."
+	    ::= { oriRADIUSAuthServerTableEntry 10 }
+
+	oriRADIUSAuthClientAccessAccepts    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates the number of RADIUS Access Accept 
+			messages received since client startup."
+	    ::= { oriRADIUSAuthServerTableEntry 11 }
+
+	oriRADIUSAuthClientAccessChallenges    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION	
+			"This variable represents the number of RADIUS Access Challenges 
+			messages received since client startup."
+	    ::= { oriRADIUSAuthServerTableEntry 12 }
+
+	oriRADIUSAuthClientAccessRejects    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the number of RADIUS Access Rejects 
+			messages received since client startup."
+	    ::= { oriRADIUSAuthServerTableEntry 13 }
+
+	oriRADIUSAuthClientMalformedAccessResponses    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the number of malformed RADIUS Access 
+			Response messages received since client startup."
+	    ::= { oriRADIUSAuthServerTableEntry 14 }
+
+	oriRADIUSAuthClientAuthInvalidAuthenticators    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION	
+			"This variable represents the number of malformed RADIUS Access 
+			Response messages containing invalid authenticators received since 
+			client startup."
+	    ::= { oriRADIUSAuthServerTableEntry 15 }
+
+	oriRADIUSAuthClientTimeouts    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only	
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the total number of timeouts for RADIUS 
+			Access Request messages since client startup."
+	    ::= { oriRADIUSAuthServerTableEntry 16 }
+
+--=============================================================================
+-- The ORiNOCO RADIUS Accounting Group: orinocoRADIUSAcct
+-- This table is used by the following ORiNOCO Devices:
+--     - Access Server 2000
+--=============================================================================
+
+	oriRADIUSAcctServerTable	OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriRADIUSAcctServerTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table represents the RADIUS servers that the device will 
+			communicated with for accounting.  Usually this table should 
+			have two members representing the primary and secondary or backup 
+			RADIUS Accounting Servers."
+	    ::= { orinocoRADIUSAcct 1 }
+
+	oriRADIUSAcctServerTableEntry    OBJECT-TYPE
+	    SYNTAX OriRADIUSAcctServerTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the entry into the RADIUS Accouting
+			Server Table."
+	    INDEX { oriRADIUSAcctServerTableIndex }
+	    ::= { oriRADIUSAcctServerTable 1 }
+
+	OriRADIUSAcctServerTableEntry ::=
+		SEQUENCE
+		    {
+				oriRADIUSAcctServerTableIndex					Integer32,
+				oriRADIUSAcctServerType							INTEGER,
+				oriRADIUSAcctServerStatus						INTEGER,
+				oriRADIUSAcctServerIPAddress					IpAddress,
+				oriRADIUSAcctServerDestPort						Integer32,
+				oriRADIUSAcctServerSharedSecret					DisplayString,
+				oriRADIUSAcctServerResponseTime					Integer32,
+				oriRADIUSAcctServerMaximumRetransmission		Integer32,
+				oriRADIUSAcctClientAccountingRequests			Counter32,
+				oriRADIUSAcctClientAccountingRetransmissions	Counter32,
+				oriRADIUSAcctClientAccountingResponses			Counter32,
+				oriRADIUSAcctClientAcctInvalidAuthenticators	Counter32
+			}
+
+	oriRADIUSAcctServerTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents a unique value for each RADIUS table 
+			entry."
+	    ::= { oriRADIUSAcctServerTableEntry 1 }
+
+	oriRADIUSAcctServerType    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    authentication(1),
+			    accounting(2),
+			    authAndAcct(3)
+			}
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates if the RADIUS server will provide 
+			Authentication service, Accounting service, or both."
+	    ::= { oriRADIUSAcctServerTableEntry 2 }
+
+	oriRADIUSAcctServerStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+				delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies if the RADIUS server entry is enabled or
+			disabled."
+	    ::= { oriRADIUSAcctServerTableEntry 3 }
+
+	oriRADIUSAcctServerIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP address of the RADIUS server."
+	    ::= { oriRADIUSAcctServerTableEntry 4 }
+
+	oriRADIUSAcctServerDestPort    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the RADIUS server accounting port - 
+			the default value is 1813."
+		DEFVAL { 1813 }
+	    ::= { oriRADIUSAcctServerTableEntry 5 }
+
+	oriRADIUSAcctServerSharedSecret    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the shared secret between the RADIUS 
+			server and client."
+	    ::= { oriRADIUSAcctServerTableEntry 6 }
+
+	oriRADIUSAcctServerResponseTime    OBJECT-TYPE
+	    SYNTAX Integer32 (1..10)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the time, in seconds, for which the 
+			RADIUS client will wait, until another authentication request is
+			sent to the server.  The default value for this object should
+			be 3."
+		DEFVAL { 3 }
+	    ::= { oriRADIUSAcctServerTableEntry 7 }
+
+	oriRADIUSAcctServerMaximumRetransmission    OBJECT-TYPE
+	    SYNTAX Integer32 (1..4)
+	    MAX-ACCESS read-write
+    	STATUS current
+	    DESCRIPTION
+			"This parameter represents the number of retransmissions of 
+			authentication requests by the RADIUS Client to the Server. The
+			default value for this object should be 3."
+		DEFVAL { 3 }
+	    ::= { oriRADIUSAcctServerTableEntry 8 }
+
+	oriRADIUSAcctClientAccountingRequests    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION		
+			"This parameter represents the number of Accounting Requests 
+			messages sent since client startup."
+	    ::= { oriRADIUSAcctServerTableEntry 9 }
+
+	oriRADIUSAcctClientAccountingRetransmissions    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the number of Accounting Requests 
+			messages retransmitted sent since client startup."
+	    ::= { oriRADIUSAcctServerTableEntry 10 }
+
+	oriRADIUSAcctClientAccountingResponses    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the number of Accounting Response 
+			messages received since client startup."
+	    ::= { oriRADIUSAcctServerTableEntry 11 }
+
+	oriRADIUSAcctClientAcctInvalidAuthenticators    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the number of Accounting Response 
+			messages which contain invalid authenticators received since client
+			startup."
+	    ::= { oriRADIUSAcctServerTableEntry 12 }
+
+--=============================================================================
+-- The ORiNOCO Telnet Group: orinocoTelnet
+-- This table is used by the following ORiNOCO Devices:
+--     - Access Server 2000
+--     - Access Point 2000
+--=============================================================================
+
+	oriTelnetSessions    OBJECT-TYPE
+    	SYNTAX Integer32 (0..5)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This object is used to enable or disable telnet access and
+		    to specify the number of active telnet sessions.  When this
+		    object is set to 0, telnet access is disabled.  When this object
+		    is set to something greater than 0, then it specifies the maximum
+		    number of active telnet sessions."
+		DEFVAL { 1 }
+	    ::= { orinocoTelnet 1 }
+
+	oriTelnetPassword    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is the password to access the device via telnet."
+		DEFVAL { "public" }
+	    ::= { orinocoTelnet 2 }
+
+	oriTelnetPort    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the TCP/IP port for which the telnet 
+			daemon will be accessible."
+		DEFVAL { 23 }
+	    ::= { orinocoTelnet 3 }
+
+	oriTelnetLoginTimeout    OBJECT-TYPE
+	    SYNTAX Integer32 (0..300)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the login timeout in seconds - the 
+			default value is 30 seconds."
+		DEFVAL { 30 }
+	    ::= { orinocoTelnet 4 }
+
+	oriTelnetIdleTimeout    OBJECT-TYPE
+	    SYNTAX Integer32 (0..36000)
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the inactivity or idle timeout in 
+			minutes - the default value is 15 minutes."
+		DEFVAL { 450 }
+	    ::= { orinocoTelnet 5 }
+
+--=============================================================================
+-- The ORiNOCO TFTP Group: orinocoTFTP
+-- This group is supported by the following ORiNOCO Devices:
+--     - Access Server 2000
+--     - Access Point 2000
+--=============================================================================
+
+	oriTFTPServerIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the IP address of the TFTP server."
+        DEFVAL { '0a000002'H }
+	    ::= { orinocoTFTP 1 }
+
+	oriTFTPFileName    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the filename to upload or download to 
+			the TFTP server."
+		DEFVAL { "Filename" }
+	    ::= { orinocoTFTP 2 }
+
+	oriTFTPFileType    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+		        configSys(1),
+		        image(2),
+		        orinoco(3),
+		        radius(4),
+		        snmpset(5),
+		        sysinfo(6),
+		        ppp(7),
+				bspbl(8)
+		    }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION	
+			"This parameter is used for the device to know what type of file is
+			being uploaded or downloaded."
+	    ::= { orinocoTFTP 3 }
+
+	oriTFTPOperation    OBJECT-TYPE 
+	    SYNTAX INTEGER
+			{
+			    upload(1),
+			    download(2),
+				downloadAndReboot(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the TFTP operation to be executed.  The
+			upload function shall transfer the specified file from the ORiNOCO
+			device to the TFTP server.  The download function shall transfer
+			the specified file from the TFTP server to the ORiNOCO device.  The 
+			upload function shall transfer the specified file from the ORiNOCO
+			device to the TFTP server.  The download and reboot function, will
+			perform the download and then reboot the device."
+	    ::= { orinocoTFTP 4 }
+
+	oriTFTPOperationStatus    OBJECT-TYPE 
+	    SYNTAX INTEGER
+			{
+			    idle(1),
+			    inProgress(2),
+			    successful(3),
+				failure(4)
+			}
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the TFTP operation status.  When a TFTP
+			operation is idle (not in progress) this object will be set to 1.
+			When a TFTP operation is in progress this object will be set to 2.  
+			When a TFTP operation has been successful this object will be set 
+			to 3.  When a TFTP operation has failed this object will be set 
+			to 4."
+	    ::= { orinocoTFTP 5 }
+	    
+--=============================================================================
+-- The ORiNOCO Serial Group: orinocoSerial
+-- This group is used by the following ORiNOCO Devices:
+--     - Access Point 2000
+--     - Access Server 2000
+--=============================================================================
+
+	oriSerialBaudRate    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    baud2400(1),
+			    baud4800(2),
+			    baud9600(3),
+			    baud19200(4),
+			    baud38400(5),
+			    baud57600(6)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the baud rate for the serial interface -
+			the default value is 9600."
+		DEFVAL { baud9600 }
+	    ::= { orinocoSerial 1 }
+
+	oriSerialDataBits    OBJECT-TYPE
+	    SYNTAX Integer32 (4..8)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the serial interface data bits - the 
+			default value is 8."
+		DEFVAL { 8 }
+	    ::= { orinocoSerial 2 }
+
+	oriSerialParity    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    even(1),
+			    odd(2),
+			    none(3),
+			    mark(4),
+			    space(5)
+			}
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used for the serial interface parity check - the
+			default value is none."
+		DEFVAL { none }
+	    ::= { orinocoSerial 3 }
+
+	oriSerialStopBits    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    bit1(1),
+			    bit1dot5(2),
+			    bit2(3)
+			}
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates the serial interface stop bits - the 
+			default value is 1."
+		DEFVAL { bit1 }
+	    ::= { orinocoSerial 4 }
+
+	oriSerialFlowControl    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    xonxoff(1),
+			    none(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used for the serial interface flow control - the
+			default value is none."
+		DEFVAL { none }
+	    ::= { orinocoSerial 5 }
+
+--=============================================================================
+-- The ORiNOCO IAPP Group: orinocoIAPP
+-- This group is supported by the following ORiNOCO Devices:
+--     - Access Server 2000
+--     - Access Point 2000
+--=============================================================================
+
+	oriIAPPStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable or disable the IAPP feature."
+		DEFVAL { enable }
+	    ::= { orinocoIAPP 1 }
+
+	oriIAPPPeriodicAnnounceInterval    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+				eighty(80),
+				oneHundredTwenty(120),
+				oneHundredSixty(160),
+				twoHundred(200)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents interval in seconds for performing an 
+			IAPP announce operation by the device.  The default value for this
+			parameter should be 120 seconds."
+		DEFVAL { oneHundredTwenty }
+	    ::= { orinocoIAPP 2 }
+
+	oriIAPPAnnounceResponseTime    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates the amount of time in seconds the 
+			device waits to send an IAPP announce response after an announce 
+			request message is sent.  This parameter is set to a default value
+			of 2 seconds and is not configurable."
+	    ::= { orinocoIAPP 3 }
+
+	oriIAPPHandoverTimeout    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    fourHundredTen(410),
+				fiveHundredTwelve(512),
+				sixHundredFourteen(614),
+				sevenHundredSeventeen(717),
+				eightHundredNineteen(819)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the time in milliseconds the device 
+			waits before it resends a handover response message.  The default 
+			value for this parameter should be 512 milliseconds.  This
+			parameter is originally given in kuseconds, but has been converted
+			to milliseconds."
+		DEFVAL { fiveHundredTwelve }
+	    ::= { orinocoIAPP 4 }
+
+	oriIAPPMaximumHandoverRetransmissions    OBJECT-TYPE
+	    SYNTAX Integer32 (1..4)
+	    MAX-ACCESS read-write
+	    STATUS current	
+	    DESCRIPTION
+			"This parameter indicates the maximum amount of retransmission sent
+			by the device for a handover request message.  The default for this
+			parameter should be 2."
+		DEFVAL { 2 }
+	    ::= { orinocoIAPP 5 }
+
+	oriIAPPAnnounceRequestSent    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Announce 
+			Request Messages sent since bootup."
+	    ::= { orinocoIAPP 6 }
+
+	oriIAPPAnnounceRequestReceived    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Announce 
+			Request Messages received since bootup."		
+	    ::= { orinocoIAPP 7 }
+
+	oriIAPPAnnounceResponseSent    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION	
+			"This parameter represents the total number of IAPP Announce 
+			Response Messages sent since bootup."
+	    ::= { orinocoIAPP 8 }
+
+	oriIAPPAnnounceResponseReceived    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Announce 
+			Response Messages received since bootup."
+	    ::= { orinocoIAPP 9 }
+
+	oriIAPPHandoverRequestSent    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Handover 
+			Request messages sent since bootup."
+	    ::= { orinocoIAPP 10}
+
+	oriIAPPHandoverRequestReceived    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Handover 
+			Request messages received since bootup."
+	    ::= { orinocoIAPP 11 }
+
+	oriIAPPHandoverRequestRetransmissions    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Handover 
+			Request retransmissions since bootup."
+	    ::= { orinocoIAPP 12 }
+
+	oriIAPPHandoverResponseSent    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Handover 
+			Response messages sent since bootup."
+	    ::= { orinocoIAPP 13 }
+
+	oriIAPPHandoverResponseReceived    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP Handover 
+			Response messages received since bootup."
+	    ::= { orinocoIAPP 14 }
+
+	oriIAPPPDUsDropped    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of IAPP packets dropped
+			due to erroneous information within the packet."
+	    ::= { orinocoIAPP 15 }
+
+	oriIAPPRoamingClients    OBJECT-TYPE 
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the total number of client that have 
+			roamed from one device to another.  This parameter is per ORiNOCO 
+			device and not a total counter of all the roaming clients for all 
+			ORiNOCO devices on the network."
+	    ::= { orinocoIAPP 16 }
+
+	oriIAPPTerminatePPPSessionPDUsSent    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents a count of the terminate PPP Session PDUs
+			sent."
+	    ::= { orinocoIAPP 17 }
+
+	oriIAPPTerminatePPPSessionPDUsReceived    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION	
+			"This variable represents a count of the terminate PPP Session PDUs
+			received."
+	    ::= { orinocoIAPP 18 }
+
+	oriIAPPTerminatePPPSessionACKsSent    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the number of terminate PPP Session 
+			acknowledgement PDUs sent."
+	    ::= { orinocoIAPP 19 }
+
+	oriIAPPTerminatePPPSessionACKsReceived    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only	
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the number of terminate PPP Session 
+			acknowledgement PDUs received."
+	    ::= { orinocoIAPP 20 }
+
+    oriIAPPMACIPTable    OBJECT-TYPE
+        SYNTAX SEQUENCE OF OriIAPPMACIPTableEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+           "The (conceptual) table listing Access Server 2000 devices in the 
+           same subnet that have the IAPP function enabled."
+        ::= { orinocoIAPP 21 }
+
+    oriIAPPMACIPTableEntry    OBJECT-TYPE
+        SYNTAX OriIAPPMACIPTableEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+           "An entry (conceptual row) representing an Access Server 2000 
+           device, maintaining its IP address and Wireless MAC Address."
+        INDEX { oriIAPPMACIPTableIndex }
+        ::= { oriIAPPMACIPTable 1 }
+
+    OriIAPPMACIPTableEntry ::=
+        SEQUENCE 
+            {
+                oriIAPPMACIPTableIndex        			Integer32,
+                oriIAPPMACIPTableSystemName 		 	DisplayString,
+                oriIAPPMACIPTableIPAddress 			 	IpAddress,
+                oriIAPPMACIPTableBSSID				 	PhysAddress,
+                oriIAPPMACIPTableESSID  				DisplayString
+			}
+                
+    oriIAPPMACIPTableIndex    OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index for the IAPP MAC-IP table."
+        ::= { oriIAPPMACIPTableEntry 1 }
+
+    oriIAPPMACIPTableSystemName    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+		    "The System Name of the IAPP enabled ORiNOCO
+		    device."
+	    ::= { oriIAPPMACIPTableEntry 2 }
+
+    oriIAPPMACIPTableIPAddress    OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP Address of the IAPP enabled ORiNOCO
+            device."
+        ::= { oriIAPPMACIPTableEntry 3 }
+
+    oriIAPPMACIPTableBSSID OBJECT-TYPE
+        SYNTAX PhysAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The BSSID (MAC address of wireless interface) of 
+            the IAPP enabled ORiNOCO device."
+        ::= { oriIAPPMACIPTableEntry 4 }
+
+    oriIAPPMACIPTableESSID OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The ESSID (network name) of the IAPP enabled ORiNOCO
+            device."
+        ::= { oriIAPPMACIPTableEntry 5 }
+
+	oriIAPPSendAnnounceRequestOnStart OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+	        } 
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "Flag to determine whether to send announce request
+		    on start.  Default value is enable."
+		DEFVAL { enable }
+	    ::=  { orinocoIAPP 22 }
+	    
+--=============================================================================
+-- The ORiNOCO Link Test Group: orinocoLinkTest
+-- The following ORiNOCO devices will support this group:
+--     - Access Point 2000
+--     - Access Server 2000
+--=============================================================================
+
+	oriLinkTestTimeOut	OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The value of this parameter determines the time (in seconds)that a 
+			link test will continue without any SNMP requests for a Link Test 
+			Table entry. When the time expires the Link Test Table is cleared."
+	    ::= { orinocoLinkTest 1 }
+
+	oriLinkTestInterval    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates the interval (in millisec) between 
+			sending link test frames to a station. Default on 200 
+			millisecond."
+		DEFVAL { 200 }
+	    ::= { orinocoLinkTest 3 }
+
+	oriLinkTestExplore    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    tableTimedOut(1),
+			    exploring(2),
+			    exploreResultsAvailable(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"When this parameter is set to 2, the access point will send out 
+			an explore request on all 802.11 interfaces and from the results 
+			build the Link Test table. This table is valid only while this 
+			parameter is 3."
+	    ::= { orinocoLinkTest 4 }
+
+	oriLinkTestTable    OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriLinkTestTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the information for the stations currently 
+			associated with this access point."
+	    ::= { orinocoLinkTest 5 }
+
+	oriLinkTestTableEntry    OBJECT-TYPE
+	    SYNTAX OriLinkTestTableEntry
+    	MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the entry in the Remote Link Test 
+			table.  This is described below."
+	    INDEX { oriLinkTestTableIndex }
+	    ::= { oriLinkTestTable 1 }
+
+	OriLinkTestTableEntry ::=
+		SEQUENCE
+		    {
+			    oriLinkTestTableIndex 				Integer32,
+			    oriLinkTestInProgress				INTEGER,
+			    oriLinkTestStationName				DisplayString,
+			    oriLinkTestMACAddress				PhysAddress,
+			    oriLinkTestStationProfile			Integer32,
+			    oriLinkTestOurCurSignalLevel		Integer32,
+			    oriLinkTestOurCurNoiseLevel			Integer32,
+			    oriLinkTestOurCurSNR				Integer32,
+			    oriLinkTestOurMinSignalLevel		Integer32,
+			    oriLinkTestOurMinNoiseLevel			Integer32,
+			    oriLinkTestOurMinSNR				Integer32,
+			    oriLinkTestOurMaxSignalLevel		Integer32,
+			    oriLinkTestOurMaxNoiseLevel			Integer32,
+			    oriLinkTestOurMaxSNR				Integer32,
+			    oriLinkTestOurLowFrameCount			Integer32,
+			    oriLinkTestOurStandardFrameCount	Integer32,
+			    oriLinkTestOurMediumFrameCount		Integer32,
+			    oriLinkTestOurHighFrameCount		Integer32,
+			    oriLinkTestHisCurSignalLevel		Integer32,
+			    oriLinkTestHisCurNoiseLevel			Integer32,
+			    oriLinkTestHisCurSNR				Integer32,
+			    oriLinkTestHisMinSignalLevel		Integer32,
+			    oriLinkTestHisMinNoiseLevel			Integer32,
+			    oriLinkTestHisMinSNR				Integer32,
+			    oriLinkTestHisMaxSignalLevel		Integer32,
+			    oriLinkTestHisMaxNoiseLevel			Integer32,
+			    oriLinkTestHisMaxSNR				Integer32,
+		    	oriLinkTestHisLowFrameCount			Integer32,
+			    oriLinkTestHisStandardFrameCount	Integer32,
+			    oriLinkTestHisMediumFrameCount		Integer32,
+			    oriLinkTestHisHighFrameCount		Integer32,
+			    oriLinkTestInterface                DisplayString,
+			    oriLinkTestRadioType                DisplayString
+			}
+
+	oriLinkTestTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents a unique value for each stattion. The 
+			value for each station must remain constant at least from one 
+			explore to the next."
+	    ::= { oriLinkTestTableEntry 1 }
+
+	oriLinkTestInProgress    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+				noLinkTestInProgress(1),
+				linkTestIinProgress(2)
+		    }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"When this parameter is set to 2 the access point will initiate a 
+			link test sequence with this station. "
+	    ::= { oriLinkTestTableEntry 2 }
+
+	oriLinkTestStationName    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies the name of the station whom which the 
+			link test is being performed."
+	    ::= { oriLinkTestTableEntry 3 }
+
+	oriLinkTestMACAddress    OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the MAC address that will be mapped to 
+			the IP Address of the station."
+	    ::= { oriLinkTestTableEntry 4 }
+
+	oriLinkTestStationProfile    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the profile/capabilities for this 
+			station."
+	    ::= { oriLinkTestTableEntry 5 }
+
+	oriLinkTestOurCurSignalLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The current signal level (in dB) for the link test from this 
+			station. This variable indicates the running average of the local 
+			signal level using the algorithm (3/4*oldvalue + 1/4*newvalue)."	
+	    ::= { oriLinkTestTableEntry 6 }
+
+	oriLinkTestOurCurNoiseLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The current noise level (in dB) for the link test to this station. 
+			This variable indicates the running average of the local noise 
+			level."
+	    ::= { oriLinkTestTableEntry 7}
+
+	oriLinkTestOurCurSNR    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The current signal to noise ratio for the link test to this 
+			station."
+	    ::= { oriLinkTestTableEntry 8 }
+
+	oriLinkTestOurMinSignalLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The minimum signal level during the link test to this station."
+	    ::= { oriLinkTestTableEntry 9 }
+
+	oriLinkTestOurMinNoiseLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION	
+			"The minimum noise level during the link test to this station."
+	    ::= { oriLinkTestTableEntry 10 }
+
+	oriLinkTestOurMinSNR    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION	
+			"The minimum signal to noise ratio during the link test to this 
+			station."
+	    ::= { oriLinkTestTableEntry 11 }
+
+	oriLinkTestOurMaxSignalLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The maximum signal level during the link test to this station."
+	    ::= { oriLinkTestTableEntry 12 }
+
+	oriLinkTestOurMaxNoiseLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The maximum noise level during the link test to this station."
+	    ::= { oriLinkTestTableEntry 13 }
+
+	oriLinkTestOurMaxSNR    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The maximum signal to noise ratio during the link test to this 
+			station."
+	    ::= { oriLinkTestTableEntry 14 }
+
+	oriLinkTestOurLowFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 1 Mbit/s speed during the link 
+			test to this station."
+	    ::= { oriLinkTestTableEntry 15 }
+
+	oriLinkTestOurStandardFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 2 Mbit/s speed during the link 
+			test to this station."
+	    ::= { oriLinkTestTableEntry 16 }
+
+	oriLinkTestOurMediumFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 5.5 Mbit/s (for Turbo-8, it is 
+			5 Mbit/s) speed during the link test to this station."
+	    ::= { oriLinkTestTableEntry 17 }
+
+	oriLinkTestOurHighFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 11 Mbit/s (for Turbo-8, it is 
+			8 Mbit/s) speed during the link test to this station."
+	    ::= { oriLinkTestTableEntry 18 }
+
+	oriLinkTestHisCurSignalLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The current signal level for the link test to the remote station 
+			or access point."
+	    ::= { oriLinkTestTableEntry 19 }
+
+	oriLinkTestHisCurNoiseLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The current noise level for the link test to the remote station or 
+			access point."
+	    ::= { oriLinkTestTableEntry 20 }
+
+	oriLinkTestHisCurSNR    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The current signal to noise ratio for the link test to the remote 
+			station or access point."
+	    ::= { oriLinkTestTableEntry 21 }	
+
+	oriLinkTestHisMinSignalLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The minimum signal level during the link test to the remote statio
+			or access point."
+	    ::= { oriLinkTestTableEntry 22 }
+
+	oriLinkTestHisMinNoiseLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The minimum noise level during the link test to the remote station 
+			or access point."
+	    ::= { oriLinkTestTableEntry 23 }
+
+	oriLinkTestHisMinSNR    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The minimum signal to noise ratio during the link test to the 
+			remote station or access point."
+	    ::= { oriLinkTestTableEntry 24 }	
+
+	oriLinkTestHisMaxSignalLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The maximum signal level during the link test to the remote 
+			station or access point."
+	    ::= { oriLinkTestTableEntry 25 }
+
+	oriLinkTestHisMaxNoiseLevel    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The maximum noise level during the link test to the remote station 
+			or access point."
+	    ::= { oriLinkTestTableEntry 26 }
+
+	oriLinkTestHisMaxSNR    OBJECT-TYPE
+    	SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The maximum signal to noise ratio during the link test to the 
+			remote station or access point."
+	    ::= { oriLinkTestTableEntry 27 }
+
+	oriLinkTestHisLowFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 1 Mbit/s speed during the link 
+			test to the remote station or access point."
+	    ::= { oriLinkTestTableEntry 28 }
+
+	oriLinkTestHisStandardFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 2 Mbit/s speed during the link 
+			test to the remote station or access point."
+	    ::= { oriLinkTestTableEntry 29 }
+
+	oriLinkTestHisMediumFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 5.5 Mbit/s (for Turbo-8, it is 
+			5 Mbit/s) speed during the link test to the remote station or 
+			access point."
+	    ::= { oriLinkTestTableEntry 30 }
+
+	oriLinkTestHisHighFrameCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The total number of frames sent at 11 Mbit/s (for Turbo-8, it is 
+			5 Mbit/s) speed during the link test to the remote station or 
+			access point."
+	    ::= { oriLinkTestTableEntry 31 }
+
+	oriLinkTestInterface   OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+	        "The PCMCIA Card Number to which the Client has sent the Explore 
+	        Response Message."
+	    ::= { oriLinkTestTableEntry 32 }
+
+	oriLinkTestRadioType    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"The Wireless Standard eg. IEEE 802.11 or IEEE 802.11b used on the 
+			Radio."
+	    ::= { oriLinkTestTableEntry 33 }
+
+--=============================================================================
+-- The ORiNOCO Link Integrity Group: orinocoLinkInt
+-- This group is supported by the following ORiNOCO Devices:
+--     - Access Point 2000
+--     - Access Server 2000
+--=============================================================================
+
+	oriLinkIntStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable or disable the link integrity 
+			functionality."
+	    ::= { orinocoLinkInt 1 }
+
+	oriLinkIntPollInterval    OBJECT-TYPE	
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to set the poll interval (in milliseconds) 
+			for the link integrity check."
+	    ::= { orinocoLinkInt 2 }
+
+	oriLinkIntPollRetransmissions    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to set the number of retransmissions for 
+			the link integrity check."
+	    ::= { orinocoLinkInt 3 }
+
+	oriLinkIntTable    OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriLinkIntTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the target IP addresses in order to perform 
+			the link integrity check.  This table is limited to 5 entries."
+	    ::= { orinocoLinkInt 4 }
+
+	oriLinkIntTableEntry    OBJECT-TYPE
+	    SYNTAX OriLinkIntTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This parameter identifies the entry in the link integrity target 
+			table.  Further description on the members of this table follows."
+	    INDEX { oriLinkIntTableIndex }
+    	::= { oriLinkIntTable 1 }
+
+	OriLinkIntTableEntry ::=
+		SEQUENCE
+		    {
+		    	oriLinkIntTableIndex			Integer32,
+			    oriLinkIntTableTargetIPAddress	IpAddress,
+			    oriLinkIntTableComment			DisplayString,
+			    oriLinkIntTableEntryStatus			INTEGER
+		    }
+
+	oriLinkIntTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indexes the entries in the link integrity target 
+			table."
+	    ::= { oriLinkIntTableEntry 1 }
+
+	oriLinkIntTableTargetIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP address of the target machine for
+			the link integrity check."
+    	::= { oriLinkIntTableEntry 2 }
+
+	oriLinkIntTableComment    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used for an optional comment associated to the 
+			link integrity table entry."
+	    ::= { oriLinkIntTableEntry 3 }
+
+	oriLinkIntTableEntryStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+			    delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used to enable, disable, or delete an entry in 
+			the link integrity table."
+    	::= { oriLinkIntTableEntry 4 }
+
+--=============================================================================
+-- The ORiNOCO ECP Group: orinocoECP
+-- This group is supported by the following ORiNOCO Devices:
+--     - Access Server 2000
+--=============================================================================
+
+	oriECPRetransmissionCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the number of retransmissions when 
+			responses are not received within the timeout period."
+	    ::= { orinocoECP 1 }
+
+	oriECPResponseRetransmissions    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the number of times the transmitted 
+			response can be retransmitted."
+	    ::= { orinocoECP 2 }
+
+	oriECPResponseRetransmissionTimeout    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the timeout interval for a response to be
+			received."
+	    ::= { orinocoECP 3 }
+
+--=============================================================================
+-- The ORiNOCO PPP Group: orinocoPPP
+-- This group is supported by the following ORiNOCO Device:
+--     - Access Server 2000
+--=============================================================================
+
+	oriPPPIPAddressAssignmentType    OBJECT-TYPE 
+	    SYNTAX INTEGER
+			{
+			    local(1),
+			    dhcpRelay(2),
+			    radius(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable identifies whether the IP addresses assigned to the 
+			AS-Clients are obtained from the local address pool, from DHCP 
+			Server via DHCP Relay, or from the RADIUS server.  The default
+			value for this object is local."
+		DEFVAL { local }
+	    ::= { orinocoPPP 1 }
+
+	oriPPPMACtoIPMappingCount    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the number of MAC address to IP address 
+			static mappings are present in the MAC to IP Mapping Table."
+	    ::= { orinocoPPP 2 }
+
+	oriPPPMACtoIPMappingTable    OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriPPPMACtoIPMappingTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the static mapping of MAC addresses to IP 
+			addresses."	
+	    ::= { orinocoPPP 3 }
+        	
+	oriPPPMACtoIPMappingTableEntry    OBJECT-TYPE
+	    SYNTAX OriPPPMACtoIPMappingTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the entry of the MAC to IP Address mapping 
+			table. The members of this table are described below."
+	    INDEX { oriPPPMACtoIPTableIndex }
+	    ::= { oriPPPMACtoIPMappingTable 1 }
+
+	OriPPPMACtoIPMappingTableEntry  ::=
+	    SEQUENCE
+			{
+			    oriPPPMACtoIPTableIndex			Integer32,
+			    oriPPPMACtoIPTableMACAddress	PhysAddress,
+			    oriPPPMACtoIPTableIPAddress		IpAddress,
+			    oriPPPMACtoIPTableComment		DisplayString,
+			    oriPPPMACtoIPTableEntryStatus	INTEGER
+			}
+
+	oriPPPMACtoIPTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This represents the index to the IP to MAC address mapping table."
+	    ::= { oriPPPMACtoIPMappingTableEntry 1 }
+	
+	oriPPPMACtoIPTableMACAddress    OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the MAC address that will be mapped to 
+			the IP Address."
+	    ::= { oriPPPMACtoIPMappingTableEntry 2 }
+
+	oriPPPMACtoIPTableIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+    	STATUS current
+	    DESCRIPTION
+			"This objects identifies IP address corresponding to the MAC 
+			address."
+	    ::= { oriPPPMACtoIPMappingTableEntry 3 }
+
+	oriPPPMACtoIPTableComment    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The variable represents the comment for this entry."
+	    ::= { oriPPPMACtoIPMappingTableEntry 4 }
+
+	oriPPPMACtoIPTableEntryStatus	OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+			    delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable is used to enable, disable, or delete the table 
+			entry."
+	    ::= { oriPPPMACtoIPMappingTableEntry 5 }
+
+	oriPPPKeepAliveInterval    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write									 
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the keep alive interval to be notified to
+			the PPP layer."
+	    ::= { orinocoPPP 4 }
+
+	oriPPPNumKeepAliveTimeouts  OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This object represents the maximum number of timeouts before the 
+			PPP session is brought down."
+	    ::= { orinocoPPP 5 }
+
+	oriPPPSessionIdleTimeout OBJECT-TYPE
+        SYNTAX Integer32 (0..36000)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable indicates the idle timeout in order to disconnect an
+			idle PPP client.  The units for this paramter is seconds.  The
+			default value for this object should be ..."
+		-- DEFVAL { xxx }
+	    ::= { orinocoPPP 6 }
+
+	oriPPPPrimaryDNSIPAddress  OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the IP address of the primary DNS server 
+			in the network."
+	    ::= { orinocoPPP 7 }
+
+	oriPPPSecondaryDNSIPAddress  OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the IP address of the secondary DNS 
+			server in the network."
+	    ::= { orinocoPPP 8 }
+
+	oriPPPMaxNumberOfUsers  OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the number of user allowed to connect to 
+			the device."
+	    ::= { orinocoPPP 9 }
+
+	oriPPPIPPoolTableEntries    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the number of entries in the PPP IP 
+			Address Pool Table."
+	    ::= { orinocoPPP 10 }
+
+	oriPPPCHAPStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This variable indicates the status of CHAP in the accessServer."
+	    ::= { orinocoPPP 11 }
+
+	oriPPPCHAPPriority    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable indicates the priority of CHAP among all 
+			authentictaion protocols enabled on the Access Server."
+	    ::= { orinocoPPP 12 }
+
+	oriPPPPAPStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This variable indicates the status of PAP in the accessServer."
+	    ::= { orinocoPPP 13 }
+
+	oriPPPPAPPriority    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This variable indicates the priority of PAP among all 
+			authentictaion protocols enabled on the accessServer."
+	    ::= { orinocoPPP 14 }
+
+	oriPPPPrimaryWINSIPAddress  OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The IP address of the Primary WINS or NBNS server in the network."
+	    ::= { orinocoPPP 15 }
+	
+	oriPPPSecondaryWINSIPAddress  OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+    	DESCRIPTION
+			"The IP address of the Secondary WINS or NBNS server in the 
+			network."
+	    ::= { orinocoPPP 16 }
+
+	oriPPPIPPoolTable  OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriPPPIPPoolTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the static mapping of MAC addresses to IP 
+			addresses."
+	    ::= { orinocoPPP 17 }
+        
+	oriPPPIPPoolTableEntry  OBJECT-TYPE
+		SYNTAX OriPPPIPPoolTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+		DESCRIPTION
+			"The entry of the oriPPPIPPoolTable. Described below."
+	    INDEX { oriPPPIPPoolTableIndex }
+	    ::= { oriPPPIPPoolTable 1 }
+
+	OriPPPIPPoolTableEntry  ::=
+	    SEQUENCE
+			{
+			    oriPPPIPPoolTableIndex 			Integer32,
+			    oriPPPIPPoolTableStartIPAddress	IpAddress,
+			    oriPPPIPPoolTableEndIPAddress	IpAddress,
+			    oriPPPIPPoolTableWidth 			Integer32,
+			    oriPPPIPPoolTableComment		DisplayString,
+			    oriPPPIPPoolTableEntryStatus 	INTEGER
+			}
+
+	oriPPPIPPoolTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This is the index for the IP range table."
+	    ::= { oriPPPIPPoolTableEntry 1 }
+
+	oriPPPIPPoolTableStartIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+    	    "This is the starting IP address of this range."
+	    ::= { oriPPPIPPoolTableEntry 2 }
+	
+	oriPPPIPPoolTableEndIPAddress    OBJECT-TYPE
+		SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This is the ending IP address of this range."
+	    ::= { oriPPPIPPoolTableEntry 3 }
+
+	oriPPPIPPoolTableWidth    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This is the width of the range (no of addresses)."
+	    ::= { oriPPPIPPoolTableEntry 4 }
+
+	oriPPPIPPoolTableComment    OBJECT-TYPE	
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The variable represents the comment for this entry."
+	    ::= { oriPPPIPPoolTableEntry 5 }
+
+	oriPPPIPPoolTableEntryStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+			    delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The status of the entry, whether to be used or not used. Setting 
+			this to delete will remove this entry."
+	    ::= { oriPPPIPPoolTableEntry 6 }
+
+--=============================================================================
+-- The ORiNOCO DHCP Group: orinocoDHCP
+-- The following ORiNOCO Devices will support this group:
+--     - Access Point 2000
+--=============================================================================
+
+	oriDHCPServerStatus	OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter indicates if the DHCP server is enabled or disabled
+			in the ORiNOCO device."
+	    ::= { orinocoDHCP 1 }
+
+	oriDHCPServerIPPoolTable    OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriDHCPServerIPPoolTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+			"This table contains the pool of IP Addresses that the DHCP server 
+			will assign to the DHCP clients.  This table is limited to
+			20."
+	    ::= { orinocoDHCP 2 }
+        
+	oriDHCPServerIPPoolTableEntry  OBJECT-TYPE
+		SYNTAX OriDHCPServerIPPoolTableEntry
+	    MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"The entries in the DHCP IP Address Pool Table.  Described below."
+	    INDEX { oriDHCPServerIPPoolTableIndex }
+	    ::= { oriDHCPServerIPPoolTable 1 }
+
+	OriDHCPServerIPPoolTableEntry  ::=
+   		SEQUENCE
+			{
+			    oriDHCPServerIPPoolTableIndex 					Integer32,
+			    oriDHCPServerIPPoolTableStartIPAddress			IpAddress,
+			    oriDHCPServerIPPoolTableEndIPAddress			IpAddress,
+			    oriDHCPServerIPPoolTableWidth 					Integer32,
+			    oriDHCPServerIPPoolTableComment					DisplayString,
+			    oriDHCPServerIPPoolTableEntryStatus 			INTEGER
+			}
+			
+	oriDHCPServerIPPoolTableIndex    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This is the index for the IP range table."
+	    ::= { oriDHCPServerIPPoolTableEntry 1 }
+
+	oriDHCPServerIPPoolTableStartIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This variable represents the start IP address for this DHCP IP 
+	        Address IP Pool Table entry."
+	    ::= { oriDHCPServerIPPoolTableEntry 2 }
+	
+	oriDHCPServerIPPoolTableEndIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+    	    " This variable represents the end IP address for this DHCP IP 
+    	    Address IP Pool Table entry."
+	    ::= { oriDHCPServerIPPoolTableEntry 3 }
+
+	oriDHCPServerIPPoolTableWidth    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This variable represents the width or number of IP Address in the 
+	        DHCP IP Address Pool table entry."
+	    ::= { oriDHCPServerIPPoolTableEntry 4 }
+
+	oriDHCPServerIPPoolTableComment    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The variable represents the comment for this entry."
+	    ::= { oriDHCPServerIPPoolTableEntry 5 }
+
+	oriDHCPServerIPPoolTableEntryStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2),
+			    delete(3)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"The variable indicates the status of the DHCP IP Address Pool 
+			Table entry."
+	    ::= { oriDHCPServerIPPoolTableEntry 6 }
+
+	oriDHCPServerDefaultGatewayIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the IP Address of the gateway or router 
+			that the DHCP Server will assign to the DHCP client."
+	    ::= { orinocoDHCP 3 }
+
+	oriDHCPServerDefaultLeaseTime    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the default lease time in seconds for 
+			the IP address assigned by the DHCP server to the DHCP client."
+	    ::= { orinocoDHCP 4 }
+
+	oriDHCPServerMaximumLeaseTime    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the maximum lease time in seconds for 
+			the IP address assigned by the DHCP server to the DHCP client."
+	    ::= { orinocoDHCP 5 }
+
+	oriDHCPServerDNSIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This variable object represents the DNS IP Address handed to
+	        DHCP clients."
+	    ::= { orinocoDHCP 6 }
+
+	oriDHCPServerNumIPPoolTableEntry    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable represents the number of entries in the DHCP IP 
+			Address Pool Table."
+	    ::= { orinocoDHCP 7 }
+
+--=============================================================================
+-- The ORiNOCO HTTP Server Group: orinocoHTTP
+-- The following group will be supported by the following ORiNOCO Devices:
+--     - Access Point 2000
+--     - Access Server 2000
+--=============================================================================
+
+	oriHTTPStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    enable(1),
+			    disable(2)
+			}
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the Web status.  If this parameter is 
+			enabled, then the device can be managed via a standard web browser 
+			otherwise not."
+	    ::= { orinocoHTTP 1 }
+
+	oriHTTPPassword    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the login password in order to manage 
+			the device via a standard web browser."
+	    ::= { orinocoHTTP 2 }
+
+	oriHTTPPort    OBJECT-TYPE
+	    SYNTAX Integer32
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents the TCP/IP port by which the HTTP daemon 
+			will be accessible."
+	    ::= { orinocoHTTP 3 }
+
+	oriHTTPHelpInformationLink    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"This parameter is used in order to set the link in the web
+			interface for where help information can be retrieved."
+	    ::= { orinocoHTTP 4 }
+	    
+--=============================================================================
+-- The ORiNOCO WDS Group: orinocoWDS
+-- This group will be supported by the following ORiNOCO Devices:
+--     - Access Point 2000
+--=============================================================================
+
+	oriWDSSetupTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriWDSSetupTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+         	"This table is used in order to configurate the WDS
+         	objects in the Access Point."
+        ::= { orinocoWDS 1 }
+	
+    oriWDSSetupTableEntry  OBJECT-TYPE
+	    SYNTAX OriWDSSetupTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+	        "The entry is the WDS table."
+        INDEX { ifIndex, oriWDSSetupTablePortIndex  }
+        ::= { oriWDSSetupTable 1 }
+
+	OriWDSSetupTableEntry  ::=
+	    SEQUENCE
+	        {
+  	   	        oriWDSSetupTablePortIndex  			Integer32,
+	            oriWDSSetupTableEntryStatus 				INTEGER,
+               	oriWDSSetupTablePartnerMACAddress  	PhysAddress
+	        }
+
+	oriWDSSetupTablePortIndex OBJECT-TYPE
+	    SYNTAX Integer32 (1..6)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+	        "The port number of the port for which this entry
+             contains bridge management information."
+	    ::= { oriWDSSetupTableEntry  1 }
+            
+	oriWDSSetupTableEntryStatus  OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+	        } 
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+			"Flag indicating whether Point to Point is enabled."
+	    ::= { oriWDSSetupTableEntry 2 }
+
+	oriWDSSetupTablePartnerMACAddress OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+		    "The MAC address of the partner to this interface."
+	    ::= { oriWDSSetupTableEntry 3 }
+
+--=============================================================================
+-- The ORiNOCO Trap Group - orinocoTrap
+--=============================================================================
+
+--=============================================================================
+-- The ORiNOCO Trap Variables
+--=============================================================================
+
+	oriTrapVariable    OBJECT IDENTIFIER
+    	::= { orinocoTrap 1 }
+
+	oriGenericTrapVariable    OBJECT-TYPE
+	    SYNTAX DisplayString
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object is used to provide additional information on traps."
+	    ::= { oriTrapVariable 1 }
+
+	oriTrapVarMACAddress    OBJECT-TYPE
+	    SYNTAX PhysAddress
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object is used to store the MAC address of the ORiNOCO device
+			that has sent a trap."
+	    ::= { oriTrapVariable 2 }
+
+	oriTrapVarTFTPIPAddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object is used to store the IP Address of the TFTP server."
+	    ::= { oriTrapVariable 3 }
+
+	oriTrapVarTFTPFilename    OBJECT-TYPE
+    	SYNTAX DisplayString
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object is used to store the name of the file on which the 
+			TFTP operation has occurred."
+	    ::= { oriTrapVariable 4 }
+
+	oriTrapVarTFTPOperation    OBJECT-TYPE
+	    SYNTAX INTEGER
+			{
+			    upload(1),
+			    download(2)
+			}
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This object is used to store the TFTP operation that failed, 
+			either download or upload"
+	    ::= { oriTrapVariable 5 }
+
+	oriTrapVarUnauthorizedManagerIPaddress    OBJECT-TYPE
+	    SYNTAX IpAddress
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This variable is used to store the IP address of the unauthorized 
+			manager that has attempted to manage the device."
+	    ::= { oriTrapVariable 6 }
+
+	oriTrapVarUnAuthorizedManagerCount    OBJECT-TYPE
+	    SYNTAX Counter32
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION
+			"This parameter represents a counter for the number of unauthorized 
+			SNMP managers that have attempted to modify and/or view the devices 
+			setup.  When this number is incremented a trap should be sent out 
+			notifying the trap host(s) that an unauthorized station has 
+			attempted to configure or monitor the device the count should also 
+			be sent out in the trap message."
+	    ::= { oriTrapVariable 8 }
+
+    oriTrapVarTaskSuspended    OBJECT-TYPE
+	    SYNTAX DisplayString
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+		    "This trap variable is used to inform what task has been suspended
+			on the ORiNOCO device."
+		::= { oriTrapVariable 9 }
+
+    oriTrapVarUnauthorizedClientMACAddress    OBJECT-TYPE
+        SYNTAX PhysAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This trap variable is used to store the MAC Address of an
+            unauthorized client station."
+        ::= { oriTrapVariable 17 }
+        
+    oriTrapVarWirelessCard    OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                pcCardA(1),
+                pcCardB(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This trap variable is used to determine on which Wireless Card,
+		    PC Card A or PC Card B, a wireless TRAP has occured on."
+		::= { oriTrapVariable 18 }
+ 
+--=============================================================================
+-- The ORiNOCO Enable/Disable Trap Group Variables
+--=============================================================================
+
+    oriConfigurationTrapsStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			    enable(1),
+				disable(2)
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		    "This object is used to enable or disable the ORiNOCO Configuration
+			related traps."
+		::= { oriTrapVariable 10 }
+
+    oriSecurityTrapsStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			    enable(1),
+				disable(2)
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		    "This object is used to enable or disable the ORiNOCO Security
+			related traps."
+		::= { oriTrapVariable 11 }
+
+    oriWirelessIfTrapsStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			    enable(1),
+				disable(2)
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		    "This object is used to enable or disable the ORiNOCO Wireless 
+			Interface related traps."
+		::= { oriTrapVariable 12 }
+
+    oriOperationalTrapsStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			    enable(1),
+				disable(2)
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		    "This object is used to enable or disable the ORiNOCO Operational
+			related traps."
+		::= { oriTrapVariable 13 }
+
+    oriFlashMemoryTrapsStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			    enable(1),
+				disable(2)
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		    "This object is used to enable or disable the ORiNOCO Flash Card
+			and Memory related traps."
+		::= { oriTrapVariable 14 }
+
+    oriTFTPTrapsStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			    enable(1),
+				disable(2)
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		    "This object is used to enable or disable the ORiNOCO TFTP
+			related traps."
+		::= { oriTrapVariable 15 }
+
+    oriTrapsImage    OBJECT-TYPE
+	    SYNTAX INTEGER
+		    {
+			    enable(1),
+				disable(2)
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		    "This object is used to enable or disable the ORiNOCO Image
+		    related traps."
+		::= { oriTrapVariable 16 }
+		
+--=============================================================================
+-- The ORiNOCO IP/ARP Group: orinocoIPARP
+-- The following ORiNOCO Devices will supported this group:
+-- -    Access Point 2000
+--=============================================================================
+
+    oriProxyARPStatus OBJECT-TYPE
+ 	    SYNTAX INTEGER
+		    {
+		        enable(1),
+		        disable(2)
+		    }
+        MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable/disable the Proxy ARP functionality
+	        in the ORiNOCO Device."
+	    DEFVAL { enable }
+        ::= {  orinocoIPARP 1 }
+
+    oriIPARPFilteringStatus OBJECT-TYPE
+ 	    SYNTAX INTEGER
+		    {
+		        enable(1),
+		        disable(2)
+		    }
+        MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable/disable the IP/ARP functionality
+	        in the ORiNOCO Device."
+	    DEFVAL { disable }
+            ::= {  orinocoIPARP 2 }
+
+    oriIPARPFilteringIPAddress OBJECT-TYPE
+ 	    SYNTAX IpAddress
+        MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to specify the IP/ARP Filtering address 
+	        in the ORiNOCO Device."
+        ::= {  orinocoIPARP 3 }
+
+    oriIPARPFilteringSubnetMask OBJECT-TYPE
+ 	    SYNTAX IpAddress
+        MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to specify the IP/ARP Subnet Mask 
+	        in the ORiNOCO Device."
+        ::= {  orinocoIPARP 4 }
+                    
+--=============================================================================
+-- The ORiNOCO Spanning Tree Group: orinocoSpanningTree
+-- The following ORiNOCO Devices will supported this group:
+-- -    Access Point 2000
+--=============================================================================
+
+    oriSpanningTreeStatus OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+			    enable(1),
+			    disable(2)
+  	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable/disable the spanning tree protocol
+	        in the ORiNOCO Device."
+	    DEFVAL { enable }
+	    ::= { orinocoSpanningTree 1 }
+
+--=============================================================================
+-- The ORiNOCO Security Group: orinocoSecurity
+-- The following ORiNOCO Devices will supported this group:
+--     - Access Point 2000
+--=============================================================================
+
+    oriSecurityConfiguration    OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+			    none(1),
+			    wep(2),
+			    dot1x(3),
+			    mixedWepAnddot1x(4)
+  	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object represents the supported security configuration
+	        options."
+	    DEFVAL { none }
+	    ::= { orinocoSecurity 1 }
+
+	oriSecurityEncryptionKeyLengthTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriSecurityEncryptionKeyLengthTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+         	"This table is used to specify the encryption key length per
+         	wireless interface."
+        ::= { orinocoSecurity 2 }
+	
+    oriSecurityEncryptionKeyLengthTableEntry  OBJECT-TYPE
+	    SYNTAX OriSecurityEncryptionKeyLengthTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+	        "This is an entry in the encryption key length table."
+        INDEX { ifIndex }
+        ::= { oriSecurityEncryptionKeyLengthTable 1 }
+
+	OriSecurityEncryptionKeyLengthTableEntry ::=
+	    SEQUENCE
+	        {
+	            oriSecurityEncryptionKeyLength			INTEGER
+	        }
+
+    oriSecurityEncryptionKeyLength    OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            fortyBits(1),
+	            oneHundredTwentyEightBits(2)
+	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object represents the encryption key length."
+	    DEFVAL { fortyBits }
+	    ::= { oriSecurityEncryptionKeyLengthTableEntry 1 }
+
+--=============================================================================
+-- The ORiNOCO HereUare Group: orinocoHereUAare
+-- The following ORiNOCO Devices will supported this group:
+--     - Access Point 2000
+--=============================================================================
+
+    oriHereUareECBStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+  	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable or disable the HereUare feature."
+	    DEFVAL { disable }
+	    ::= { orinocoHereUare 1 }
+
+    oriHereUareECBBootStrapIPAddress	OBJECT-TYPE
+        SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object represents the BootStrap IP Address for the HereUare 
+	        ECB Server."
+	    ::= { orinocoHereUare 2 }
+
+    oriHereUareECBSecurityStatus	OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+  	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable or disable the ECB security in the
+	        HereUare feature."
+	    DEFVAL { enable }
+	    ::= { orinocoHereUare 3 }
+
+    oriHereUareECBSecurityKey	OBJECT-TYPE
+	    SYNTAX OCTET STRING
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object represents the ECB security key for the HereUAre 
+	        feature.  This object should be masked by the SNMP agent."
+	    ::= { orinocoHereUare 4 }
+
+    oriHereUareECBNATProxyStatus	OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+  	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable or disable the NAT proxy function
+	        in the HereUAre feature."
+	    DEFVAL { disable }
+	    ::= { orinocoHereUare 5 }
+
+    oriHereUareECBNATProxyIPAddress	OBJECT-TYPE
+        SYNTAX IpAddress
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object represents the IP Address of the ECB NAT Proxy 
+	        Server."
+	    ::= { orinocoHereUare 6 }
+	        	    
+	oriHereUareECBClientTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF OriHereUareECBClientTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+         	"This table is to monitor the clients that are using HereUare
+         	and don not require further authentication.  This table is
+         	limited to 500 entries."
+        ::= { orinocoHereUare 7 }
+	
+    oriHereUareECBClientTableEntry  OBJECT-TYPE
+	    SYNTAX OriHereUareECBClientTableEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+	        "This is an entry in the HereUare ECB table."
+        INDEX { oriHereUareECBClientTableIndex }
+        ::= { oriHereUareECBClientTable 1 }
+
+	OriHereUareECBClientTableEntry ::=
+	    SEQUENCE
+	        {
+	            oriHereUareECBClientTableIndex			Integer32,
+	            oriHereUareECBClientTableStationName	DisplayString,
+	            oriHereUareECBClientTableMACAddress		PhysAddress,
+	            oriHereUareECBClientTableIPAddress		IpAddress,
+	            oriHereUareECBClientTableLinkStatus		INTEGER,
+	            oriHereUareECBClientTablePingCountDown	Counter32,
+	            oriHereUareECBClientTableConnectionTime	Counter32
+	        }
+
+    oriHereUareECBClientTableIndex   OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This is the index for the HereUare ECB Client table."
+       ::= { oriHereUareECBClientTableEntry 1 }
+
+    oriHereUareECBClientTableStationName    OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the HereUare ECB Client Station Name."
+        ::= { oriHereUareECBClientTableEntry 2 }
+        
+    oriHereUareECBClientTableMACAddress    OBJECT-TYPE
+        SYNTAX PhysAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the HereUare ECB Client Station
+            MAC Address."
+        ::= { oriHereUareECBClientTableEntry 3 }
+
+    oriHereUareECBClientTableIPAddress    OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the HereUare ECB Client Station
+            IP Address."
+        ::= { oriHereUareECBClientTableEntry 4 }
+
+    oriHereUareECBClientTableLinkStatus    OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                ecbWLStationUnauthorized(1),
+                ecbWLStationAuthorized(2),
+                ecbWLSendingKeepAlive(3),
+                ecbWLAwaitingKeepAlive(4),
+                ecbWLECBDConnected(5),
+                ecbWLECBDDisconnected(6),
+                ecbWLECBDSendingKeepAlive(7),
+                ecbWLMemberConnected(8),
+                ecbWLMemberDisconnected(9),
+                ecbWLBootStrapConnected(10),
+                ecbWLBootStrapDisconnected(11),
+                ecbWLTCConnected(12),
+                ecbWLTCDisconnected(13)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the HereUare ECB Client Station
+            Link Status."
+        ::= { oriHereUareECBClientTableEntry 5 }     
+
+    oriHereUareECBClientTablePingCountDown    OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the number of seconds until the ECB 
+            makes its next keep-alive ping to this station."
+        ::= { oriHereUareECBClientTableEntry 6 }
+
+    oriHereUareECBClientTableConnectionTime    OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object represents the HereUare ECB Client station
+            connection time."
+        ::= { oriHereUareECBClientTableEntry 7 }
+
+--=============================================================================
+-- The ORiNOCO SpectraLink VoIP Group: orinocoSpectraLink
+-- The following ORiNOCO Devices will supported this group:
+--     - Access Point 2000
+--=============================================================================
+
+    oriSpectraLinkStatus    OBJECT-TYPE
+	    SYNTAX INTEGER
+	        {
+	            enable(1),
+	            disable(2)
+  	        }
+	    MAX-ACCESS read-write
+	    STATUS current
+	    DESCRIPTION
+	        "This object is used to enable or disable the SpectraLink VoIP 
+	        feature."
+	    DEFVAL { disable }
+	    ::= { orinocoSpectraLink 1 }
+                	    	                
+--=============================================================================
+-- The ORiNOCO Configuration Related Traps
+--=============================================================================
+
+	oriConfigurationTraps    OBJECT-IDENTITY
+	    STATUS current
+	    DESCRIPTION
+	        "This the configuration related traps for ORiNOCO devices"
+	    ::= { orinocoTrap 2 }
+
+	oriTrapIPAddrAssignmentNotConfigured    NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress }
+	    STATUS current
+	    DESCRIPTION
+			"This trap is to identify the that the IP Address Pool Assignment 
+			Type has not been configured in the ORiNOCO device.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+	    ::= { oriConfigurationTraps 1 }
+
+	oriTrapRADIUSNotConfigured    NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to inform that the RADIUS configuration parameters 
+			have not been configured in the ORiNOCO device.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+	    ::= { oriConfigurationTraps 2 }
+
+	oriTrapDNSIPNotConfigured    NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress }
+        STATUS current
+        DESCRIPTION
+			"This traps is used to inform that the DNS IP Address has not been 
+			configured in the ORiNOCO device.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+	    ::= { oriConfigurationTraps 3 }
+
+	oriTrapWINSIPNotConfigured    NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress }
+        STATUS current
+	    DESCRIPTION
+			"This traps is used to inform that the WINS or NBNS IP Address has 
+			not been configured in the ORiNOCO device.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+	    ::= { oriConfigurationTraps 4 }
+
+     oriTrapRADIUSAuthenticationNotConfigured NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when the radius authentication information
+            is not configured in the ORiNOCO device.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+        ::= { oriConfigurationTraps 5 } 
+        
+     oriTrapRADIUSAccountingNotConfigured NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when the radius accounting information
+            is not configured in the ORiNOCO device.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+        ::= { oriConfigurationTraps 6 }
+
+     oriTrapDuplicateIPAddressEncountered NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress }
+        STATUS current
+        DESCRIPTION
+            "This trap is generated when the access point device has 
+            encountered another network device with he same IP Address.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+        ::= { oriConfigurationTraps 7 }
+
+--=============================================================================
+-- The ORiNOCO Security Related Traps
+--=============================================================================
+
+	oriSecurityTraps    OBJECT-IDENTITY
+	    STATUS current
+	    DESCRIPTION
+	        "This is the security related traps for ORiNOCO Devices."
+	    ::= { orinocoTrap 3 }
+
+	oriTrapInvalidEncryptionKey    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarUnauthorizedClientMACAddress }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to identify that an invalid encryption key has been 
+			detected by the ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+	    ::= { oriSecurityTraps 1 }
+
+	oriTrapAuthenticationFailure    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarUnauthorizedClientMACAddress }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to inform that a client RADIUS authentication failure 
+			has occurred at the ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriSecurityTraps 2 }
+
+	oriTrapUnauthorizedManagerDetected    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarUnauthorizedManagerIPaddress, 
+                  oriTrapVarUnAuthorizedManagerCount }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to inform that an unauthorized SNMP manager has 
+			attempted to view and/or modify parameters.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+        ::= { oriSecurityTraps 3 }
+
+--=============================================================================
+-- The ORiNOCO Wireless Interface/Card Related Traps
+--=============================================================================
+
+	oriWirelessIfTraps   OBJECT-IDENTITY
+        STATUS current
+        DESCRIPTION
+            "This is the wireless interface or wireless card related traps for
+            ORiNOCO devices."
+	    ::= { orinocoTrap 4 }
+
+	oriTrapWLCNotPresent    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to inform that a Wirless Card (WLC) is not present
+			in the ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriWirelessIfTraps 1 }
+
+	oriTrapWLCFailure    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to identify that there was some type of failure in 
+			the wireless interface card.  This trap can signify that the there 
+			is a failure with the ORiNOCO PC Card.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriWirelessIfTraps 2 }
+
+	oriTrapWLCRemoval    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard }
+        STATUS current
+	    DESCRIPTION	
+			"This trap is to inform that the wireless interface card (ORiNOCO 
+			PC Card) has been removed from the ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriWirelessIfTraps 3 }
+
+	oriTrapWLCIncompatibleFirmware    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard }
+        STATUS current
+	    DESCRIPTION
+			"This trap is sent to inform that the firmware in the wireless
+			interface card in the access point device is incompatible.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriWirelessIfTraps 4 }
+
+    oriTrapWLCVoltageDiscrepancy NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard }
+        STATUS current
+        DESCRIPTION
+            "This trap is sent when non 5 volt card or 3.3 volt card is 
+            inserted in the access point device.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+        ::= { oriWirelessIfTraps 5 }
+     
+    oriTrapWLCIncompatibleVendor NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard }
+        STATUS current
+        DESCRIPTION
+            "This trap is generated when an incompatible wireless vendor
+            card is inserted or present in the access point device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+        ::= { oriWirelessIfTraps 6 }
+        
+    oriTrapWLCFirmwareDownloadFailure NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard }
+        STATUS current
+        DESCRIPTION
+            "This trap is generated when a failure occurs during the firmware
+            download process.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Poing 2000"
+        ::= { oriWirelessIfTraps 7 }
+
+    oriTrapWLCFirmwareFailure NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarWirelessCard, oriGenericTrapVariable }
+        STATUS current
+        DESCRIPTION
+            "This trap is generated when a failure occurs in the Wireless
+            Card Firmware.
+            ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Poing 2000"
+        ::= { oriWirelessIfTraps 8 }
+
+--=============================================================================
+-- The ORiNOCO Operational Related Traps
+--=============================================================================
+
+	oriOperationalTraps    OBJECT-IDENTITY
+	    STATUS current
+	    DESCRIPTION
+	        "This is the operational related traps for ORiNOCO devices."
+	    ::= { orinocoTrap 5 }
+
+	oriTrapWatchDogTimerExpired    NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable, oriTrapVarMACAddress,
+                  oriTrapVarTaskSuspended }
+        STATUS current
+	    DESCRIPTION
+			"This trap is sent when the software watch dog timer has expired.  
+			This can signify that some problem has occurred with one or more 
+			software modules and the system will reboot itself.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriOperationalTraps 1 }
+
+	oriTrapRADIUSServerNotResponding    NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to indicate that no RADIUS server(s) are responding 
+			to authentication requests sent by the RADIUS client within the 
+			ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000" 
+	    ::= { oriOperationalTraps 2 }
+
+	oriTrapModuleNotInitialized    NOTIFICATION-TYPE
+        OBJECTS { oriGenericTrapVariable }
+        STATUS current
+	    DESCRIPTION
+			"This trap is to inform that a certain software or hardware module 
+			has not been initialized or failed to be initialized.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriOperationalTraps 3 }
+
+	oriTrapChangeInAdminState    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarMACAddress }
+        STATUS current
+	    DESCRIPTION
+			"This trap is sent when the administration state of the ORiNOCO 
+			device is changes either from Normal to maintenance mode or 
+			vice-versa.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000"
+	    ::= { oriOperationalTraps 4 }
+
+	oriTrapDeviceRebooting    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarMACAddress }
+        STATUS current
+	    DESCRIPTION
+			"This trap is sent when the ORiNOCO device has received a request
+			to be rebooted.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriOperationalTraps 5 }
+
+	oriTrapTaskSuspended    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarTaskSuspended }
+        STATUS current
+	    DESCRIPTION
+			"This trap is sent when a task in the ORiNOCO device has suspended.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriOperationalTraps 6 }
+
+	oriTrapBootPFailed NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarMACAddress }
+        STATUS current
+	    DESCRIPTION
+	        "This trap is generated when a response to the BootP request is
+	        not received, hence the access point device is not dynamically 
+	        assigned an IP Address.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriOperationalTraps 7 }
+
+	oriTrapDHCPFailed NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarMACAddress }
+        STATUS current
+	    DESCRIPTION
+	        "This trap is generated when a response to the DHCP client request
+	        is not received, hence the access point device is not dynamically 
+	        assigned an IP Address.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"	    
+	    ::= { oriOperationalTraps 8 }
+
+--=============================================================================
+-- The ORiNOCO Flash Memory Related Traps
+--=============================================================================
+
+	oriFlashTraps    OBJECT-IDENTITY
+	    STATUS current
+	    DESCRIPTION
+	        "This is the flash memory related traps for ORiNOCO devices."
+		::= { orinocoTrap 6 }
+
+	oriTrapFlashMemoryEmpty    NOTIFICATION-TYPE
+        STATUS current
+	    DESCRIPTION
+			"This trap is used to inform that there is no data present in flash
+			memory - either on the Flash card or the onboard flash memory.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriFlashTraps 1 }
+
+	oriTrapFlashMemoryCorrupted    NOTIFICATION-TYPE
+        STATUS current
+	    DESCRIPTION
+			"This trap is to inform that the data content of flash memory is 
+			corrupted.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriFlashTraps 2 }
+
+--=============================================================================
+-- The ORiNOCO TFTP Related Traps
+--=============================================================================
+
+	oriTFTPTraps    OBJECT-IDENTITY
+	    STATUS current
+	    DESCRIPTION
+	        "This is the TFTP related traps for ORiNOCO devices."
+	    ::= { orinocoTrap 7 }
+
+	oriTrapTFTPFailedOperation    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarTFTPIPAddress, oriTrapVarTFTPFilename,
+                  oriTrapVarTFTPOperation }
+        STATUS current
+	    DESCRIPTION
+			"This trap is used to notify that a failure occurred with the TFTP 
+			operation.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriTFTPTraps 1 }
+
+	oriTrapTFTPOperationInitiated    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarTFTPIPAddress, oriTrapVarTFTPFilename,
+                  oriTrapVarTFTPOperation }        
+        STATUS current
+	    DESCRIPTION
+			"This trap is used to notify that a TFTP operation has been
+			initiated.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point"
+		::= { oriTFTPTraps 2 }
+
+	oriTrapTFTPOperationCompleted    NOTIFICATION-TYPE
+        OBJECTS { oriTrapVarTFTPIPAddress, oriTrapVarTFTPFilename,
+                  oriTrapVarTFTPOperation }
+        STATUS current
+	    DESCRIPTION
+			"This trap is used to notify that a TFTP operation has been
+			completed.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+		::= { oriTFTPTraps 3 }
+
+--=============================================================================
+-- The ORiNOCO Miscellaneous Traps
+--=============================================================================
+
+    oriMiscTraps    OBJECT-IDENTITY
+        STATUS current
+        DESCRIPTION
+            "This is a miscellaneous trap group for the ORiNOCO devices."
+	    ::= { orinocoTrap 8 }
+
+--=============================================================================
+-- Image Related Traps
+--=============================================================================
+
+	oriImageTraps OBJECT-IDENTITY
+	    STATUS current
+	    DESCRIPTION
+	        "This is image related traps for the ORiNOCO devices."
+	    ::= { orinocoTrap 9 }
+
+	oriTrapZeroSizeImage NOTIFICATION-TYPE
+        STATUS current
+	    DESCRIPTION
+	        "This trap is generated when an a zero size image is loaded to the
+	        ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriImageTraps 1 }
+
+	oriTrapInvalidImage NOTIFICATION-TYPE
+        STATUS current
+	    DESCRIPTION
+	        "This trap is sent when an invalid image is loaded to the
+	        ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriImageTraps 2 }
+
+	oriTrapImageTooLarge NOTIFICATION-TYPE
+        STATUS current
+	    DESCRIPTION
+	        "This trap is sent when the image loaded to the access point 
+	        device exceeds the size limitation of flash.
+	        ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriImageTraps 3 }
+
+	oriTrapIncompatibleImage NOTIFICATION-TYPE
+        STATUS current
+	    DESCRIPTION
+	        "This trap is sent when an incompatible image is loaded to the
+	        ORiNOCO device.
+			ORiNOCO Devices that use this Trap:
+            	- Access Server 2000
+            	- Access Point 2000"
+	    ::= { oriImageTraps 4 }
+
+--=============================================================================
+-- ORiNOCO MIBs End
+--=============================================================================
+
+END

@@ -1,0 +1,258 @@
+--------------------------------------------------------------------------------
+--ACMEPACKET-SECURITY-MIB:  Acme Packet SECURITY MIB file
+--
+--April 2008
+--
+--Copyright (c) by Acme Packet, Inc.
+--All rights reserved.
+--------------------------------------------------------------------------------
+--This MIB provides a means to gather information about the
+--Acme Management Interface running at the Net-Net SBC
+--
+
+APSECURITY-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32,
+    IpAddress, Unsigned32
+        FROM SNMPv2-SMI
+    OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    DisplayString, TruthValue 
+  	FROM SNMPv2-TC
+    acmepacketMgmt
+        FROM ACMEPACKET-SMI;
+
+    apSecurityModule MODULE-IDENTITY
+        LAST-UPDATED	    "200803140000Z"
+        ORGANIZATION	    "Acme Packet, Inc"
+        CONTACT-INFO        "   Customer Service  
+			Postal:	Acme Packet, Inc
+				71 Third Avenue
+				Burlington, MA 01803
+				US
+			Tel:	1-781-328-4400
+			E-mail:	support@acmepacket.com"
+        DESCRIPTION     "The Net-Net SECURITY MIB for Acme Packet"
+
+        ::= { acmepacketMgmt 9 }
+
+    apSecurityMIBObjects OBJECT IDENTIFIER ::= { apSecurityModule 1 }
+
+    apSecurityNotificationObjects OBJECT IDENTIFIER ::= { apSecurityModule 2 }	 
+
+    apSecuritySpi OBJECT-TYPE
+	SYNTAX		Unsigned32
+	MAX-ACCESS	accessible-for-notify
+	STATUS			current
+	DESCRIPTION	"Tunnel security-policy-index."
+
+	::= { apSecurityNotificationObjects 1 }
+	
+    apSecuritySrcIpAddress 	OBJECT-TYPE
+	SYNTAX		IpAddress
+	MAX-ACCESS	accessible-for-notify
+	STATUS		current
+	DESCRIPTION
+	    "Source IP address."
+	::= { apSecurityNotificationObjects 2 }
+
+    apSecurityDstIpAddress 	OBJECT-TYPE
+	SYNTAX		IpAddress
+	MAX-ACCESS	accessible-for-notify
+	STATUS		current
+	DESCRIPTION
+	    "Destination IP address."
+	::= { apSecurityNotificationObjects 3 }
+
+    apSecurityIPSECMode		OBJECT-TYPE
+	SYNTAX     	     	INTEGER {
+					tunnel(0),
+					transport(1)
+				}
+	MAX-ACCESS		accessible-for-notify
+	STATUS	   		current
+	DESCRIPTION
+	"IPSec mode."
+	::= { apSecurityNotificationObjects 4 }
+
+    apSecurityEncryptionAlg	OBJECT-TYPE
+	SYNTAX     	     	INTEGER {
+					any(0),
+					alg-des(1),
+					alg-3des(2),
+					alg-blowfish(3),
+					alg-aes(4),
+					null(5)
+				}
+	MAX-ACCESS		accessible-for-notify
+	STATUS	   		current
+	DESCRIPTION
+	"Type of the encryption algorithms supported in the tunnel setup."
+	::= { apSecurityNotificationObjects 5 }
+	
+    apSecurityAuthAlg		OBJECT-TYPE
+	SYNTAX     	     	INTEGER {
+					any(0),
+					md5(1),
+					sha1(2)
+				}
+	MAX-ACCESS		accessible-for-notify
+	STATUS	   		current
+	DESCRIPTION
+	"Type of the authentication algorithms supported in the tunnel setup."
+	::= { apSecurityNotificationObjects 6 }
+
+    apSecuritySecProtocol	OBJECT-TYPE
+	SYNTAX     	     	INTEGER {
+					ah(0),
+					esp(1),
+					esp-auth(2),
+					esp-null(3)
+				}
+	MAX-ACCESS		accessible-for-notify
+	STATUS	   		current
+	DESCRIPTION
+	"Type of the security protocol supported in the tunnel setup."
+	::= { apSecurityNotificationObjects 7 }
+
+    apSecurityFailureCause	OBJECT-TYPE
+	SYNTAX     	     	INTEGER {
+					incorrect-id(0),
+					incorrect-user-passwd(1),
+					incorrect-shared-secret(2),
+					incorrect-dh-group(3),
+					incorrect-encryption-alg(4),
+					incorrect-auth-alg(5),
+					incorrect-sec-protocol(6),
+					incorrect-hash(7),
+					incorrect-mode(8),
+					service-unavailable(9),
+					access-reject(10)
+					
+				}
+	MAX-ACCESS		accessible-for-notify
+	STATUS	   		current
+	DESCRIPTION
+	"Reason for failure in the IKE, IPSec or RADIUS areas."
+	::= { apSecurityNotificationObjects 8 }
+
+    apSecurityFailureArea	OBJECT-TYPE
+	SYNTAX     	     	INTEGER {
+					ike(0),
+					ipsec(1),
+					radius(2)
+				}
+	MAX-ACCESS		accessible-for-notify
+	STATUS	   		current
+	DESCRIPTION
+	"Where the failure happened."
+	::= { apSecurityNotificationObjects 9 }
+
+
+    apSecurityStatus OBJECT-TYPE
+	SYNTAX		INTEGER {
+		       success (1),
+		       failure (2)
+		       }
+	MAX-ACCESS	accessible-for-notify
+	STATUS			current
+	DESCRIPTION	"Status."
+
+	::= { apSecurityNotificationObjects 10 }
+
+    apSecurityDateTime      OBJECT-TYPE
+	SYNTAX        DisplayString
+	MAX-ACCESS    accessible-for-notify
+	STATUS	      current
+	DESCRIPTION   "Time as configured at the Net-Net SBC when an
+			event completes."
+	::= { apSecurityNotificationObjects 11 }
+	
+    apSecurityUser    OBJECT-TYPE
+	SYNTAX        DisplayString  (SIZE (0..255))
+	MAX-ACCESS    accessible-for-notify
+	STATUS	      current
+	DESCRIPTION   "User name" 
+	::= { apSecurityNotificationObjects 12 }
+
+
+-- Notifications
+
+    apSecurityNotifications OBJECT IDENTIFIER ::= { apSecurityModule 3 }
+    apSecurityAuthNotificationsPrefix
+		OBJECT IDENTIFIER ::= { apSecurityNotifications 1 }
+    apSecurityAuthNotifications
+		OBJECT IDENTIFIER ::= { apSecurityAuthNotificationsPrefix 0 }
+
+    apSecurityTunnelFailureNotification	NOTIFICATION-TYPE
+	OBJECTS		{
+			apSecuritySpi,
+			apSecuritySrcIpAddress,
+			apSecurityDstIpAddress,
+			apSecurityFailureCause,
+			apSecurityFailureArea,
+			apSecurityStatus
+			}
+	STATUS	   	current
+	DESCRIPTION
+	      "The notification will be generated whenever IPSEC IKEV2 tunnel fails to 
+	      establish. "
+	::= { apSecurityAuthNotifications 1 }
+
+    apSecurityRadiusFailureNotification	NOTIFICATION-TYPE
+	OBJECTS		{
+			apSecurityUser,
+			apSecurityFailureCause,
+			apSecurityFailureArea,
+			apSecurityStatus
+			}
+	STATUS	   	current
+	DESCRIPTION
+	      "The notification will be generated whenever Radius authentication request fails."
+	::= { apSecurityAuthNotifications 2 }
+
+    apSecurityGeneralNotificationsPrefix
+		OBJECT IDENTIFIER ::= { apSecurityNotifications 2 }
+    apSecurityGeneralNotifications
+		OBJECT IDENTIFIER ::= { apSecurityGeneralNotificationsPrefix 0 }
+    apSecurityTunnelDPDNotification	NOTIFICATION-TYPE
+	OBJECTS		{
+			apSecuritySpi,
+			apSecuritySrcIpAddress,
+			apSecurityDstIpAddress,
+			apSecurityFailureArea,
+			apSecurityStatus
+			}
+	STATUS	   	current
+	DESCRIPTION
+	      "The notification will be generated whenever IPSEC IKEV2 tunnel fails 
+	      due to Dead Peer Detection(DPD). "
+	::= { apSecurityGeneralNotifications 1 }
+
+    -- Conformance information
+
+apSecurityConformance OBJECT IDENTIFIER ::= { apSecurityModule 4 }
+apSecurityCompliances OBJECT IDENTIFIER ::= { apSecurityConformance 1 }
+apSecurityGroups   OBJECT IDENTIFIER ::= { apSecurityConformance 2 }
+apSecurityNotificationsGroups
+		     OBJECT IDENTIFIER ::= { apSecurityConformance 3 }
+				 
+-- notification groups
+
+apSecurityNotificationsGroup NOTIFICATION-GROUP
+	NOTIFICATIONS  {
+		apSecurityTunnelFailureNotification,
+		apSecurityRadiusFailureNotification,
+		apSecurityTunnelDPDNotification
+		}
+	STATUS   current
+        DESCRIPTION
+                 "A collection of notifications for security "
+	::= {  apSecurityNotificationsGroups 1 }
+
+    
+
+END
+
+

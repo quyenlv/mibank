@@ -1,0 +1,461 @@
+-- =================================================================
+-- Copyright (C) 2002 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:the huawei load-backup mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--	
+-- =================================================================
+
+	HUAWEI-LOAD-BACKUP-MIB DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+			hwFrameIndex, hwSlotIndex			
+				FROM HUAWEI-DEVICE-MIB			
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			HWPCBType			
+				FROM HUAWEI-TC-MIB			
+			IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI			
+			DisplayString			
+				FROM SNMPv2-TC;
+	
+	
+		
+		hwLoadBackup MODULE-IDENTITY 
+			LAST-UPDATED "200210010900Z"		
+			ORGANIZATION
+				"HAUWEI MIB Standard community"
+			CONTACT-INFO
+				"
+				ADDR£ºHUAWEI TECHNOLOGY CO.,LTD,SHEZHEN CHINA
+				Tel£º 86-755-26540808			
+				"
+			DESCRIPTION 
+				"V01_05"
+			REVISION "200204220900Z"		 
+			DESCRIPTION
+				" V01_01   20020422"
+				
+			REVISION "200206060900Z"		 
+			DESCRIPTION
+				"V01_02
+				20020606"
+			REVISION "200208200900Z"		 
+			DESCRIPTION
+				" V01_03   2002/08/28 			
+				"
+			REVISION "200209060900Z"		 
+			DESCRIPTION
+				" V01_04   2002/09/06"			                    
+			REVISION "200209100900Z"		 
+			DESCRIPTION
+				" V01_05   2002/09/10 
+				1) hwLoadParaTable.hwLoadContent
+				2) hwBackupParaTable.hwBackupContent"
+			::= { huaweiUtility 6 }
+		
+
+		hwLoadBackupMon OBJECT IDENTIFIER ::= { hwLoadBackup 1 }
+		
+		hwLoadParaTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwLoadParaTableEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Load para table "
+			::= { hwLoadBackupMon 1 }
+		
+		hwLoadParaTableEntry OBJECT-TYPE
+			SYNTAX HwLoadParaTableEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Load para table entry"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwLoadParaTable 1 }
+		
+		HwLoadParaTableEntry ::=
+			SEQUENCE { 
+				hwLoadServerIpAddr
+					IpAddress,
+				hwLoadMode
+					INTEGER,
+				hwLoadFileName
+					DisplayString,
+				hwLoadContent
+					INTEGER,
+				hwLoadBoardType
+					HWPCBType,
+				hwPortId
+					Integer32,
+				hwLoadProcess
+					Integer32,				
+				hwLoadUserName
+				    DisplayString,
+				hwLoadPassword
+				    DisplayString    	
+
+			 }
+
+		hwLoadServerIpAddr OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the IP address of Server"
+			::= { hwLoadParaTableEntry 1 }
+		
+		hwLoadMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				tftp(1),
+				modem(2),
+				ftp(3),
+				smbLoadAnyBoards(4),
+				other(255)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Load protocol "
+			::= { hwLoadParaTableEntry 2 }
+		
+		hwLoadFileName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the file name "
+			::= { hwLoadParaTableEntry 3 }
+		
+		hwLoadContent OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				program(1),
+				configuration(2),
+				patch(3),
+				shellMacro(4),
+				resLocal(5),
+				resGeneral(6),
+				cpeDrive(7),
+				programDatabase(8),
+				programBios(9),
+				programApp(10),
+				logicFpga(11),
+				logicCpld(12),
+				logicPci(13),
+				logicAfc(14),
+				programMicroCode(15),
+				programFireware(16), 
+				programHelp(17),
+				programDataFlow(18),
+				programBootFile(19),
+				logciPa(20),
+				webExp(21),
+				webNev(22),
+				webHelp(23),
+				configurationIni(40),
+				configurationEfs(41),
+				configurationCli(42),
+				programCurrent(45),
+				programOther(46)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"load content " 
+			::= { hwLoadParaTableEntry 4 }
+		
+		hwLoadBoardType OBJECT-TYPE
+			SYNTAX HWPCBType
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the board type the system supports "
+			::= { hwLoadParaTableEntry 5 }
+		
+		hwPortId OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the port index"
+			::= { hwLoadParaTableEntry 6 }         
+			
+		hwLoadProcess OBJECT-TYPE
+			SYNTAX Integer32(0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" the Process of loading."
+			::= { hwLoadParaTableEntry 7 }
+			
+		hwLoadUserName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..31))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the load user name£¬which is necessary in FTP mode 
+				and unnecessary in TFTP mode "
+			::= { hwLoadParaTableEntry 8 }
+			
+		hwLoadPassword OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..16))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the load user name,which is necessary in FTP mode ,
+				which is necessary in FTP mode 
+				and unnecessary in TFTP mode "
+			::= { hwLoadParaTableEntry 9 }
+			
+		
+		hwBackupParaTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBackupParaTableEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"backup para table"
+			::= { hwLoadBackupMon 2 }
+		
+		hwBackupParaTableEntry OBJECT-TYPE
+			SYNTAX HwBackupParaTableEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"backup para table entry"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwBackupParaTable 1 }
+		
+		HwBackupParaTableEntry ::=
+			SEQUENCE { 
+				hwBackupServerIpAddr
+					IpAddress,
+				hwBackupMode
+					INTEGER,
+				hwBackupFileName
+					DisplayString,
+				hwBackupContent
+					INTEGER,
+				hwBackupProcess					
+					Integer32,
+				hwBackupUserName
+				    DisplayString,
+				hwBackupPassword
+				    DisplayString     
+			 }
+
+		hwBackupServerIpAddr OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the IP address of Server"
+			::= { hwBackupParaTableEntry 1 }
+		
+		hwBackupMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				tftp(1),
+				modem(2),
+				ftp(3),
+				other(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Load protocol:tftp and MODEM currently supported"
+			::= { hwBackupParaTableEntry 2 }
+		
+		hwBackupFileName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the file name "
+			::= { hwBackupParaTableEntry 3 }
+		
+		hwBackupContent OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				configuration(1),
+				shellMacro(2),   
+				log(3),          
+				bill(4),         
+				alarm(5),        
+				program(15),     
+				reslocal(16),    
+				resgeneral(17),   
+				patch(18),            
+				programDatabase(19),  
+				programBios(20),      
+				programApp(21),      
+				logicFpga(22),
+				logicCpld(23),
+				logicPci(24),
+				logicAfc(25),
+				programMicroCode(26),
+				programFireware(27), 
+				programDataFlow(28),
+				programBootFile(29),
+				logciPa(30),
+				webExp(31),
+				webNev(32),
+				webHelp(33),
+				configurationIni(40),
+				configurationEfs(41),
+				configurationCli(42),
+				programCurrent(45),
+				programOther(46)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"backup content"
+			::= { hwBackupParaTableEntry 4 }
+	
+		hwBackupProcess OBJECT-TYPE
+			SYNTAX Integer32(0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" the Process of backuping."
+			::= { hwBackupParaTableEntry 5 } 
+		
+		hwBackupUserName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..31))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the backup user name£¬which is necessary in FTP mode 
+				and unnecessary in TFTP mode "
+			::= { hwBackupParaTableEntry 6 }
+			
+		hwBackupPassword OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..16))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the backup user name,which is necessary in FTP mode ,
+				which is necessary in FTP mode 
+				and unnecessary in TFTP mode "
+			::= { hwBackupParaTableEntry 7 }
+             
+             
+		hwBackupAndRestoreConfig  OBJECT IDENTIFIER ::= { hwLoadBackupMon 4 }
+		hwBackupAndRestore OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				copyMemToFlash(1),
+				copyFlashToMem(2),
+				copyMemToHardDisk(3),
+				copyHardDiskToMem(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwBackupAndRestoreConfig 1 }
+
+	
+		
+		snmpTraps OBJECT IDENTIFIER ::= { hwLoadBackupMon 3 }
+		snmpTrapsOID OBJECT IDENTIFIER ::= { snmpTraps 0 }
+		backupFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwFrameIndex, hwSlotIndex,hwTrapBackupResult }
+			STATUS current
+			DESCRIPTION
+				"
+				1 name:backupFailAlarm
+				2 reason£ºwhen backuping file by ftp or tftp,there is an error.The reasean maybe filename error ,non-exist directory,the server ip address error or loading type error
+				3 restore advice£ºretry to set the params again£¬or modify according the above reason.
+				"
+			::= { snmpTrapsOID 1 }
+		
+		
+		loadFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwFrameIndex, hwSlotIndex,hwTrapLoadResult }
+			STATUS current
+			DESCRIPTION
+				"1 name:loadFailAlarm
+				 2 reason£ºwhen loading file by ftp or tftp,there is an error.The reasean maybe filename error ,non-exist directory,the server ip address error or loading type error
+				 3 restore advice£ºretry to set the params again£¬or modify according the above reason.
+				"
+			::= { snmpTrapsOID 2 }
+		
+		backupFailAlarmSuccess  NOTIFICATION-TYPE
+			OBJECTS {hwFrameIndex, hwSlotIndex }
+			STATUS current
+			DESCRIPTION
+				"
+				 1 name:backupFailAlarmSuccess
+				 2 reason£ºto notify snmp workstation the backup operation success.
+				 3 restore advice: none				
+				"
+			::= { snmpTrapsOID 3 }	
+
+		loadFailAlarmSuccess  NOTIFICATION-TYPE
+			OBJECTS {hwFrameIndex,  hwSlotIndex }
+			STATUS current
+			DESCRIPTION
+				"
+				 1 name:loadFailAlarmSuccess
+				 2 reason:to notify snmp workstation the load operation success.
+				 3 restore advice: none
+				"
+			::= { snmpTrapsOID 4 }
+	
+		copyAndSaveFail  NOTIFICATION-TYPE
+			OBJECTS { hwCopyAndSaveResult }
+			STATUS current
+			DESCRIPTION
+				"
+				 1 name:copyAndSaveFail
+				 2 reason£ºfile CRC error,writing FLASH error,time out,reading flash error,etc.
+				 3 restore advice:retry to set the params again£¬or modify according the above reason.
+				"
+			::= { snmpTrapsOID 5 }		
+			
+		copyAndSaveSuccess  NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION
+				"
+				 1 name:copyAndSaveSuccess
+				 2 reason:to notify snmp workstation the copy and save operation success.
+				 3 restore advice: none
+				"
+			::= { snmpTrapsOID 6 }			
+			
+		
+		hwTrapReasonOids  OBJECT IDENTIFIER ::= { snmpTraps 1 }	
+		hwTrapLoadBackupResult  OBJECT IDENTIFIER ::= { hwTrapReasonOids  1 }	
+		          
+		          
+		hwTrapLoadResult OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"load failure reason"
+			::= { hwTrapLoadBackupResult  1 }
+			
+		hwTrapBackupResult OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"backup failure reason"
+			::= { hwTrapLoadBackupResult  2 }
+
+		hwCopyAndSaveResult OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"copy and slave failure reason"
+			::= { hwTrapLoadBackupResult  3 }			
+	
+	END

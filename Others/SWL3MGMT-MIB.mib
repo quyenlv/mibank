@@ -1,0 +1,593 @@
+SWL3MGMT-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        Counter32,MODULE-IDENTITY,OBJECT-TYPE,IpAddress,
+        NOTIFICATION-TYPE
+                                                  FROM SNMPv2-SMI
+        PhysAddress,DisplayString                 FROM SNMPv2-TC
+        dlinkMgmtMIB                              FROM DLINKMGMT-MIB;
+
+    swL3MgmtMIB MODULE-IDENTITY
+	    LAST-UPDATED "200007150000Z"
+	    ORGANIZATION "D-Link, Inc."
+	    CONTACT-INFO
+	        "   D-Link Customer Service
+
+		    Postal: No. 20,Park Ave, II, Science-based
+			        Industrial Park, Hsinchu, taiwan, R.O.C.
+
+		       Tel: 886-3-577-9966
+
+		    E-mail: "
+	    DESCRIPTION
+		    "The Structure of Layer 3 Network Management Information for the
+		    D-Link enterprise."
+        ::= { dlinkMgmtMIB des3326Series(32) 3}
+
+    NodeAddress             ::= OCTET STRING (SIZE(6))
+    NetAddress              ::= OCTET STRING (SIZE(4))
+
+    des3326Series           OBJECT IDENTIFIER ::= { dlinkMgmtMIB 32 }
+
+    swL3DevMgmt             OBJECT IDENTIFIER ::= { swL3MgmtMIB 1 }
+    swL3IpMgmt              OBJECT IDENTIFIER ::= { swL3MgmtMIB 2 }
+    swL3IpxMgmt             OBJECT IDENTIFIER ::= { swL3MgmtMIB 3 }
+
+    swL3IpDomainMgmt        OBJECT IDENTIFIER ::= { swL3IpMgmt 1 }
+    swL3IpFdbMgmt           OBJECT IDENTIFIER ::= { swL3IpMgmt 2 }
+    swL3IpFilterMgmt        OBJECT IDENTIFIER ::= { swL3IpMgmt 3 }
+--    swL3IpMirrorMgmt        OBJECT IDENTIFIER ::= { swL3IpMgmt 4 }
+--    swL3IpPriorityMgmt      OBJECT IDENTIFIER ::= { swL3IpMgmt 5 }
+--    swL3IpQosMgmt           OBJECT IDENTIFIER ::= { swL3IpMgmt 6 }
+    swL3IpStatisticsMgmt    OBJECT IDENTIFIER ::= { swL3IpMgmt 4 }
+
+-- ********************************************************************
+--  swL3DevMgmt             OBJECT IDENTIFIER ::= { swL3MgmtMIB 1 }
+-- ********************************************************************
+
+    swL3DevCtrl             OBJECT IDENTIFIER ::= { swL3DevMgmt 1 }
+
+    swL3DevCtrlIGMPState OBJECT-TYPE
+        SYNTAX  INTEGER {
+               other(1),
+               disabled(2),
+               enabled(3)
+               }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "This object indicates layer 3 Internet Group Management Protocol
+            (IGMP) function is enabled or disabled ."
+        ::= { swL3DevCtrl 1 }
+
+    swL3DevCtrlRIPState OBJECT-TYPE
+        SYNTAX  INTEGER {
+               other(1),
+               disabled(2),
+               enabled(3)
+               }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "This object indicates Routing Information Protocol (RIP) version 2
+            function is enabled or disabled ."
+        ::= { swL3DevCtrl 2 }
+
+    swL3DevCtrlOSPFState OBJECT-TYPE
+        SYNTAX  INTEGER {
+               other(1),
+               disabled(2),
+               enabled(3)
+               }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "This object indicates Open Shortest Path First Routing Protocol
+            (OSPF) function is enabled or disabled ."
+        ::= { swL3DevCtrl 3 }
+
+-- ********************************************************************
+--  swL3IpDomainMgmt        OBJECT IDENTIFIER ::= { swL3IpMgmt 1 }
+-- ********************************************************************
+
+    swL3IpDomainMaxSupportedDomains OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Maximum number of routing domain in the IP routing domain control
+            table (swL3IpDomainCtrlTable) ."
+        ::= { swL3IpDomainMgmt 1 }
+
+    swL3IpDomainCurrentTotalDomains OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Current exist routing domain number in the IP routing domain control
+            table ."
+        ::= { swL3IpDomainMgmt 2 }
+
+    swL3IpDomainCtrlTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF SwL3IpDomainCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "This table contain IP routing domain bind below interface
+            information ."
+        ::= { swL3IpDomainMgmt 3 }
+
+    swL3IpDomainCtrlEntry OBJECT-TYPE
+        SYNTAX  SwL3IpDomainCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of information about a specific IP routing domain bind interface ."
+        INDEX  { swL3IpDomainIpAddr , swL3IpDomainIpSubnetMask , swL3IpDomainInterface }
+        ::= { swL3IpDomainCtrlTable 1 }
+
+    SwL3IpDomainCtrlEntry ::= 
+        SEQUENCE {
+            swL3IpDomainIpAddr
+                IpAddress,
+            swL3IpDomainIpSubnetMask
+                IpAddress,
+            swL3IpDomainInterface
+                INTEGER,
+            swL3IpDomainDesc
+                DisplayString,
+            swL3IpDomainStatsIndex
+                INTEGER,
+            swL3IpDomainState
+                INTEGER
+        }
+
+    swL3IpDomainIpAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This object indicates the IP address of routing domain . This object
+            only can take the value of the unicast IP address."
+        ::= { swL3IpDomainCtrlEntry 1 }
+
+    swL3IpDomainIpSubnetMask OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IP net mask for this routing domain ."
+        ::= { swL3IpDomainCtrlEntry 2 }
+
+    swL3IpDomainInterface OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The object indicates a interface number which bind the IP routing domain
+            . The value must be a Ifindex exist in ifTable (Please refer RFC2233 for
+            detail) ."
+        ::= { swL3IpDomainCtrlEntry 3 }
+
+    swL3IpDomainDesc OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (1..12))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "A textual description of the IP routing domain . It cannot be a null
+            string . And each description must be unique in the table ."
+        ::= { swL3IpDomainCtrlEntry 4 }
+
+    swL3IpDomainStatsIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The object indicates the IP domain statistics index for statistics counter
+            (Please refer to swL3IpStatsIpDomainRtDomain object) . The value is
+            maintained by system ."
+        ::= { swL3IpDomainCtrlEntry 5 }
+
+    swL3IpDomainState OBJECT-TYPE
+        SYNTAX  INTEGER {
+               other(1),
+               down(2),
+               up(3),
+               invalid(4)
+               }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "This object indicates the status of this entry. 
+
+            other(1) - this entry is currently in use but the conditions under
+                which it will remain so are different from each of the following
+                values .
+            down(2) - the interface is just now created . The interface can'nt
+                routing or forwarding packets .
+            up(3) - the interface is ready to routing and fordwarding packets .
+            invalid(4) - writing this value to the object, and then the corresponding
+                entry will be removed from the table ."
+        ::= { swL3IpDomainCtrlEntry 6 }
+
+-- ********************************************************************
+--  swL3IpFdbMgmt           OBJECT IDENTIFIER ::= { swL3IpMgmt 2 }
+-- ********************************************************************
+
+    swL3IpFdbInfoTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF SwL3IpFdbInfoEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table that contains forwarding and/or filtering information.
+            This information is used by the switch in determining how to propagate
+            the received IP packets."
+        ::= { swL3IpFdbMgmt 1 }
+
+    swL3IpFdbInfoEntry OBJECT-TYPE
+        SYNTAX  SwL3IpFdbInfoEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Information about a specific IP address for which the bridge has some
+            forwarding and/or filtering information."
+        INDEX  { swL3IpFdbInfoRdIndex , swL3IpFdbInfoIpAddr }
+        ::= { swL3IpFdbInfoTable 1 }
+
+    SwL3IpFdbInfoEntry ::= 
+        SEQUENCE {
+            swL3IpFdbInfoRdIndex
+                INTEGER,
+            swL3IpFdbInfoIpAddr
+                IpAddress,
+            swL3IpFdbInfoPort
+                INTEGER,
+            swL3IpFdbInfoType
+                INTEGER
+        }
+
+    swL3IpFdbInfoRdIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The object indicates the IP routing domain index, and should be
+            associated with one of swL3IpDomainStatsIndex."
+        ::= { swL3IpFdbInfoEntry 1 }
+
+    swL3IpFdbInfoIpAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "A IP address for which switch has forwarding and/or filtering 
+            information."
+        ::= { swL3IpFdbInfoEntry 2 }
+
+    swL3IpFdbInfoPort OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Either the value '0', or the port number of the port on which packet
+            having a IP address equal to the value of the corresponding instance
+            of swL3IpFdbInfoIpAddr has been seen.  A value of '0' indicates that the
+            port number has not been learned but that switch does have some
+            forwarding/filtering information about this address."
+        ::= { swL3IpFdbInfoEntry 3 }
+
+    swL3IpFdbInfoType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                other(1),
+                invalid(2),
+                learned(3),
+                self(4),
+                mgmt(5)
+                }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                      "The status of this entry.  The meanings of the
+                      values are:
+
+                        other(1)   : none of the following.  This would
+                                     include the case where some other
+                                     MIB object (not the corresponding
+                                     instance of dot1dTpFdbPort, nor an
+                                     entry in the dot1dStaticTable) is
+                                     being used to determine if and how
+                                     frames addressed to the value of
+                                     the corresponding instance of
+                                     dot1dTpFdbAddress are being
+                                     forwarded.
+
+                        invalid(2) : this entry is not longer valid
+                                     (e.g., it was learned but has since
+                                     aged-out), but has not yet been
+                                     flushed from the table.
+
+                        learned(3) : the value of the corresponding
+                                     instance of dot1dTpFdbPort was
+                                     learned, and is being used.
+
+                        self(4)    : the value of the corresponding
+                                     instance of dot1dTpFdbAddress
+                                     represents one of the bridge's
+                                     addresses.  The corresponding
+                                     instance of dot1dTpFdbPort
+                                     indicates which of the bridge's
+                                     ports has this address.
+
+                        mgmt(5)    : the value of the corresponding
+                                     instance of dot1dTpFdbAddress is
+                                     also the value of an existing
+                                     instance of dot1dStaticAddress."
+        ::= { swL3IpFdbInfoEntry 4 }
+
+-- ********************************************************************
+--  swL3IpFilterMgmt        OBJECT IDENTIFIER ::= { swL3IpMgmt 3 }
+-- ********************************************************************
+
+    swL3IpFilterAddrConfig  OBJECT IDENTIFIER ::= { swL3IpFilterMgmt 1 }
+
+    swL3IpFilterAddrMaxSupportedEntries OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Maximum number of entries in the IP address filtering table
+            (swL3IpFilterAddrCtrlTable) ."
+        ::= { swL3IpFilterAddrConfig 1 }
+
+    swL3IpFilterAddrCurrentTotalEntries OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Current applied number of entries in the IP address filtering
+            table ."
+        ::= { swL3IpFilterAddrConfig 2 }
+
+    swL3IpFilterAddrCtrlTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF SwL3IpFilterAddrCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "This table defines information for the device to filter packets with
+            specific IP address (either as the DA and/or as the SA) . The IP address 
+            can be a unicast address or multicast address . This table has higher
+            priority than both static FDB table and IGMP table . It means that if a
+            IP address appears on this table also appears on the static FDB table ,
+            the device will use the information provide by this table to process the
+            packet ."
+        ::= { swL3IpFilterAddrConfig 3 }
+
+    swL3IpFilterAddrCtrlEntry OBJECT-TYPE
+        SYNTAX  SwL3IpFilterAddrCtrlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of information about a specific unicast/multicast IP address for
+            which the switch has filtering information ."
+        INDEX  { swL3IpFilterAddrIpAddr }
+        ::= { swL3IpFilterAddrCtrlTable 1 }
+
+    SwL3IpFilterAddrCtrlEntry ::= 
+        SEQUENCE {
+            swL3IpFilterAddrIpAddr
+                IpAddress,
+            swL3IpFilterAddrIpSktGE
+                INTEGER,
+            swL3IpFilterAddrIpSktLE
+                INTEGER,
+            swL3IpFilterAddrCtrlState
+                INTEGER
+        }
+
+    swL3IpFilterAddrIpAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This object indicates a unicast/multicast IP address for which the switch
+            has filtering information . But if the swL3IpFilterAddrCtrlState = src-addr
+            then the object can not be a multicast IP address (Class D IP address) ."
+        ::= { swL3IpFilterAddrCtrlEntry 1 }
+
+    swL3IpFilterAddrIpSktGE OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "This object indicates a socket number which the used socket number
+             should be greater than or equal to"
+        ::= { swL3IpFilterAddrCtrlEntry 2 }
+
+    swL3IpFilterAddrIpSktLE OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "This object indicates a socket number which the used socket number
+             should be less than or equal to"
+        ::= { swL3IpFilterAddrCtrlEntry 3 }
+
+    swL3IpFilterAddrCtrlState OBJECT-TYPE
+        SYNTAX  INTEGER {
+               other(1),
+               dst-addr(2),
+               src-addr(3),
+               dst-src-addr(4),
+               invalid(5)
+               }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "This object indicates the status of this entry. 
+
+            other(1) - this entry is currently in use but the conditions under
+                which it will remain so are different from each of the following
+                values .
+            dst-addr(2) - recieved frames's destination address are currently used
+                to be filtered as it meets with the IP address entry of the table .
+            src-addr(3) - recieved frames's source address are currently used to
+                be filtered as it meets with the IP address entry of the table .
+            dst-src-addr(4) - recieved frames's destination address or source
+                address are currently used to be filtered as it meets with 
+                the IP address entry of the table .
+            invalid(5) - writing this value to the object, and then the corresponding
+                entry will be removed from the table ."
+        ::= { swL3IpFilterAddrCtrlEntry 4 }
+
+-- ********************************************************************
+--  swL3IpStatisticsMgmt    OBJECT IDENTIFIER ::= { swL3IpMgmt 7 }
+-- ********************************************************************
+
+    swL3IpStatsIpDomainInfo OBJECT IDENTIFIER ::= { swL3IpStatisticsMgmt 1 }
+
+    swL3IpStatsIpDomainInfoTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF SwL3IpStatsIpDomainInfolEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table which contains the statistics count information of the
+            swL3IpDomainCtrlTable specify IP domain table ."
+        ::= { swL3IpStatsIpDomainInfo 1 }
+
+    swL3IpStatsIpDomainInfolEntry OBJECT-TYPE
+        SYNTAX  SwL3IpStatsIpDomainInfolEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of statistics count information about a specific IP routing
+            domain for which the switch has statistics information ."
+        INDEX  { swL3IpStatsIpDomainRtDomain }
+        ::= { swL3IpStatsIpDomainInfoTable 1 }
+
+    SwL3IpStatsIpDomainInfolEntry ::= 
+        SEQUENCE {
+            swL3IpStatsIpDomainRtDomain
+                INTEGER,
+            swL3IpStatsIpDomainDesc
+                DisplayString,
+            swL3IpStatsIpDomainRxPkts
+                Counter32,
+            swL3IpStatsIpDomainRxLenErrorPkts
+                Counter32,
+            swL3IpStatsIpDomainRxCksmErrorPkts
+                Counter32,
+            swL3IpStatsIpDomainRxAddErrorPkts
+                Counter32,
+            swL3IpStatsIpDomainRxVerErrorPkts
+                Counter32,
+            swL3IpStatsIpDomainRxTTLErrorPkts
+                Counter32,
+            swL3IpStatsIpDomainRxOptionErrorPkts
+                Counter32,
+            swL3IpStatsIpDomainTxPkts
+                Counter32,
+            swL3IpStatsIpDomainDropPkts
+                Counter32
+        }
+
+    swL3IpStatsIpDomainRtDomain OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The index of IP routing domain statistics information . The value should
+            same as swL3IpDomainStatsIndex ."
+        ::= { swL3IpStatsIpDomainInfolEntry 1 }
+
+    swL3IpStatsIpDomainDesc OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (1..12))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "A textual description of the IP routing statistics domain . The value
+            should same as swL3IpDomainDesc ."
+        ::= { swL3IpStatsIpDomainInfolEntry 2 }
+
+    swL3IpStatsIpDomainRxPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every received IP routed packets
+            for the routing domain ."
+        ::= { swL3IpStatsIpDomainInfolEntry 3 }
+
+    swL3IpStatsIpDomainRxLenErrorPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every received the corresponding
+            IP routing domain packet which has invaild header length and invaild
+            datagram length packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 4 }
+
+    swL3IpStatsIpDomainRxCksmErrorPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every received the corresponding
+            IP routing domain packet which has checksum error packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 5 }
+
+    swL3IpStatsIpDomainRxAddErrorPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every received the corresponding
+            IP routing domain packet which has error or invalid address packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 6 }
+
+    swL3IpStatsIpDomainRxVerErrorPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every received the corresponding
+            IP routing domain packet which has not version 4 packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 7 }
+
+    swL3IpStatsIpDomainRxTTLErrorPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every received the corresponding
+            IP routing domain packet which has TTL expired packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 8 }
+
+    swL3IpStatsIpDomainRxOptionErrorPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every received the corresponding
+            IP routing domain packet which has IP option error packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 9 }
+
+    swL3IpStatsIpDomainTxPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every transmitted the corresponding
+            IP routing domain good packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 10 }
+
+    swL3IpStatsIpDomainDropPkts OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This counter is incremented once for every transmitted the corresponding
+            IP routing domain packet which has dropped packet ."
+        ::= { swL3IpStatsIpDomainInfolEntry 11 }
+
+END

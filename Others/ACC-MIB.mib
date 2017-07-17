@@ -1,0 +1,29 @@
+ACC-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS 
+           enterprises, Counter, Gauge, IpAddress,
+           NetworkAddress, TimeTicks
+                   FROM RFC1155-SMI
+           ifIndex, ipRouteDest, ipAdEntAddr
+                   FROM RFC1213-MIB
+            atportIndex
+                   FROM RFC1243-MIB
+	   OBJECT-TYPE
+                  FROM RFC-1212;
+
+
+-- ACC TEXTUAL CONVENTIONS 
+    -- General TC's from RFC 1213
+   DisplayString ::= OCTET STRING
+    -- RowStatus TC defined in rfc1443   
+	RowStatus   ::= INTEGER
+    -- IfIndex for ifIndices, for clarity
+
+   IfIndex     ::= INTEGER
+   SmdsAddress ::= OCTET STRING  (SIZE (8))
+--OBJECT DEFINTIONS:  ACC PRIVATE MIB
+            acc			OBJECT IDENTIFIER ::= { enterprises 5 }
+                accSBAR		OBJECT IDENTIFIER ::= { acc 1 }
+                    accBRG		OBJECT IDENTIFIER ::= { accSBAR 1 }
+
+END

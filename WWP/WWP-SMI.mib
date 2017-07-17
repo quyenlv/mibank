@@ -1,0 +1,70 @@
+--
+-- WWP-SMI.my
+--
+--
+
+	WWP-SMI DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+			enterprises, MODULE-IDENTITY, OBJECT-IDENTITY			
+				FROM SNMPv2-SMI;
+	
+	
+		wwp MODULE-IDENTITY
+			LAST-UPDATED "200009052201Z"
+			ORGANIZATION
+				"World Wide Packets, Inc."
+			CONTACT-INFO
+				"       World Wide Packets
+				Customer Service (Mib Meister)
+				
+				Postal: World Wide Packets
+				       P.O. Box 14665
+				       Spokane, WA 99214
+				       USA
+				Tel:  	+1 509 242 9000
+				
+				Email:  mib.meister@worldwidepackets.com"
+			DESCRIPTION
+				"The enterprise MIB for WorldWide Packets products."
+			REVISION "200009051900Z"
+			DESCRIPTION
+				"Reorganized MIB file structure for WWP products."
+			REVISION "200006010000Z"
+			DESCRIPTION
+				"Initial version of this MIB module."
+			::= { enterprises 6141 }
+		
+	
+--
+-- Node definitions
+--
+	
+		wwpProducts OBJECT-IDENTITY
+			STATUS current
+			DESCRIPTION
+				"wwpProducts is the root OBJECT-IDENTIFIER for all WWP
+				products.  sysObjectID values will be assigned the OID
+				representing the product specified in WWP-PRODUCTS-MIB.my."
+			::= { wwp 1 }
+		
+		wwpModules OBJECT-IDENTITY
+			STATUS current
+			DESCRIPTION
+				"wwpModules provides a root object identifier that can be
+				used to assign MODULE-IDENTIFY values."
+			::= { wwp 2 }
+
+		wwpModulesLeos OBJECT-IDENTITY
+			STATUS current
+			DESCRIPTION
+				"wwpModulesLeos provides a root object identifier for leos that can be
+				  used to assign MODULE-IDENTIFY values."
+			::= { wwpModules 60 }
+		
+	
+	END
+
+--
+-- WWP-SMI.my
+--

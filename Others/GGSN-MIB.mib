@@ -1,0 +1,1323 @@
+--
+-- GGSN MIB 
+-- 
+-- Copyright (c) 2001, Ericsson-Juniper Networks  MobileIP AB.
+-- All rights reserved.
+--
+-- The contents of this document are subject to change 
+-- without notice.
+--
+ 
+
+GGSN-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    enterprises, Integer32, Gauge32, Counter64, IpAddress
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString, TimeStamp 
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF;
+    
+ggsnMIB MODULE-IDENTITY
+    LAST-UPDATED "200110050000Z" -- date is 05 Oct 2001 
+    ORGANIZATION "Juniper Networks, Inc."
+    CONTACT-INFO
+            "        Juniper Technical Assistance Center
+                     Juniper Networks, Inc.
+                     1194 N. Mathilda Avenue
+                     Sunnyvale, CA 94089
+                     E-mail: support@juniper.net"
+
+    DESCRIPTION
+        "The MIB module for GPRS Gateway Support Node 
+         Application"
+    ::= { ejnxMibs 1 }
+
+--
+-- Until we have the mechanism in place to "include" the
+-- definition of juniperMIB, we replicate it here.
+--
+
+ejnmobileipABmib     OBJECT IDENTIFIER ::= { enterprises 10923 }
+ejnxMibs             OBJECT IDENTIFIER ::= { ejnmobileipABmib 1 }
+--
+-- ggsnMIB tree structure
+--
+
+ggsnMibs       OBJECT IDENTIFIER ::= { ggsnMIB 1 }
+ggsnTraps      OBJECT IDENTIFIER ::= { ggsnMIB 2 }
+
+ggsnMIBObjects  OBJECT IDENTIFIER ::= { ggsnMibs 1 }
+
+--
+-- Top-level groups in ggsnMibs. For RADIUS group, standard
+-- MIBs defined in RFC2618 and RFC2620 are supported. 
+--
+
+ggsnGeneralInfo  OBJECT IDENTIFIER ::= { ggsnMIBObjects 1 }
+ggsnGtpcInfo     OBJECT IDENTIFIER ::= { ggsnMIBObjects 2 }
+ggsnChargingInfo OBJECT IDENTIFIER ::= { ggsnMIBObjects 3 }
+ggsnDhcpInfo     OBJECT IDENTIFIER ::= { ggsnMIBObjects 4 }
+ggsnAlarmInfo    OBJECT IDENTIFIER ::= { ggsnMIBObjects 5 }
+
+
+--
+-- GGSN system group
+--
+
+ggsnVersion OBJECT-TYPE
+   SYNTAX        DisplayString (SIZE (0..255))
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The revision of this application, blank if unknown
+          or unavailable."
+   ::= { ggsnGeneralInfo 1 }
+
+ggsnInstalled OBJECT-TYPE
+   SYNTAX        TimeStamp
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The value of sysUpTime when the application was 
+          last installed, up and running. Zero if unknown."
+   ::= { ggsnGeneralInfo 2 }
+
+
+-- GGSN Global statistics
+
+ggsnGlobalStats OBJECT IDENTIFIER ::= { ggsnGeneralInfo 3 }
+
+ggsnStatReportTime OBJECT-TYPE
+   SYNTAX        TimeStamp
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The value of sysUpTime when the global statistics report is 
+          generated."
+   ::= { ggsnGlobalStats 1 }
+
+ggsnNbrOfActivePdpContexts OBJECT-TYPE
+   SYNTAX        Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of active PDP contexts on this GGSN."
+   ::= { ggsnGlobalStats 2 }
+
+ggsnPdpContextsStatsAttempted 
+   OBJECT IDENTIFIER ::= { ggsnGlobalStats 3 }
+ggsnPdpContextsStatsCompleted 
+   OBJECT IDENTIFIER ::= { ggsnGlobalStats 4 }
+
+ggsnAttemptedActivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context activation procedures
+          initiated by the MS on this GGSN."
+   ::= { ggsnPdpContextsStatsAttempted 1 }
+
+ggsnAttemptedDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context deactivation procedures
+          initiated by the MS on this GGSN."
+   ::= { ggsnPdpContextsStatsAttempted 2 }
+
+ggsnAttemptedSelfDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context deactivation procedures
+          initiated by this GGSN."
+   ::= { ggsnPdpContextsStatsAttempted 3 }
+
+ggsnAttemptedUpdate OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context updates attempted on
+          this GGSN."
+   ::= { ggsnPdpContextsStatsAttempted 4 }
+
+ggsnCompletedActivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of successfully completed activation
+          PDP context procedures initiated by the MS on this 
+          GGSN."
+   ::= { ggsnPdpContextsStatsCompleted 1 }
+
+ggsnCompletedDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+         "The number of successfully completed deactivation
+          PDP context procedures initiated by the MS on this 
+          GGSN."
+   ::= { ggsnPdpContextsStatsCompleted 2 }
+
+ggsnCompletedSelfDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+         "The number of successfully completed deactivation
+          PDP context procedures initiated by this GGSN."
+   ::= { ggsnPdpContextsStatsCompleted 3 }
+
+ggsnCompletedUpdate OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context updates successfully
+          completed on this GGSN."
+   ::= { ggsnPdpContextsStatsCompleted 4 }
+   
+ggsnUplinkTrafficInfo 
+   OBJECT IDENTIFIER ::= { ggsnGlobalStats 11 }
+ggsnDownlinkTrafficInfo 
+   OBJECT IDENTIFIER ::= { ggsnGlobalStats 12 }
+
+ggsnUplinkPackets OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total uplink packets processed by this GGSN."
+   ::= { ggsnUplinkTrafficInfo 1 }
+ 
+ggsnUplinkBytes OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total bytes for all processed uplink packets
+          via this GGSN."
+   ::= { ggsnUplinkTrafficInfo 2 }
+
+ggsnUplinkDrops OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of dropped packets by this GGSN 
+          in the uplink direction."
+   ::= { ggsnUplinkTrafficInfo 3 }
+
+ggsnDownlinkPackets OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total downlink packets processed by this GGSN."
+   ::= { ggsnDownlinkTrafficInfo 1 }
+ 
+ggsnDownlinkBytes OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total bytes for all processed downlink packets
+          via this GGSN."
+   ::= { ggsnDownlinkTrafficInfo 2 }
+
+ggsnDownlinkDrops OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of dropped packets by this GGSN 
+          in the downlink direction."
+   ::= { ggsnDownlinkTrafficInfo 3 }
+
+
+-- GGSN Pic statistics
+
+ggsnPicStatsTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF GgsnPicStatsEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A table listing the statistics for all GTP PICs."
+   ::= { ggsnGeneralInfo 4 }
+
+ggsnPicStatsEntry OBJECT-TYPE
+   SYNTAX        GgsnPicStatsEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A conceptual row listing the statistics for each 
+          GTP PICs on this GGSN." 
+   INDEX         { ggsnPicIndex }
+   ::= { ggsnPicStatsTable 1 }
+
+
+GgsnPicStatsEntry ::= SEQUENCE {
+   ggsnPicIndex                  Integer32,
+   ggsnPicAddress                IpAddress,
+   ggsnPicNbrOfActivePdpContexts Gauge32
+}
+
+ggsnPicIndex OBJECT-TYPE
+   SYNTAX        Integer32 (1..2147483647)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A number representing each GTP PIC whose statistics
+          is being generated."
+   ::= { ggsnPicStatsEntry 1 }
+
+ggsnPicAddress OBJECT-TYPE
+   SYNTAX        IpAddress
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The IP address of this GTP PIC."
+   ::= { ggsnPicStatsEntry 2 }
+
+ggsnPicNbrOfActivePdpContexts OBJECT-TYPE
+   SYNTAX        Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of active PDP contexts on a per PIC
+          of this GGSN."
+   ::= { ggsnPicStatsEntry 3 }
+
+
+-- GGSN APN statistics
+
+ggsnApnStatsTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF ApnStats
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A table listing the statistics for all APNs which
+          are served by this GGSN."
+   ::= { ggsnGeneralInfo 5 }
+
+ggsnApnStatsEntry OBJECT-TYPE
+   SYNTAX        ApnStats
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A conceptual row listing the statistics for each
+          APN which is served by this GGSN."
+   INDEX         { ggsnApnIndex }
+   ::= { ggsnApnStatsTable 1 }
+
+ApnStats ::= SEQUENCE {
+   ggsnApnIndex                     Integer32,
+   ggsnApnName                      DisplayString,
+   ggsnApnActivePdpContextCount     Gauge32,
+   ggsnApnAttemptedActivation       Counter64,
+   ggsnApnAttemptedDynActivation    Counter64,
+   ggsnApnAttemptedDeactivation     Counter64,
+   ggsnApnAttemptedSelfDeactivation Counter64,
+   ggsnApnCompletedActivation       Counter64,
+   ggsnApnCompletedDynActivation    Counter64,
+   ggsnApnCompletedDeactivation     Counter64,
+   ggsnApnCompletedSelfDeactivation Counter64,
+   ggsnApnUplinkPackets             Counter64,
+   ggsnApnUplinkBytes               Counter64,
+   ggsnApnUplinkDrops               Counter64,
+   ggsnApnDownlinkPackets           Counter64,
+   ggsnApnDownlinkBytes             Counter64,
+   ggsnApnDownlinkDrops             Counter64
+}
+
+ggsnApnIndex OBJECT-TYPE
+   SYNTAX        Integer32 (1..2147483647)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A number representing each APN whose statistics
+          is being generated."
+   ::= { ggsnApnStatsEntry 1 }
+
+ggsnApnName OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The identifier of the subject APN."
+   ::= { ggsnApnStatsEntry 2 }
+ 
+ggsnApnActivePdpContextCount  OBJECT-TYPE
+   SYNTAX        Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of active PDP contexts associated with
+          the APN."
+   ::= { ggsnApnStatsEntry 3 }
+   
+ggsnApnAttemptedActivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context activation procedures
+          initiated by the MS on a per APN of the GGSN."
+   ::= { ggsnApnStatsEntry 4 }
+
+ggsnApnAttemptedDynActivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of dynamic PDP context activation 
+          procedures initiated by the MS where a dynamic
+          PDP addressis requested on a per APN of the GGSN."
+   ::= { ggsnApnStatsEntry 5 }
+
+ggsnApnAttemptedDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context deactivation procedures
+          initiated by the MS on a per APN of the GGSN."
+   ::= { ggsnApnStatsEntry 6 }
+
+ggsnApnAttemptedSelfDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of PDP context deactivation procedures
+          initiated by the GGSN on a per APN."
+   ::= { ggsnApnStatsEntry 7 }
+   
+ggsnApnCompletedActivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of successfully completed activation
+          PDP context procedures initiated by the MS on a 
+          per APN of the GGSN."
+   ::= { ggsnApnStatsEntry 8 }
+   
+ggsnApnCompletedDynActivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of successfully attempted dynamic PDP  
+          context activation procedures initiated by the MS 
+          where a dynamic PDP addressis requested on a per 
+          APN of the GGSN." 
+   ::= { ggsnApnStatsEntry 9 }
+     
+ggsnApnCompletedDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of successfully completed deactivation
+          PDP context procedures initiated by the MS on a 
+          per APN of the GGSN."
+   ::= { ggsnApnStatsEntry 10 }
+      
+ggsnApnCompletedSelfDeactivation OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of successfully completed deactivation
+          PDP context procedures initiated by the GGSN on a 
+          per APN."
+   ::= { ggsnApnStatsEntry 11 }
+   
+ggsnApnUplinkPackets OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total uplink packets processed on a per APN."
+   ::= { ggsnApnStatsEntry 12 }
+ 
+ggsnApnUplinkBytes OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total bytes for all processed uplink packets 
+          on a per APN of this GGSN."
+   ::= { ggsnApnStatsEntry 13 }
+
+ggsnApnUplinkDrops OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of dropped packets in the uplink 
+          direction on a per APN of this GGSN."
+   ::= { ggsnApnStatsEntry 14 }
+
+ggsnApnDownlinkPackets OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total downlink packets processed on a per APN."
+   ::= { ggsnApnStatsEntry 15 }
+ 
+ggsnApnDownlinkBytes OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total bytes for all processed downlink packets
+          on a per APN."
+   ::= { ggsnApnStatsEntry 16 }
+
+ggsnApnDownlinkDrops OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of dropped packets in the downlink 
+          direction on a per APN."
+   ::= { ggsnApnStatsEntry 17 }
+
+
+-- GGSN SGSN statistics
+
+ggsnSgsnStatsTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF SgsnStats
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A table listing the statistics for all SGSNs with  
+          which this GGSN communicates."
+   ::= { ggsnGeneralInfo 6 }
+
+ggsnSgsnStatsEntry OBJECT-TYPE
+   SYNTAX        SgsnStats
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A conceptual row listing the statistics for each 
+          SGSN with which this GGSN communicates."
+   INDEX        { ggsnSgsnIndex }
+   ::= { ggsnSgsnStatsTable 1 }
+
+SgsnStats ::= SEQUENCE {
+   ggsnSgsnIndex             Integer32,
+   ggsnSgsnAddress           IpAddress,
+   ggsnSgsnUplinkPackets     Counter64,
+   ggsnSgsnUplinkBytes       Counter64,
+   ggsnSgsnUplinkDrops       Counter64,
+   ggsnSgsnDownlinkPackets   Counter64,
+   ggsnSgsnDownlinkBytes     Counter64,
+   ggsnSgsnDownlinkDrops     Counter64
+}
+
+ggsnSgsnIndex OBJECT-TYPE
+   SYNTAX        Integer32 (1..2147483647)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A number representing each SGSN whose statistics
+          is being generated."
+   ::= { ggsnSgsnStatsEntry 1 }
+
+ggsnSgsnAddress OBJECT-TYPE
+   SYNTAX        IpAddress
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The IP address of the SGSN whose statistics
+          is being generated."
+   ::= { ggsnSgsnStatsEntry 2 }
+
+ggsnSgsnUplinkPackets OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total uplink packets processed on a per SGSN."
+   ::= { ggsnSgsnStatsEntry 3 }
+ 
+ggsnSgsnUplinkBytes OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total bytes for all processed uplink packets
+          on a per SGSN."
+   ::= { ggsnSgsnStatsEntry 4 }
+
+ggsnSgsnUplinkDrops OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Count of dropped packets in the uplink direction
+          on a per SGSN."
+   ::= { ggsnSgsnStatsEntry 5 }
+
+ggsnSgsnDownlinkPackets OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total downlink packets processed on a per SGSN."
+   ::= { ggsnSgsnStatsEntry 6 }
+ 
+ggsnSgsnDownlinkBytes OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total bytes for all processed downlink packets
+          on a per SGSN."
+   ::= { ggsnSgsnStatsEntry 7 }
+
+ggsnSgsnDownlinkDrops OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total dropped packets in the downlink direction
+          on a per SGSN."
+   ::= { ggsnSgsnStatsEntry 8 }
+   
+
+-- GGSN User statistics (TBD)
+
+--
+-- GTP-C group 
+--
+
+ggsnGtpcTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF GtpcEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "The table listing GTP-C PICs"
+   ::= { ggsnGtpcInfo 1 }
+
+ggsnGtpcEntry OBJECT-TYPE
+   SYNTAX        GtpcEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "An entry representing a GTP-C PIC."
+   INDEX         { ggsnGtpcIndex }
+   ::= { ggsnGtpcTable 1 }
+
+GtpcEntry ::= SEQUENCE {
+   ggsnGtpcIndex       Integer32,
+   ggsnGtpcVersion     DisplayString,
+   ggsnGtpcAddress     IpAddress,
+   ggsnGtpcPdpCapacity Integer32,
+   ggsnGtpcRole        INTEGER, 
+   ggsnGtpcStatus      DisplayString
+}
+
+ggsnGtpcIndex OBJECT-TYPE
+   SYNTAX        Integer32 (1..2147483647)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A number uniquely identifying each GGSN GTP-C."
+   ::= { ggsnGtpcEntry 1 }
+
+ggsnGtpcVersion OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Software version running on the GTP-C PIC"
+   ::= { ggsnGtpcEntry 2 }
+
+ggsnGtpcAddress OBJECT-TYPE
+   SYNTAX        IpAddress
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The external IP address of the GTP-C PIC."
+   ::= { ggsnGtpcEntry 3 }
+
+ggsnGtpcPdpCapacity OBJECT-TYPE
+   SYNTAX        Integer32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The capacity of the GTP-C PIC."
+   ::= { ggsnGtpcEntry 4 }
+
+ggsnGtpcRole OBJECT-TYPE
+   SYNTAX        INTEGER {
+                     unknown(1),
+                     master(2),
+                     slave(3),
+                     standby(4)
+                 }
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The current role of the GTP-C."
+   ::= { ggsnGtpcEntry 5 }
+   
+ggsnGtpcStatus OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The current status of the GTP-C, example BLOCK."
+   ::= { ggsnGtpcEntry 6 }
+
+
+--
+-- Charging group
+--
+
+ggsnAcctPartialRecordGenerated OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only 
+   STATUS        current
+   DESCRIPTION 
+         "The number of partial Call Data Records 
+          generated."
+   ::= { ggsnChargingInfo 1 }
+
+ggsnAcctBillingGatewayTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF BillingGatewayEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "The table listing the Billing Gateway with
+          which the GGSN communicates."
+   ::= { ggsnChargingInfo 2 }
+
+ggsnAcctBillingGatewayEntry OBJECT-TYPE
+   SYNTAX        BillingGatewayEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "An entry representing a GGSN Billing Gateway."
+   INDEX         { ggsnAcctBillingGatewayIndex }
+   ::= { ggsnAcctBillingGatewayTable 1 }
+
+BillingGatewayEntry ::= SEQUENCE {
+   ggsnAcctBillingGatewayIndex       Integer32 ,
+   ggsnAcctBillingGatewayAddress     IpAddress,
+   ggsnAcctDataRecTransReqSent       Counter64,
+   ggsnAcctDataRecTransReqSentDup    Counter64,
+   ggsnAcctDataRecTransReqCancelled  Counter64,
+   ggsnAcctDataRecTransRespReceived  Counter64,
+   ggsnAcctRedirectionReqReceived    Counter64,
+   ggsnAcctRedirectionRespSent       Counter64
+}
+
+ggsnAcctBillingGatewayIndex OBJECT-TYPE
+   SYNTAX        Integer32 (1..2147483647)
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "A number uniquely identifying each Billing Gateway
+          with which the GGSN communicates."
+   ::= { ggsnAcctBillingGatewayEntry 1 }
+   
+ggsnAcctBillingGatewayAddress OBJECT-TYPE
+   SYNTAX        IpAddress
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The address of the Billing Gateway referred to
+          in this table entry."
+   ::= { ggsnAcctBillingGatewayEntry 2 }
+   
+ggsnAcctDataRecTransReqSent OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of Data Record Transfer Request packets
+          sent."
+   ::= { ggsnAcctBillingGatewayEntry 3 }
+
+ggsnAcctDataRecTransReqSentDup OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of Data Record Transfer Requests sent
+          with duplicated data record packets."
+   ::= { ggsnAcctBillingGatewayEntry 4 }
+
+ggsnAcctDataRecTransReqCancelled OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of Data Record Transfer Requests sent
+          with indication to cancel CDR packets related to
+          previously unacknowledged sequence number."
+   ::= { ggsnAcctBillingGatewayEntry 5 }
+
+ggsnAcctDataRecTransRespReceived OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of Data Record Transfer Responses 
+          received."
+   ::= { ggsnAcctBillingGatewayEntry 6 }
+
+ggsnAcctRedirectionReqReceived OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of Redirection Request packets 
+          received."
+   ::= { ggsnAcctBillingGatewayEntry 7 }
+
+ggsnAcctRedirectionRespSent OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of Redirection Response packets 
+          sent."
+   ::= { ggsnAcctBillingGatewayEntry 8 }
+
+--
+-- DHCP group
+--
+
+ggsnDhcpClientAddress OBJECT-TYPE
+   SYNTAX        IpAddress
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The Address of the DHCP client of the GGSN."
+   ::= { ggsnDhcpInfo 1 }
+
+ggsnDhcpServerTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF DhcpServerEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "The table listing the DHCP servers with
+          which the GGSN communicates."
+   ::= { ggsnDhcpInfo 2 }
+
+ggsnDhcpServerEntry OBJECT-TYPE
+   SYNTAX        DhcpServerEntry
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "An entry representing a GGSN DHCP server."
+   INDEX         { ggsnDhcpServerIndex }
+   ::= { ggsnDhcpServerTable 1 }
+
+DhcpServerEntry ::= SEQUENCE {
+   ggsnDhcpServerIndex            Integer32,
+   ggsnDhcpServerAddress          IpAddress,
+   ggsnDhcpServerName             DisplayString,
+   ggsnDhcpClientYiaddr           IpAddress,
+   ggsnDhcpClientState            DisplayString,
+   ggsnDhcpClientRequestsSent     Counter64,
+   ggsnDhcpClientRepliesReceived  Counter64,
+   ggsnDhcpClientRepliesDiscarded Counter64
+}
+
+ggsnDhcpServerIndex OBJECT-TYPE
+   SYNTAX        Integer32 (1..2147483647)
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A number uniquely identifying each DHCP server with
+          which this client communicates."
+   ::= { ggsnDhcpServerEntry 1 }
+
+ggsnDhcpServerAddress OBJECT-TYPE
+   SYNTAX        IpAddress
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The IP address of the DHCP server (siaddr)
+          referred to in this table entry."
+   ::= { ggsnDhcpServerEntry 2 }
+
+ggsnDhcpServerName OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The host name of the DHCP server (sname)."
+   ::= { ggsnDhcpServerEntry 3 }
+
+ggsnDhcpClientYiaddr OBJECT-TYPE
+   SYNTAX        IpAddress
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The IP address of the 'your' client (yiaddr)."
+   ::= { ggsnDhcpServerEntry 4 }
+
+ggsnDhcpClientState OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The state of the DHCP client such as RENEWING."
+   ::= { ggsnDhcpServerEntry 5 }
+
+ggsnDhcpClientRequestsSent     OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of requests sent to this server."
+   ::= { ggsnDhcpServerEntry 6 }
+
+ggsnDhcpClientRepliesReceived  OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of replies received from this server."
+   ::= { ggsnDhcpServerEntry 7 }
+
+ggsnDhcpClientRepliesDiscarded OBJECT-TYPE
+   SYNTAX        Counter64
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The number of replies received from this server
+          and dropped."
+   ::= { ggsnDhcpServerEntry 8 }
+   
+
+-- 
+-- Group for alarm data
+-- 
+
+PerceivedSeverity ::= TEXTUAL-CONVENTION
+   STATUS      current
+   DESCRIPTION 
+       "Perceived severity of an event or alarm."
+   SYNTAX      INTEGER {
+       unknown       (1),
+       critical      (2),
+       major         (3),
+       minor         (4),
+       warning       (5),
+       cleared       (6),
+       informational (7)      
+   }
+
+ggsnAlarmNumber  OBJECT-TYPE
+   SYNTAX        Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total number of active alarms, i.e. total number
+          of entries in the alarm table"
+   ::= { ggsnAlarmInfo 1 }
+
+ggsnAlarmCriticalNumber OBJECT-TYPE
+   SYNTAX       Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total number of critical alarms."
+   ::= { ggsnAlarmInfo 2 }
+
+ggsnAlarmMajorNumber OBJECT-TYPE
+   SYNTAX        Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total number of major alarms."
+   ::= { ggsnAlarmInfo 3 }
+
+ggsnAlarmMinorNumber OBJECT-TYPE
+   SYNTAX       Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total number of minor alarms."
+   ::= { ggsnAlarmInfo 4 }
+
+ggsnAlarmWarningNumber OBJECT-TYPE
+   SYNTAX        Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total number of warnings."
+   ::= { ggsnAlarmInfo 5 }
+
+ggsnAlarmUnknownNumber OBJECT-TYPE
+   SYNTAX        Gauge32
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "Total number of unknown alarms."
+   ::= { ggsnAlarmInfo 6 }
+
+ggsnAlarmTable OBJECT-TYPE
+   SYNTAX        SEQUENCE OF GgsnAlarm
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A table listing the current active alarms in the
+          system."
+   ::= { ggsnAlarmInfo 7 }
+
+ggsnAlarmEntry OBJECT-TYPE
+   SYNTAX        GgsnAlarm
+   MAX-ACCESS    not-accessible
+   STATUS        current
+   DESCRIPTION 
+         "A table entry holding one current alarm."
+   INDEX         { ggsnAlarmId }
+   ::= { ggsnAlarmTable 1 }
+
+GgsnAlarm ::= SEQUENCE {
+   ggsnAlarmId             Integer32,
+   ggsnAlarmName           DisplayString,
+   ggsnAlarmTime           TimeStamp,
+   ggsnAlarmSourceId       DisplayString,
+   ggsnAlarmObjectClass    DisplayString,
+   ggsnAlarmObjectInstance DisplayString,
+   ggsnAlarmSeverity       PerceivedSeverity,
+   ggsnAlarmDescription    DisplayString
+}
+
+ggsnAlarmId OBJECT-TYPE
+   SYNTAX        Integer32 (1..2147483647)
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "A number uniquely identifying each event or alarm
+          in the Alarm Table."
+   ::= { ggsnAlarmEntry 1 }
+
+ggsnAlarmName OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The name of the event or alarm."
+   ::= { ggsnAlarmEntry 2 }
+
+ggsnAlarmTime OBJECT-TYPE
+   SYNTAX        TimeStamp
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The value of sysUpTime when the event or alarm was sent."
+   ::= { ggsnAlarmEntry 3 }
+
+ggsnAlarmSourceId OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The name of the event or alarm's originator."
+   ::= { ggsnAlarmEntry 4 }
+
+ggsnAlarmObjectClass OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The class of the network resources associated
+          with the event or alarm."
+   ::= { ggsnAlarmEntry 5 }
+
+ggsnAlarmObjectInstance OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The instance (of a class) of the network resource
+          associated with the event or alarm."
+   ::= { ggsnAlarmEntry 6 }
+
+ggsnAlarmSeverity OBJECT-TYPE
+   SYNTAX        PerceivedSeverity
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION 
+         "The perceived serverity of the event. The value
+          unknown (0) is not recommended to be used."
+   ::= { ggsnAlarmEntry 7 }
+
+ggsnAlarmDescription OBJECT-TYPE
+   SYNTAX        DisplayString
+   MAX-ACCESS     read-only
+   STATUS        current
+   DESCRIPTION 
+         "A short textual explanation of the event or
+          alarm instance."
+   ::= { ggsnAlarmEntry 8 }
+
+
+--
+-- GGSN enterprise traps
+--
+
+ggsnTrapNew NOTIFICATION-TYPE
+   OBJECTS { ggsnAlarmId,
+             ggsnAlarmName,
+             ggsnAlarmTime,
+             ggsnAlarmSourceId,
+             ggsnAlarmObjectClass,
+             ggsnAlarmObjectInstance,
+             ggsnAlarmSeverity,
+             ggsnAlarmDescription }
+   STATUS    current
+   DESCRIPTION 
+         "A trap describing the newly generated event or
+          alarm. The text in ggsnTrapDescription indicates 
+          the nature of the problem."
+   ::= { ggsnTraps 1 }
+
+ggsnTrapChanged NOTIFICATION-TYPE
+   OBJECTS { ggsnAlarmId,
+             ggsnAlarmName,
+             ggsnAlarmTime,
+             ggsnAlarmSourceId,
+             ggsnAlarmObjectClass,
+             ggsnAlarmObjectInstance,
+             ggsnAlarmSeverity,
+             ggsnAlarmDescription }
+   STATUS    current
+   DESCRIPTION 
+         "A trap indicating a change in some of the alarm or
+          event's attributes has occured. The text in
+          ggsnTrapDescription indicates the nature
+          of the change."
+   ::= { ggsnTraps 2 }
+
+ggsnTrapCleared NOTIFICATION-TYPE
+   OBJECTS { ggsnAlarmId,
+             ggsnAlarmName,
+             ggsnAlarmTime,
+             ggsnAlarmSourceId,
+             ggsnAlarmObjectClass,
+             ggsnAlarmObjectInstance,
+             ggsnAlarmSeverity,
+             ggsnAlarmDescription }
+   STATUS    current
+   DESCRIPTION 
+         "A trap indicating the clear of the event or alarm."
+   ::= { ggsnTraps 3 }
+
+
+--
+-- Conformance information
+--
+
+ggsnMIBConformance
+         OBJECT IDENTIFIER ::= { ggsnMibs 2 }
+ggsnMIBCompliances
+         OBJECT IDENTIFIER ::= { ggsnMIBConformance 1 }
+ggsnMIBGroups
+         OBJECT IDENTIFIER ::= { ggsnMIBConformance 2 }
+
+
+-- Compliance statements
+
+ggsnMIBCompliance MODULE-COMPLIANCE
+   STATUS        current
+   DESCRIPTION 
+         "The compliance statement for the box implementing
+          the ggsn MIB."
+   MODULE -- this module
+   MANDATORY-GROUPS { 
+          ggsnSystemGroup,
+          ggsnGlobalStatisticsGroup,
+          ggsnApnStatisticsGroup,
+          ggsnSgsnStatisticsGroup,
+          ggsnAcctClientStatisticsGroup,
+          ggsnDhcpStatisticsGroup,
+          ggsnAlarmsGroup, 
+          ggsnAlarmsEntryGroup, 
+          ggsnNotificationsGroup
+   }
+   ::= { ggsnMIBCompliances 1 }
+
+
+-- Unit of conformance
+
+ggsnSystemGroup OBJECT-GROUP
+   OBJECTS { ggsnVersion,
+             ggsnInstalled,
+             ggsnGtpcVersion,
+             ggsnGtpcAddress,
+             ggsnGtpcPdpCapacity,
+             ggsnGtpcRole,
+             ggsnGtpcStatus        
+   }
+   STATUS current
+   DESCRIPTION
+         "The basic collection of objects providing system 
+          management of the ggsn application."
+   ::= { ggsnMIBGroups 1 }
+
+ggsnGlobalStatisticsGroup OBJECT-GROUP
+   OBJECTS { ggsnStatReportTime,
+             ggsnNbrOfActivePdpContexts,
+             ggsnAttemptedActivation,
+             ggsnAttemptedDeactivation,
+             ggsnAttemptedSelfDeactivation,
+             ggsnAttemptedUpdate,
+             ggsnCompletedActivation,
+             ggsnCompletedDeactivation,
+             ggsnCompletedSelfDeactivation,
+             ggsnCompletedUpdate,
+             ggsnUplinkPackets,
+             ggsnUplinkBytes,
+             ggsnUplinkDrops,
+             ggsnDownlinkPackets,
+             ggsnDownlinkBytes,
+             ggsnDownlinkDrops,
+             ggsnPicAddress,
+             ggsnPicNbrOfActivePdpContexts
+   }
+   STATUS current
+   DESCRIPTION
+         "The basic collection of objects providing global 
+          measurements for the ggsn node."
+   ::= { ggsnMIBGroups 2 }
+
+ggsnApnStatisticsGroup OBJECT-GROUP
+   OBJECTS { ggsnApnName,
+             ggsnApnActivePdpContextCount,
+             ggsnApnAttemptedActivation,
+             ggsnApnAttemptedDynActivation,
+             ggsnApnAttemptedDeactivation,
+             ggsnApnAttemptedSelfDeactivation,
+             ggsnApnCompletedActivation,
+             ggsnApnCompletedDynActivation,
+             ggsnApnCompletedDeactivation,
+             ggsnApnCompletedSelfDeactivation,
+             ggsnApnUplinkPackets,
+             ggsnApnUplinkBytes,
+             ggsnApnUplinkDrops,
+             ggsnApnDownlinkPackets,
+             ggsnApnDownlinkBytes,
+             ggsnApnDownlinkDrops          
+   }
+   STATUS current
+   DESCRIPTION
+         "The basic collection of objects providing 
+          measurements on a per APN of the ggsn node."
+   ::= { ggsnMIBGroups 3 }
+
+ggsnSgsnStatisticsGroup OBJECT-GROUP
+   OBJECTS { ggsnSgsnAddress,
+             ggsnSgsnUplinkPackets,
+             ggsnSgsnUplinkBytes,
+             ggsnSgsnUplinkDrops,
+             ggsnSgsnDownlinkPackets,
+             ggsnSgsnDownlinkBytes,
+             ggsnSgsnDownlinkDrops          
+   }
+   STATUS current
+   DESCRIPTION
+         "The basic collection of objects providing 
+          measurements on a per SGSN of the ggsn node."
+   ::= { ggsnMIBGroups 4 }
+
+ggsnAcctClientStatisticsGroup OBJECT-GROUP
+   OBJECTS { ggsnAcctBillingGatewayIndex,
+             ggsnAcctBillingGatewayAddress,
+             ggsnAcctDataRecTransReqSent,
+             ggsnAcctDataRecTransReqSentDup,
+             ggsnAcctDataRecTransReqCancelled,
+             ggsnAcctDataRecTransRespReceived,
+             ggsnAcctRedirectionReqReceived,
+             ggsnAcctRedirectionRespSent          
+   }
+   STATUS current
+   DESCRIPTION
+         "The basic collection of objects providing 
+          measurements on a per Billing Gateway with
+          which the ggsn node communicates."
+   ::= { ggsnMIBGroups 5 }
+
+ggsnDhcpStatisticsGroup OBJECT-GROUP
+   OBJECTS { ggsnDhcpClientAddress,
+             ggsnDhcpServerAddress,
+             ggsnDhcpServerName,
+             ggsnDhcpClientYiaddr,
+             ggsnDhcpClientState,
+             ggsnDhcpClientRequestsSent,
+             ggsnDhcpClientRepliesReceived,
+             ggsnDhcpClientRepliesDiscarded          
+   }
+   STATUS current
+   DESCRIPTION
+         "The basic collection of objects providing 
+          measurements on a per DHCP server with
+          which the ggsn node communicates."
+   ::= { ggsnMIBGroups 6 }
+
+ggsnAlarmsGroup OBJECT-GROUP
+   OBJECTS { ggsnAlarmNumber,
+             ggsnAlarmCriticalNumber,
+             ggsnAlarmMajorNumber,
+             ggsnAlarmMinorNumber,
+             ggsnAlarmWarningNumber,
+             ggsnAlarmUnknownNumber
+   }
+   STATUS current
+   DESCRIPTION
+         "The alarms objects implemented for the GGSN node."
+   ::= {ggsnMIBGroups 7}
+
+ggsnAlarmsEntryGroup OBJECT-GROUP
+   OBJECTS { ggsnAlarmId,
+             ggsnAlarmName,
+             ggsnAlarmTime,
+             ggsnAlarmSourceId,
+             ggsnAlarmObjectClass,
+             ggsnAlarmObjectInstance,
+             ggsnAlarmSeverity,
+             ggsnAlarmDescription 
+   }
+   STATUS current
+   DESCRIPTION
+         "The alarm entry objects implemented for the GGSN node."
+   ::= {ggsnMIBGroups 8}
+
+ggsnNotificationsGroup NOTIFICATION-GROUP
+   NOTIFICATIONS { ggsnTrapNew,
+                   ggsnTrapChanged,
+                   ggsnTrapCleared
+   }
+   STATUS current
+   DESCRIPTION
+         "The notifications which are implemented by the
+          GGSN node."
+   ::= {ggsnMIBGroups 9}
+
+
+END
+
+
+
+

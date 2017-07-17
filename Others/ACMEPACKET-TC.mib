@@ -1,0 +1,68 @@
+ACMEPACKET-TC DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        Gauge32, Integer32
+                FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION, DisplayString, TruthValue
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        acmepacketMgmt
+                FROM ACMEPACKET-SMI;
+
+
+ApHardwareModuleFamily ::= TEXTUAL-CONVENTION
+        STATUS          current
+        DESCRIPTION
+               "The hardware module types."
+        SYNTAX INTEGER {
+	                unknown(0),
+			spu(17),
+			npu(18),
+			tcu(19),
+			niuCopper(24),
+			niuFiber(25),
+			miu(26),
+			fanTray(240),
+			powerSupply(241)
+		       }
+
+ApRedundancyState ::= TEXTUAL-CONVENTION
+        STATUS          current
+        DESCRIPTION
+               "The redundancy states that system or card can be in."
+        SYNTAX INTEGER {
+                unknown(0),             -- unrecognised state
+                initial(1),             -- initial stage
+                active(2),              -- active state
+                standby(3),             -- standby state
+                outOfService(4),        -- out of service
+                unassigned(5),          -- unassigned state
+                activePending(6),       -- becoming active
+                standbyPending(7),      -- becoming standby
+                outOfServicePending(8), -- becoming OOS
+                recovery(9)             -- recovey state
+                }
+
+
+ApPhyPortType ::= TEXTUAL-CONVENTION
+        STATUS          current
+        DESCRIPTION
+               "The physical port type."
+        SYNTAX INTEGER {
+	                unknown(0),
+			sfp(1)
+		       }
+
+ApPresence ::= TEXTUAL-CONVENTION
+        STATUS          current
+        DESCRIPTION
+               "The Presence of the physical entity."
+        SYNTAX INTEGER {
+	                unknown(0),
+			inserted(1),
+			removed(2)
+		       }
+
+END

@@ -1,0 +1,429 @@
+-- ************************************************************************
+-- Cisco OTBU Global Registration MIB module
+--
+-- This module contains the top-level registrations for the Cisco OTBU.
+--
+-- Copyright (c) 1998-1999 by Cerent Corporation, Inc.  All rights reserved.
+-- Copyright (c) 2000      by Cisco Systems, Inc.  All rights reserved.
+--
+-- ************************************************************************
+
+CERENT-GLOBAL-REGISTRY DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-IDENTITY,
+    enterprises
+        FROM SNMPv2-SMI;
+
+cerentGlobalRegModule MODULE-IDENTITY
+    LAST-UPDATED "000517000000Z" -- 2000/May/17
+    ORGANIZATION "Cisco Systems"
+    CONTACT-INFO
+        "         Support@Cisco.com
+
+         Postal:  Cisco Systems, Inc.
+                  1450 N. McDowell Blvd.
+                  Petaluma, CA  94954
+                  USA
+
+            Tel: 1-877-323-7368"
+
+    DESCRIPTION
+        "This module provides the global registrations for all
+         other Cisco OTBU MIB modules."
+
+    REVISION "0005170000Z" -- 2000/May/17
+    DESCRIPTION
+        "This file can be used with R2.2 (Afghani)."
+
+    REVISION "0004040000Z" -- 2000/Apr/4
+    DESCRIPTION
+        "Added cerentOtherComponent and additional component
+         definitions cerentDs3nCard - cerentSensorComponent."
+
+    REVISION "0002210000Z" -- 2000/Feb/21
+    DESCRIPTION
+        "This file can be used with R2.1.1 release."
+
+    REVISION "0002200000Z" -- 2000/Feb/20
+    DESCRIPTION
+        "This file can be used with R2.1.0 release."
+
+    REVISION "0001140000Z" -- 2000/Jan/14
+    DESCRIPTION
+        "This file can be used with R2.0.3 release."
+
+    REVISION "0001070000Z" -- 2000/Jan/07
+    DESCRIPTION
+        "This file can be used with R2.0.2 release."
+
+    REVISION "990922000000Z" -- 1999/Sept/22
+    DESCRIPTION
+        "This file can be used with R2.0.1 release."
+
+    REVISION "990405000000Z" -- 1999/April/05
+    DESCRIPTION
+        "Inital version of this module"
+ 
+     ::= { enterprises 3607 1 10 10 } -- WRS's mibcomp can't deal
+                                      -- with forward reference!
+                                      -- So change ::= { cerentModules 10 }
+                                      -- to { enterprises ... }
+
+-- The root of the sub-tree for Cisco OTBU
+
+cerent OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree for Cisco OTBU. Cerent enterprise OID 
+         provided by IANA is used."
+	::= { enterprises 3607 }
+
+-- Sub-tree for registration 
+
+cerentRegistry OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree for registrations for all Cisco OTBU modules."
+	::= { cerent 1 }
+
+
+-- Sub-tree for enterprise-wide objects and events
+
+cerentGeneric OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree for common object and event definitions."
+	::= { cerent 2 }
+
+-- Sub-tree for product-line specific objects and events
+
+cerentExperimental OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"cerentExperimental provides a root object identifier from
+		which experimental MIBs may be temporarily based.  
+		A MIB module in the cerentExperimental sub-tree will be
+        moved under cerentGeneric or cerentProducts whenever
+        the development of that module is deemed completed."
+	::= { cerent 3 }
+
+-- Sub-tree for specifying agent capabilities
+
+cerentAgentCapabilities OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"cerentAgentCaps provides a root object identifier from
+                which AGENT-CAPABILITIES values may be assigned."
+	::= { cerent 4 }
+
+-- Sub-tree for specifying requirements
+
+cerentRequirements OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree for management application requirements."
+	::= { cerent 5 }
+
+-- Sub-tree for all temporary objects and events
+
+cerentProducts OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree for specific object and event definitions."
+	::= { cerent 6 }
+
+-- Sub-tree for all Cisco OTBU MIB modules 
+-- All the all sub-identifier are in 10s. This will facilitate
+-- insertion of another oid without disturbing the existing order.
+
+cerentModules OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree to register MIB modules."
+	::= { cerentRegistry 10 }
+
+cerentCommunicationEquipment OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree to register all Cisco manufactured
+                 equipment (OTBU only)."
+	::= { cerentRegistry 20 }
+
+-- Sub-tree for all Cisco OTBU board products
+
+cerentComponents OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree to register all Cisco OTBU boards."
+	::= { cerentRegistry 30 }
+
+-- Sub-tree for ADM product line
+
+cerentADMs OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Sub-tree to register Cisco OTBU products."
+	::= { cerentCommunicationEquipment 10 }
+
+-- Id of Cisco ONS 15454
+
+cerent454Node OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The SNMP agent will return this as the value of
+                 sysObjectID of system group in MIB-II" 
+	::= { cerentADMs 10 }
+
+-- Components OIDs
+
+cerentOtherComponent OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"An unknown component is installed or the component
+                 type is unavailable."
+	::= { cerentComponents 1 }
+
+cerentTcc OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for Cisco OTBU Timing Communications
+                and Control card."
+	::= { cerentComponents 10 }
+
+cerentXc OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for Cross Connect card."
+	::= { cerentComponents 20 }
+
+cerentDs114 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for DS1-14 card."
+	::= { cerentComponents 30 }
+
+cerentDs1n14 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for DS1N-14 card."
+	::= { cerentComponents 40 }
+
+cerentDs312 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for DS3-12 card."
+	::= { cerentComponents 50 }
+
+cerentOc3ir OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for OC3-IR card."
+	::= { cerentComponents 60 }
+
+cerentOc12ir OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for OC12-IR card."
+	::= { cerentComponents 70 }
+
+cerentOc12lr1310 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for OC12-LR-1310 card."
+	::= { cerentComponents 80 }
+
+cerentOc48ir OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for OC48-IR card."
+	::= { cerentComponents 90 }
+
+cerentOc48lr OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"The OID definition for OC48-LR card."
+	::= { cerentComponents 100 }
+
+cerentFanTray OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 110 }
+
+cerentFanSlot OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 120 }
+
+cerentIoSlot OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 130 }
+
+cerentXcSlot OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 140 }
+
+cerentAicSlot OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 150 }
+
+cerentTccSlot OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 160 }
+
+cerentBackPlane454 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 170 }
+
+cerentChassis454 OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		""
+	::= { cerentComponents 180 }
+
+cerentDs3nCard OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ds3n card."
+	::= { cerentComponents 190 }
+
+cerentDs3XmCard OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ds3Xm card."
+	::= { cerentComponents 200 }
+
+cerentOc3Card OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Oc3 card."
+	::= { cerentComponents 210 }
+
+cerentOc12Card OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Oc12 card."
+	::= { cerentComponents 220 }
+
+cerentOc48Card OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Oc48 card."
+	::= { cerentComponents 230 }
+
+cerentEc1Card OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ec1 card."
+	::= { cerentComponents 240 }
+
+cerentEc1nCard OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ec1n card."
+	::= { cerentComponents 250 }
+
+cerentEpos100Card OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"EPOS 100 card."
+	::= { cerentComponents 260 }
+
+cerentEpos1000Card OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"EPOS 1000 card."
+	::= { cerentComponents 270 }
+
+cerentAicCard OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"AIC card."
+	::= { cerentComponents 280 }
+
+cerentXcVtCard OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"VT cross connect card."
+	::= { cerentComponents 290 }
+
+cerentEther1000Port OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ether1000 port."
+	::= { cerentComponents 300 }
+
+cerentEther100Port OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ether100 port."
+	::= { cerentComponents 310 }
+
+cerentDs1VtMappedPort OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Mapped Ds1-Vt port."
+	::= { cerentComponents 320 }
+
+cerentDs3XmPort OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ds3Xm port."
+	::= { cerentComponents 330 }
+
+cerentDs3Port OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ds3 port."
+	::= { cerentComponents 340 }
+
+cerentEc1Port OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Ec1 port."
+	::= { cerentComponents 350 }
+
+cerentOc3Port OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Oc3 port."
+	::= { cerentComponents 360 }
+
+cerentOc12Port OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Oc12 port."
+	::= { cerentComponents 370 }
+
+cerentOc48Port OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Oc48 port."
+	::= { cerentComponents 380 }
+
+cerentOrderwirePort OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Orderwire port."
+	::= { cerentComponents 390 }
+
+cerentSensorComponent OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Misc. sensor component."
+	::= { cerentComponents 400 }
+
+END

@@ -1,0 +1,611 @@
+--==================================================================
+-- Copyright (C) 2002 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description: HUAWEI Layer Two VLAN MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- ==================================================================
+-- ==================================================================
+-- 
+-- Varibles and types be imported
+--
+-- ==================================================================
+HUAWEI-L2VLAN-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    
+    RowStatus
+        FROM SNMPv2-TC
+
+    OBJECT-GROUP, MODULE-COMPLIANCE
+        FROM SNMPv2-CONF
+
+    OBJECT-TYPE, Integer32,  TimeTicks
+        FROM SNMPv2-SMI  
+        
+    hwDatacomm
+        FROM HUAWEI-MIB
+        
+    VlanId, PortList,VlanIndex
+        FROM Q-BRIDGE-MIB
+    
+    ifIndex
+        FROM IF-MIB        
+    
+    EnabledStatus
+        FROM P-BRIDGE-MIB; 
+        
+    hwL2Mgmt OBJECT IDENTIFIER ::= { hwDatacomm 42 }
+    
+    hwL2Vlan OBJECT IDENTIFIER ::= { hwL2Mgmt 3 }
+    
+--    hwL2Vlan MODULE-IDENTITY  ::= { hwL2Mgmt 3 }   
+--        LAST-UPDATED "200505100936Z"		
+--	ORGANIZATION 
+--	    "Huawei Technologies co.,Ltd."
+--	CONTACT-INFO  
+--	    "VRP Team Huawei Technologies co.,Ltd.
+--	    Huawei Bld.,NO.3 Xinxi Rd., 
+--	    Shang-Di Information Industry Base,
+--	    Hai-Dian District Beijing P.R. China
+--	    http://www.huawei.com
+--            Zip:100085
+--	    "
+--	DESCRIPTION
+--            "The L2Vlan MIB module is defined to manage several layer two function of Huawei Technologies co.,Ltd."
+--            ::= { hwL2Mgmt 3 }
+    
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+           
+hwL2VlanMngObjects OBJECT IDENTIFIER ::= { hwL2Vlan 1 }
+    
+-- -------------------------------------------------------------
+-- groups in the hwL2Vlan MIB
+-- -------------------------------------------------------------
+hwL2VlanBase          OBJECT IDENTIFIER ::= { hwL2VlanMngObjects 1 }
+hwL2VlanApply         OBJECT IDENTIFIER ::= { hwL2VlanMngObjects 2 }
+
+
+    hwL2VlanMIBTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwL2VlanMIBEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " The table contains basic information for this vlan. "
+        ::= { hwL2VlanBase  1 }
+
+
+    hwL2VlanMIBEntry OBJECT-TYPE
+        SYNTAX HwL2VlanMIBEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "  Entries of VLAN MIB table "
+        INDEX   { hwL2VlanIndex }
+        ::= { hwL2VlanMIBTable 1}
+
+    HwL2VlanMIBEntry ::=
+    SEQUENCE {
+        hwL2VlanIndex    VlanId   ,
+        hwL2VlanDescr     OCTET STRING ,
+        hwL2VlanPortList    PortList   ,
+        hwL2VlanType     INTEGER ,
+        hwL2VlanBcastUnknownUni   EnabledStatus  , 
+        hwL2VlanIfIndex    INTEGER ,
+        hwL2VlanMacLearn EnabledStatus  ,
+        hwL2VlanMulticast EnabledStatus,
+        hwL2VlanAdminStatus EnabledStatus, 
+        hwL2VlanStatisStatus EnabledStatus, 
+        hwL2VlanCreateStatus     INTEGER ,
+        hwL2VlanRowStatus    RowStatus
+        }
+
+    hwL2VlanIndex OBJECT-TYPE
+        SYNTAX  VlanId
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " The VLAN-ID or other identifier refering to this VLAN."
+        ::= { hwL2VlanMIBEntry 1 }
+
+
+    hwL2VlanDescr  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (0..80))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " description of the VLAN "
+        ::= { hwL2VlanMIBEntry 2 }
+
+
+    hwL2VlanPortList OBJECT-TYPE
+        SYNTAX  PortList  (SIZE (65))     
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " the set of Ports which belong to the VLAN"
+        ::= { hwL2VlanMIBEntry 3 }
+
+    hwL2VlanType  OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        super-vlan (1),
+        common-vlan (2),  
+        sub-vlan (3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Change the value from '2' to '1' indecates that the common-vlan is configured into super-vlan;
+                      Change the value from '1' to '2' indecates that the super-vlan is canceled;
+                      Note that the switch between '1' and '3' or between '2' and '3' are forbidden ."
+        ::= { hwL2VlanMIBEntry 4 }
+
+
+    hwL2VlanBcastUnknownUni OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-write  
+        STATUS current
+        DESCRIPTION " Whether to broadcast the unknown unnicast packets when ports receive it .
+                      enabled(1) indecates broadcast the packets,disable(2) indecates it's closed . "
+        ::= { hwL2VlanMIBEntry 5 }
+
+
+    hwL2VlanIfIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Whether vlan interface is configured on vlan. If vlan interface is configured,
+                      the value of the node is InterfaceIndex, else the value is -1. "
+        ::= { hwL2VlanMIBEntry 6 }
+
+
+    hwL2VlanMacLearn OBJECT-TYPE   
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The value indicates whether the MAC address learning is opened.The value enabled(1) indecates learning is allowed .
+                      Just the common vlan and Sub-vlan have the attribute .Default value is enabled(1). "
+        ::= { hwL2VlanMIBEntry 7 }
+ 
+        
+    hwL2VlanMulticast  OBJECT-TYPE
+        SYNTAX  EnabledStatus      
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "The value enabled(1) indecates vlan Multicasting is allowed;disable(2) indecates it's closed . The default value is disable(2)."
+        DEFVAL  {2}
+        ::= { hwL2VlanMIBEntry 8 }
+             
+    hwL2VlanAdminStatus  OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " value disable(2) indecates shutdown the vlan ; enabled£¨1£©indecates open the vlan."
+        DEFVAL  {1}
+        ::= { hwL2VlanMIBEntry 9 }
+        
+        
+    hwL2VlanStatisStatus  OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The value enabled(1) indecates Statistics on  vlan are allowed ;disable(2) indecates are'nt .
+                      default value  is disable(2). "
+        DEFVAL  {2}
+        ::= { hwL2VlanMIBEntry 10 }
+        
+    hwL2VlanCreateStatus  OBJECT-TYPE
+        SYNTAX  INTEGER
+                     {
+        other (1),
+        static (2),  
+        dynamic (3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "The status indecates how the vlan is created,
+        static configured by management or created dynamicly by GVRP.  "
+        ::= { hwL2VlanMIBEntry 11 }
+        
+    hwL2VlanRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " Operation status "
+        ::= { hwL2VlanMIBEntry 12 }   
+         
+    
+    hwL2VlanStackingTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwL2VlanStackingEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " QinQ-port configuration table  "
+        ::= { hwL2VlanApply  1 }
+
+    hwL2VlanStackingEntry  OBJECT-TYPE
+        SYNTAX HwL2VlanStackingEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " QinQ-port configuration table   "
+        INDEX   { hwL2VlanStackingPortIndex, hwL2VlanStackingInsideVlanId }
+        ::= { hwL2VlanStackingTable 1}
+
+    HwL2VlanStackingEntry  ::=
+    SEQUENCE {
+        hwL2VlanStackingPortIndex            INTEGER,
+        hwL2VlanStackingInsideVlanId         VlanId,
+        hwL2VlanStackingOutsideVlanListLow    OCTET STRING,
+        hwL2VlanStackingOutsideVlanListHigh    OCTET STRING,
+        hwL2VlanStackingRowStatus   RowStatus
+        }
+
+
+    hwL2VlanStackingPortIndex  OBJECT-TYPE
+        SYNTAX  INTEGER (1..65535) 
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Index number of QinQ-port  "
+        ::= { hwL2VlanStackingEntry 1 }
+    
+    
+    hwL2VlanStackingInsideVlanId  OBJECT-TYPE
+        SYNTAX  VlanId
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " InsideVlanId of  QinQ-port ,use it as the Index. "
+        ::= { hwL2VlanStackingEntry 2 }
+
+
+    hwL2VlanStackingOutsideVlanListLow  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(256))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " The possible value of the outside vlan list "
+        ::= { hwL2VlanStackingEntry 3 }
+    
+    hwL2VlanStackingOutsideVlanListHigh  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(256))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " The possible value of the outside vlan list "
+        ::= { hwL2VlanStackingEntry 4 }
+
+    hwL2VlanStackingRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION   " this table can be created "
+        ::= { hwL2VlanStackingEntry 5 }
+        
+        
+    hwL2VlanMappingTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwL2VlanMappingEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " configuration table  "
+        ::= { hwL2VlanApply  2 }
+
+
+    hwL2VlanMappingEntry  OBJECT-TYPE
+        SYNTAX HwL2VlanMappingEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " QinQ-port configuration table   "
+        INDEX   { hwL2VlanMappingPortIndex, hwL2VlanMappingInsideVlanId }
+        ::= { hwL2VlanMappingTable 1}
+
+    HwL2VlanMappingEntry  ::=
+    SEQUENCE {
+        hwL2VlanMappingPortIndex            INTEGER,
+        hwL2VlanMappingInsideVlanId         VlanId,
+        hwL2VlanMappingOutsideVlanListLow    OCTET STRING,
+        hwL2VlanMappingOutsideVlanListHigh    OCTET STRING,
+        hwL2VlanMappingRowStatus   RowStatus
+        }
+
+
+    hwL2VlanMappingPortIndex  OBJECT-TYPE
+        SYNTAX  INTEGER (1..65535)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Index number of QinQ-port  "
+        ::= { hwL2VlanMappingEntry 1 }
+    
+    
+    hwL2VlanMappingInsideVlanId  OBJECT-TYPE
+        SYNTAX  VlanId
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " InsideVlanId of  QinQ-port ,use it as the Index. "
+        ::= { hwL2VlanMappingEntry 2 }
+
+
+    hwL2VlanMappingOutsideVlanListLow  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(256))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " The possible value of the outside vlan list "
+        ::= { hwL2VlanMappingEntry 3 }
+    
+    hwL2VlanMappingOutsideVlanListHigh  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(256))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " The possible value of the outside vlan list "
+        ::= { hwL2VlanMappingEntry 4 }
+
+    hwL2VlanMappingRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION   " this table can be created "
+        ::= { hwL2VlanMappingEntry 5 }      
+          
+          
+    hwSuperVlanTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF HwSuperVlanEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+		"The table contains configuration and control information for the super vlan."
+		::= { hwL2VlanApply 3 }
+		
+    hwSuperVlanEntry OBJECT-TYPE
+		SYNTAX HwSuperVlanEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+		"Entries of the super vlan table."
+		INDEX { hwSuperVlanId }
+		::= { hwSuperVlanTable 1 }
+		
+    HwSuperVlanEntry ::=
+	SEQUENCE { 
+		hwSuperVlanId	VlanId,
+		hwSubVlanListLow OCTET STRING,
+		hwSubVlanListHigh OCTET STRING		
+	         }
+
+    hwSuperVlanId OBJECT-TYPE
+		SYNTAX VlanId
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+		"The super vlan id."
+		::= { hwSuperVlanEntry 1 }
+	
+    hwSubVlanListLow OBJECT-TYPE
+		SYNTAX OCTET STRING (SIZE (256))
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		"The lowest possible value of the sub vlan list on the supervlan"
+		::= { hwSuperVlanEntry 2 }
+	
+    hwSubVlanListHigh OBJECT-TYPE
+		SYNTAX OCTET STRING (SIZE (256))
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+		" The highest possible value of the sub vlan list on the supervlan"
+		::= { hwSuperVlanEntry 3 }	
+        	
+    
+    hwL2InterfIsolateTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwL2InterfIsolateEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "The table contains configuration and control information for interfaces isolate."
+        ::= { hwL2VlanApply  4 }
+
+    hwL2InterfIsolateEntry OBJECT-TYPE
+        SYNTAX HwL2InterfIsolateEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "Secondary vlan lists of Isolate-VLANs"
+        INDEX   { hwL2InterfIsolateVlanId }
+        ::= { hwL2InterfIsolateTable 1}
+        
+    HwL2InterfIsolateEntry    ::=
+        SEQUENCE 
+        {
+        hwL2InterfIsolateVlanId  VlanId   ,
+        hwL2InterfIsolateInterflistLow   OCTET STRING,
+        hwL2InterfIsolateInterflistHigh  OCTET STRING
+        }
+        
+    hwL2InterfIsolateVlanId  OBJECT-TYPE
+        SYNTAX  VlanId
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " VLAN ID. The vlan into which interf-isolate is configured."
+        ::= { hwL2InterfIsolateEntry 1 }
+
+    hwL2InterfIsolateInterflistLow  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (65))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The lowest possible value of Interface list on the vlan "
+        ::= { hwL2InterfIsolateEntry 2 }
+
+    hwL2InterfIsolateInterflistHigh  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (65))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The highest possible value of Interface list on the vlan  "
+        ::= { hwL2InterfIsolateEntry 3 }
+        
+    hwL2IsolatemappingTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwL2IsolatemappingEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "The table contains mapping information between isolated ports."
+        ::= { hwL2VlanApply  5 }
+
+    hwL2IsolatemappingEntry OBJECT-TYPE
+        SYNTAX HwL2IsolatemappingEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " "
+        INDEX   { hwL2IsolatemappingPortNum }
+        ::= { hwL2IsolatemappingTable 1}
+        
+    HwL2IsolatemappingEntry    ::=
+        SEQUENCE 
+        {
+        hwL2IsolatemappingPortNum    INTEGER,
+        hwL2IsolateInterflistLow   OCTET STRING,
+        hwL2IsolateInterflistHigh  OCTET STRING
+        }
+        
+    hwL2IsolatemappingPortNum  OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Port number ."
+        ::= { hwL2IsolatemappingEntry 1 }
+
+    hwL2IsolateInterflistLow  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (256))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The lowest possible value of Interface list . "
+        ::= { hwL2IsolatemappingEntry 2 }
+
+    hwL2IsolateInterflistHigh  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE (256))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The highest possible value of Interface . "
+        ::= { hwL2IsolatemappingEntry 3 }
+        
+	
+	 
+-- -------------------------------------------------------------
+-- IEEE 802.1Q MIB - Conformance Information
+-- -------------------------------------------------------------
+
+hwL2vlanConformance OBJECT IDENTIFIER ::= { hwL2Vlan 2 }
+
+hwL2vlanGroups OBJECT IDENTIFIER ::= { hwL2vlanConformance 1 }
+
+hwL2vlanCompliances OBJECT IDENTIFIER  ::= { hwL2vlanConformance 2 }                               
+-- -------------------------------------------------------------
+-- units of conformance
+-- -------------------------------------------------------------
+
+hwL2VlanMIBTableGroup OBJECT-GROUP
+    OBJECTS {
+        hwL2VlanDescr    ,
+        hwL2VlanPortList   ,
+        hwL2VlanType    ,
+        hwL2VlanBcastUnknownUni   ,
+        hwL2VlanIfIndex   ,
+        hwL2VlanMacLearn ,
+        hwL2VlanCreateStatus   ,
+        hwL2VlanMulticast ,
+        hwL2VlanAdminStatus ,
+        hwL2VlanStatisStatus ,
+        hwL2VlanRowStatus    
+    }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing device level control
+        and status information for the Virtual LAN bridge
+        services."
+    ::= { hwL2vlanGroups 1 }
+
+hwL2vlanStackingGroup OBJECT-GROUP
+     OBJECTS {
+        hwL2VlanStackingPortIndex     ,   
+        hwL2VlanStackingInsideVlanId ,
+        hwL2VlanStackingOutsideVlanListLow  , 
+        hwL2VlanStackingOutsideVlanListHigh ,
+        hwL2VlanStackingRowStatus       
+             }
+     STATUS      current
+     DESCRIPTION
+        "A collection of objects providing l2vlan stacking service."
+     ::= { hwL2vlanGroups 2 }
+        
+hwL2vlanMappingGroup OBJECT-GROUP
+     OBJECTS {
+        hwL2VlanMappingPortIndex    ,    
+        hwL2VlanMappingInsideVlanId   ,
+        hwL2VlanMappingOutsideVlanListLow  , 
+        hwL2VlanMappingOutsideVlanListHigh  ,
+        hwL2VlanMappingRowStatus        
+             }
+     STATUS      current
+     DESCRIPTION
+        "A collection of objects providing l2vlan mapping service."
+     ::= { hwL2vlanGroups 3 }
+        
+hwSupervlanGroup OBJECT-GROUP
+     OBJECTS {
+        hwSuperVlanId	,
+        hwSubVlanListLow ,
+	    hwSubVlanListHigh 
+             }
+     STATUS      current
+     DESCRIPTION
+        "A collection of objects providing supervlan  service."
+     ::= { hwL2vlanGroups 4 }
+        
+hwL2InterfIsolateGroup OBJECT-GROUP
+      OBJECTS {
+        hwL2InterfIsolateVlanId  ,
+        hwL2InterfIsolateInterflistLow  , 
+        hwL2InterfIsolateInterflistHigh  
+               }
+      STATUS     current
+      DESCRIPTION
+         "A collection of objects provding l2interfisolate service. "  
+      ::= { hwL2vlanGroups 5 }
+      
+hwL2IsolatemappingGroup  OBJECT-GROUP
+       OBJECTS {
+        hwL2IsolatemappingPortNum   ,
+        hwL2IsolateInterflistLow    ,
+        hwL2IsolateInterflistHigh  
+               }
+      STATUS     current
+      DESCRIPTION
+         "A collection of objects provding enhanced l2isolate service. "  
+      ::= { hwL2vlanGroups 6 }
+
+
+-- -------------------------------------------------------------
+-- compliance statements
+-- -------------------------------------------------------------
+
+hwL2vlanCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for device support of Virtual
+        LAN services."
+
+    MODULE
+        MANDATORY-GROUPS {
+            hwL2VlanMIBTableGroup,
+            hwSupervlanGroup 
+        }
+
+
+     GROUP      hwL2vlanStackingGroup
+        DESCRIPTION
+            "This group is optional ."
+
+     GROUP      hwL2vlanMappingGroup
+        DESCRIPTION
+            "This group is optional ."
+
+     GROUP      hwL2InterfIsolateGroup
+        DESCRIPTION
+            "This group is optional ."
+            
+     GROUP      hwL2IsolatemappingGroup
+        DESCRIPTION
+            "This group is optional ."
+     ::= { hwL2vlanCompliances 1 }
+            
+END 

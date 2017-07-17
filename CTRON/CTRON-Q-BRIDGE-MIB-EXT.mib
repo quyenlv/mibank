@@ -1,0 +1,433 @@
+
+CTRON-Q-BRIDGE-MIB-EXT DEFINITIONS ::= BEGIN
+
+--  ctron-q-bridge-mib-ext.txt  
+--
+--  This module provides authoritative definitions for Cabletron's
+--  CTRON-Q-BRIDGE-MIB-EXT.
+--
+--  This module will be extended, as needed.
+--
+--  Enterasys Networks reserves the right to make changes in
+--  specification and other information contained in this document
+--  without prior notice.  The reader should consult Enterasys Networks
+--  to determine whether any such changes have been made.
+--
+--  In no event shall Enterasys Networks be liable for any incidental,
+--  indirect, special, or consequential damages whatsoever (including
+--  but not limited to lost profits) arising out of or related to this
+--  document or the information contained in it, even if Enterasys 
+--  Networks has been advised of, known, or should have known, the
+--  possibility of such damages.
+--
+--  Enterasys grants vendors, end-users, and other interested parties
+--  a non-exclusive license to use this Specification in connection
+--  with the management of Enterasys and Cabletron products.
+--
+--  Copyright April 2001 Cabletron Systems
+--  Copyright July 2002 Enterasys Networks, Inc.
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    dot1dBasePortEntry
+        FROM BRIDGE-MIB
+    EnabledStatus
+        FROM P-BRIDGE-MIB
+    VlanIndex, dot1qVlanCurrentEntry, PortList
+        FROM Q-BRIDGE-MIB
+    ctVlanExt
+        FROM CTRON-MIB-NAMES;
+
+ctQBridgeMibExt MODULE-IDENTITY
+    LAST-UPDATED "200312181907Z"  -- Thu Dec 18 19:07 GMT 2003
+    ORGANIZATION "Enterasys Networks, Inc."
+    CONTACT-INFO
+        "Postal:  Enterasys Networks
+                  50 Minuteman Rd.
+                  Andover, MA 01810-1008
+                  USA
+         Phone:   +1 978 684 1000
+         E-mail:  support@enterasys.com
+         WWW:     http://www.enterasys.com"
+
+    DESCRIPTION
+            "This MIB module defines a portion of the SNMP enterprise
+             MIBs under the Cabletron enterprise OID pertaining to 
+             the configuration of switches that support IEEE 802.1Q
+             [802.1Q] and the Q-BRIDGE-MIB [RFC2674]."
+
+    REVISION    "200312152053Z"  -- Mon Dec 15 20:53 GMT 2003
+    DESCRIPTION "Added ctDot1qPortReplaceTCI to allow the optional
+                 replacement of the original Tag Control Information
+                 (TCI) in an 802.1Q tagged frame."
+
+    REVISION    "200207262045Z"  -- Fri Jul 26 20:45 GMT 2002
+    DESCRIPTION "Changed the description of
+                 ctDot1qVlanForbidEgressPorts."
+
+    REVISION    "200207191412Z"  -- Fri Jul 19 14:12 GMT 2002
+    DESCRIPTION "Added the ctDot1qVlanCurrentExtTable.
+                 Changed CONTACT-INFO clause to Enterasys Networks."
+
+    REVISION    "200104161816Z"
+    DESCRIPTION "Minor grammatical changes."
+
+    REVISION    "200101101329Z"
+    DESCRIPTION "Added the ctDot1qPortDiscardTagged leaf for additional 
+                 backwards compatibility with the now obsolete
+                 CTRON-VLAN-EXTENSIONS-MIB.  Fixed the INDEX clause of
+                 the ctDot1qVlanDynamicEgressEntry.  Added the new
+                 ctQBridgePortGroup2 OBJECT-GROUP and ctDot1qVlan2 
+                 MODULE-COMPLIANCE.  Deprecated the ctQBridgePortGroup
+                 OBJECT-GROUP and ctDot1qVlan MODULE-COMPLIANCE."
+
+    REVISION    "199910060812Z"
+    DESCRIPTION "The initial version of this MIB module published as 
+                 01.00.00."
+         ::= { ctVlanExt 7 } 
+
+
+-- branches used in this MIB
+ctQBridgeMIBObjects OBJECT IDENTIFIER ::= { ctQBridgeMibExt 1 }
+
+-- -------------------------------------------------------------
+-- The VLAN Port Extension Configuration Table
+-- -------------------------------------------------------------
+ctDot1qPortVlanExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CtDot1qPortVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing per port control and status information
+        for Cabletron proprietary extensions pertaining to VLAN 
+        configuration in the device."
+    ::= { ctQBridgeMIBObjects 1 }
+
+ctDot1qPortVlanEntry OBJECT-TYPE
+    SYNTAX      CtDot1qPortVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information controlling proprietary VLAN configuration for
+        a port on the device.  This is indexed by dot1dBasePort."
+    AUGMENTS { dot1dBasePortEntry }
+    ::= { ctDot1qPortVlanExtTable 1 }
+
+CtDot1qPortVlanEntry ::=
+    SEQUENCE {
+        ctDot1qPortDefaultForwardMode
+            INTEGER,
+        ctDot1qPortDiscardTagged
+            EnabledStatus,
+        ctDot1qPortReplaceTCI
+            EnabledStatus
+    }
+
+ctDot1qPortDefaultForwardMode OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    forwardNoFrames(1),
+                    forwardAllFramesAsTagged(2),
+                    forwardAllFramesAsUntagged(3)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The method used to forward frames belonging to VLANs that 
+        do not have an entry in the dot1qVlanCurrentTable.
+ 
+        When this is forwardNoFrames(1), the device will not forward
+        traffic out this port, for any VLAN that does not have an 
+        entry in the dot1qVlanCurrentTable.
+
+        When this is forwardAllFramesAsTagged(2), the device will 
+        forward all traffic out this port, with an 802.1Q VLAN tag,
+        for any VLAN that does not have an entry in 
+        dot1qVlanCurrentTable.
+
+        When this is forwardAllFramesAsUntagged(3), the device will 
+        forward all traffic out this port, without an 802.1Q VLAN tag,
+        for any VLAN that does not have an entry in 
+        dot1qVlanCurrentTable.
+
+        This control does not affect VLAN independent BPDU frames,
+        such as GVRP and STP.  It does affect VLAN dependent BPDU
+        frames, such as GMRP."
+    DEFVAL      { forwardNoFrames }
+    ::= { ctDot1qPortVlanEntry 1 }
+
+ctDot1qPortDiscardTagged OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The method used to discard all incoming VLAN tagged frames 
+        for the port specified by the indexing of this entry.
+ 
+        When this is enabled(1), the device will discard all 802.1Q 
+        tagged packets received on this port.
+
+        When this is disabled(2), the device will NOT discard frames
+        received on this port based on the presence of an 802.1Q tag.
+
+        The behavior of this method in conjunction with the
+        dot1qPortAcceptableFrameTypes leaf of Q-BRIDGE-MIB [RFC2674]
+        is that of a logical OR."
+    DEFVAL      { disabled }
+    ::= { ctDot1qPortVlanEntry 2 }
+
+ctDot1qPortReplaceTCI OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The method used to replace the Tag Control Information (TCI)
+        field in all VLAN tagged frames received on the port specified
+        by the indexing of this entry.
+ 
+        When this is enabled(1), the device will replace the 802.1Q 
+        TCI field with results of the INGRESS stage of frame forwarding.
+        Logically, this happens immediately prior to the PROGRESS stage
+        of frame relay.
+
+        When this is disabled(2), the device operates in compliance with
+        the IEEE 802.1Q standard and honors the TCI field of incident
+        frames."
+    REFERENCE
+        "IEEE Std. 802.1Q-1998: Section 9.3.2"
+    DEFVAL      { disabled }
+    ::= { ctDot1qPortVlanEntry 3 }
+
+-- -------------------------------------------------------------
+-- The Cabletron Dynamic Egress Configuration Table
+-- -------------------------------------------------------------
+
+ctDot1qVlanDynamicEgressTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CtDot1qVlanDynamicEgressEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing per VLAN control and status
+        information for Cabletron proprietary egress extensions for
+        VLAN configuration in the device."
+    ::= { ctQBridgeMIBObjects 2 }
+
+ctDot1qVlanDynamicEgressEntry OBJECT-TYPE
+    SYNTAX      CtDot1qVlanDynamicEgressEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information controlling proprietary VLAN configuration 
+        for a device."  
+    INDEX { ctDot1qVlanDynamicEgressIndex }
+    ::= { ctDot1qVlanDynamicEgressTable 1 }
+
+CtDot1qVlanDynamicEgressEntry ::=
+    SEQUENCE {
+        ctDot1qVlanDynamicEgressIndex
+            VlanIndex,
+        ctDot1qVlanDynamicEgressStatus
+            EnabledStatus
+    }
+
+ctDot1qVlanDynamicEgressIndex OBJECT-TYPE
+    SYNTAX      VlanIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The VLAN to which this entries' dynamic egress status 
+        applies."
+    ::= { ctDot1qVlanDynamicEgressEntry 1 }
+
+ctDot1qVlanDynamicEgressStatus OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The state of Dynamic Egress operation on this VLAN.  The 
+        value enabled(1) indicates that Dynamic Egress is enabled on 
+        this VLAN.  If Dynamic Egress is enabled for a VLAN the 
+        following rules are applied to received frames:
+
+        1. If the frame is untagged, and
+
+        2. The frame is successfully classified to the specified 
+           VLAN, and
+ 
+        3. The port the frame was received on is not configured in
+           dot1qVlanCurrentEgressPorts, dot1qVlanCurrentUntaggedPorts,
+           or dot1qVlanForbiddenEgressPorts, for the classified VLAN,
+           and
+
+        4. The port is configured for forwardNoFrames(1) in
+           ctDot1qPortDefaultForwardMode (if supported), then
+
+        5. The port the frame was received on will be added to
+           the dot1qVlanCurrentEgressPorts and 
+           dot1qVlanCurrentUntaggedPorts for the classified VLAN.
+           If the VLAN was not preexisting the dot1qVlanStatus
+           leaf for the VLAN will return other(1)." 
+    DEFVAL      { disabled }
+    ::= { ctDot1qVlanDynamicEgressEntry 2 }
+
+-- -------------------------------------------------------------
+-- The VLAN Current Table Extension.
+-- -------------------------------------------------------------
+ctDot1qVlanCurrentExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CtDot1qVlanCurrentExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing current configuration information
+        for each VLAN currently configured into the device by
+        (local or network) management or created dynamically created.
+        This table provides proprietary extensions to 
+        dot1qVlanCurrentTable as defined in RFC2674."
+    ::= { ctQBridgeMIBObjects 3 }
+
+ctDot1qVlanCurrentEntryExt OBJECT-TYPE
+    SYNTAX      CtDot1qVlanCurrentExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Information for a VLAN configured into the device by
+        (local or network) management or created dynamically."
+    AUGMENTS { dot1qVlanCurrentEntry }
+    ::= { ctDot1qVlanCurrentExtTable 1 }
+
+CtDot1qVlanCurrentExtEntry ::=
+    SEQUENCE {
+        ctDot1qVlanForbidEgressPorts
+            PortList
+    }
+
+ctDot1qVlanForbidEgressPorts OBJECT-TYPE
+    SYNTAX      PortList
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current set of ports which are prohibited from being 
+        included in the egress list for this VLAN.  This object is a 
+        logical combination of dot1qVlanForbiddenEgressPorts and zero
+        or more proprietary methods of forbidding egress on a per port
+        per VLAN basis."
+    ::= { ctDot1qVlanCurrentEntryExt 1 }
+
+-- -------------------------------------------------------------
+-- Conformance Information
+-- -------------------------------------------------------------
+
+ctQBridgeConformance OBJECT IDENTIFIER ::= { ctQBridgeMibExt 2 }
+
+ctQBridgeGroups      OBJECT IDENTIFIER ::= { ctQBridgeConformance 1 }
+ctQBridgeCompliances OBJECT IDENTIFIER ::= { ctQBridgeConformance 2 }
+
+-- -------------------------------------------------------------
+-- Units of conformance
+-- -------------------------------------------------------------
+
+ctQBridgePortGroup OBJECT-GROUP
+    OBJECTS { ctDot1qPortDefaultForwardMode }
+    STATUS      deprecated
+    DESCRIPTION
+        "********* THIS GROUP IS DEPRECATED **********
+
+        A collection of objects providing port level control
+        over the forwarding behavior of frames classified to
+        unconfigured VLANs."
+    ::= { ctQBridgeGroups 1 }
+
+
+ctQBridgeVlanGroup OBJECT-GROUP
+    OBJECTS { ctDot1qVlanDynamicEgressStatus }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing device level control
+        over the addition and deletion of unconfigured ports to
+        the egress lists of VLANs."
+    ::= { ctQBridgeGroups 2 }
+
+ctQBridgePortGroup2 OBJECT-GROUP
+    OBJECTS { 
+              ctDot1qPortDefaultForwardMode,
+              ctDot1qPortDiscardTagged
+            }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing port level control
+        over the ingress and egress of frames received by the device."
+    ::= { ctQBridgeGroups 3 }
+
+ctQBridgeVlanCurrentForbidGroup OBJECT-GROUP
+    OBJECTS { ctDot1qVlanForbidEgressPorts }
+    STATUS      current
+    DESCRIPTION
+        "A collection of objects providing read-only current operational
+        information pertaining to forbidden egress on a per VLAN basis."
+    ::= { ctQBridgeGroups 4 }
+   
+ctQBridgePortReplaceTCIGroup OBJECT-GROUP
+    OBJECTS { 
+              ctDot1qPortReplaceTCI
+            }
+    STATUS      current
+    DESCRIPTION
+        "An object providing port level control TCI replacement."
+    ::= { ctQBridgeGroups 5 }
+
+
+-- -------------------------------------------------------------
+-- Compliance statements
+-- -------------------------------------------------------------
+
+ctDot1qVlan MODULE-COMPLIANCE
+    STATUS      deprecated
+    DESCRIPTION
+        "******** THIS COMPLIANCE IS DEPRECATED ********
+
+        The compliance statement for devices that support
+        Cabletron extensions to Q-BRIDGE-MIB."
+
+    MODULE
+        MANDATORY-GROUPS { 
+            ctQBridgePortGroup,
+            ctQBridgeVlanGroup
+        }
+    ::= { ctQBridgeCompliances  1 }
+
+ctDot1qVlan2 MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for devices that support
+        Cabletron extensions to Q-BRIDGE-MIB."
+
+    MODULE
+        MANDATORY-GROUPS {
+            ctQBridgeVlanGroup,
+            ctQBridgePortGroup2
+        }
+        GROUP       ctQBridgePortReplaceTCIGroup
+        DESCRIPTION
+            "This group is REQUIRED for devices supporting TCI
+            replacement."
+    ::= { ctQBridgeCompliances  2 }
+    
+
+ctDot1qVlanCurentCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for devices that support
+        Cabletron extensions to the dot1qVlanCurrentTable of
+        the Q-BRIDGE-MIB."
+
+    MODULE
+        GROUP       ctQBridgeVlanCurrentForbidGroup
+        DESCRIPTION
+           "This group is mandatory for all devices that support a 
+           mechanism of configuring forbidden egress beyond the 
+           capabilities provided by dot1qVlanForbiddenEgressPorts."
+    ::= { ctQBridgeCompliances  3 }
+
+END

@@ -1,0 +1,263 @@
+ --
+ -- WWP-LEOS-DHCP-CLIENT-MIB.my
+ --
+ --
+
+ WWP-LEOS-DHCP-CLIENT-MIB DEFINITIONS ::= BEGIN
+
+ IMPORTS 		
+   NOTIFICATION-TYPE, IpAddress, Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY			
+	    FROM SNMPv2-SMI			
+   DisplayString, TruthValue			
+	    FROM SNMPv2-TC						
+   wwpModules, wwpModulesLeos			
+	    FROM WWP-SMI;
+	
+	
+ wwpLeosDhcpClientMIB MODULE-IDENTITY
+	    LAST-UPDATED "200104031700Z"
+	    ORGANIZATION "World Wide Packets, Inc"
+	    CONTACT-INFO
+		    "   Mib Meister
+		  	Postal: World Wide Packets
+		        P.O. Box 950
+		        Veradale, WA 99037
+		        USA
+		 	Phone:  +1 509 242 9000
+			Email:  mib.meister@worldwidepackets.com"
+	    DESCRIPTION
+		    "The MIB module to manage dhcp client on WWP products."
+	    REVISION    "200211011700Z"
+	    DESCRIPTION
+		    "Initial creation."
+	    ::= { wwpModulesLeos 17 }
+						
+ --
+ -- Node definitions
+ --
+	
+ wwpLeosDhcpClientMIBObjects OBJECT IDENTIFIER ::= { wwpLeosDhcpClientMIB 1 }
+ 
+ wwpLeosDhcpClient OBJECT IDENTIFIER ::= { wwpLeosDhcpClientMIBObjects 1 }
+
+ 		
+ -- Notifications 
+  
+ wwpLeosDhcpClientMIBNotificationPrefix  OBJECT IDENTIFIER ::= { wwpLeosDhcpClientMIB 2 } 
+ wwpLeosDhcpClientMIBNotifications       OBJECT IDENTIFIER ::=  
+                       { wwpLeosDhcpClientMIBNotificationPrefix 0 }
+
+ -- Conformance information 
+ 
+ wwpLeosDhcpClientMIBConformance OBJECT IDENTIFIER ::= { wwpLeosDhcpClientMIB 3 } 
+ wwpLeosDhcpClientMIBCompliances OBJECT IDENTIFIER ::= { wwpLeosDhcpClientMIBConformance 1 } 		
+ wwpLeosDhcpClientMIBGroups      OBJECT IDENTIFIER ::= { wwpLeosDhcpClientMIBConformance 2 }
+
+ -- the dhcp client table
+ 
+ wwpLeosDhcpIfName   OBJECT-TYPE
+     SYNTAX       DisplayString(SIZE (0..32))
+     MAX-ACCESS   read-write
+     STATUS       current
+     DESCRIPTION
+             "The ifDesc associated with the dhcp client.
+	      it can be set to 'remote' or 'local'"
+     ::= { wwpLeosDhcpClient 1 }
+     
+ wwpLeosDhcpStatus     OBJECT-TYPE
+     SYNTAX          INTEGER {
+                         enable(1),
+		         disable(2)
+		     }
+     MAX-ACCESS      read-write
+     STATUS          current
+     DESCRIPTION
+    	     "Setting this object to 'enable' will enable the 
+	     dhcp client on this interface."        
+     ::= { wwpLeosDhcpClient 2 } 
+     
+ wwpLeosDhcpState     OBJECT-TYPE
+     SYNTAX          INTEGER {
+                         bound(1),
+		         disabled(2),
+		         inform(3),
+		         init(4),
+		         rebinding(5),
+		         renewing(6),
+		         requesting(7),
+		         selecting(8),
+		         unknown(9)  
+		     }
+     MAX-ACCESS      read-only
+     STATUS          current
+     DESCRIPTION
+    	     "The current state of the dhcp client on this 
+	      interface as per RFC2131."        
+     ::= { wwpLeosDhcpClient 3 }       			 		 
+      
+ wwpLeosDhcpLeaseOffered  OBJECT-TYPE
+     SYNTAX          Integer32(0..2147483647)
+     UNITS           "seconds"
+     MAX-ACCESS      read-only
+     STATUS          current     
+     DESCRIPTION
+             "The lease time authorized by the server."
+     ::= { wwpLeosDhcpClient 5 }
+     
+ wwpLeosDhcpLeaseRemaining  OBJECT-TYPE
+     SYNTAX          Integer32(0..2147483647)
+     UNITS           "seconds"
+     MAX-ACCESS      read-only
+     STATUS          current     
+     DESCRIPTION
+             "The time remaining for the lease to expire."
+     ::= { wwpLeosDhcpClient 6 }
+ 
+ wwpLeosDhcpDiscoveryMsgInterval  OBJECT-TYPE
+     SYNTAX          Integer32(0..2147483647)
+     UNITS           "seconds"
+     MAX-ACCESS      read-write
+     STATUS          current     
+     DESCRIPTION
+             "The time interval for discovery messages issued before the client
+             receives the first reply."
+     DEFVAL  { 30 }
+     ::= { wwpLeosDhcpClient 7 }
+     
+ wwpLeosDhcpRenewalTime  OBJECT-TYPE
+     SYNTAX          Integer32(0..2147483647)
+     UNITS           "seconds"
+     MAX-ACCESS      read-only
+     STATUS          current     
+     DESCRIPTION
+             "The number of seconds before the client begins to renew its 
+	     address lease with the dhcp server. This time is a function typically 
+	     50% of the full configured duration (or lease time) for a client lease.
+	     Referred to as T1 in RFC2131."
+     ::= { wwpLeosDhcpClient 8 }
+ 
+ wwpLeosDhcpRebindingTime  OBJECT-TYPE
+     SYNTAX          Integer32(0..2147483647)
+     UNITS           "seconds"
+     MAX-ACCESS      read-only
+     STATUS          current     
+     DESCRIPTION
+             "The number of seconds before the client enters the rebinding state 
+	     if it has not renewed its current address lease with the dhcp server. 
+             This time is a function (typically, 87.5%) of the full configured 
+	     duration (or lease time) for a client lease. 
+	     Referred to as T2 in RFC2131."
+     ::= { wwpLeosDhcpClient 9 }
+     
+ wwpLeosDhcpServerAddress  OBJECT-TYPE
+     SYNTAX          IpAddress
+     MAX-ACCESS      read-only
+     STATUS          current     
+     DESCRIPTION
+             "The IP address that identifies the dhcp server."
+     ::= { wwpLeosDhcpClient 10 }
+     
+ wwpLeosDhcpRenewLease   OBJECT-TYPE
+     SYNTAX          TruthValue
+     MAX-ACCESS      read-write
+     STATUS          current
+     DESCRIPTION
+    	     "Setting this object to true will force the dhcp 
+	     client to renew its lease."
+     DEFVAL { false }                
+     ::= { wwpLeosDhcpClient 11 }
+     
+ wwpLeosDhcpReleaseLease OBJECT-TYPE
+     SYNTAX          TruthValue
+     MAX-ACCESS      read-write
+     STATUS          current
+     DESCRIPTION
+    	     "Setting this object to true will force the dhcp
+	     client to release its lease, if the client dhcp
+	     is in the bound state"
+     DEFVAL { false }                
+     ::= { wwpLeosDhcpClient 12 }
+     
+ --
+ -- Dhcp Option List
+ --
+ -- the Multi dhcp client Table
+
+ wwpLeosDhcpClientOptionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WwpLeosDhcpClientOptionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "List of options supported by the Dhcp client."
+    ::= { wwpLeosDhcpClient 13 }
+
+ wwpLeosDhcpClientOptionEntry OBJECT-TYPE
+    SYNTAX      WwpLeosDhcpClientOptionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry containing list of options supported by dhcp client."
+    INDEX   { wwpLeosDhcpOptionCodeIndex }
+    ::= { wwpLeosDhcpClientOptionTable 1 }
+
+ WwpLeosDhcpClientOptionEntry ::=
+    SEQUENCE {
+        wwpLeosDhcpOptionCodeIndex             INTEGER,
+        wwpLeosDhcpOptionDesc                  DisplayString,
+	wwpLeosDhcpOptionCode		       INTEGER,
+        wwpLeosDhcpOptionState                 TruthValue
+    }
+
+ wwpLeosDhcpOptionCodeIndex OBJECT-TYPE
+     SYNTAX		INTEGER (1..65535)
+     MAX-ACCESS		read-only
+     STATUS		current
+     DESCRIPTION
+             "Specifies the index used for this entry."
+ ::= { wwpLeosDhcpClientOptionEntry 1 }
+
+ wwpLeosDhcpOptionDesc OBJECT-TYPE
+     SYNTAX		DisplayString
+     MAX-ACCESS		read-only
+     STATUS		current
+     DESCRIPTION
+             "Specifies the descriotion for the given dhcp option code."
+ ::= { wwpLeosDhcpClientOptionEntry 2 }
+
+ wwpLeosDhcpOptionCode OBJECT-TYPE
+     SYNTAX		INTEGER (0..4294967295)
+     MAX-ACCESS		read-only
+     STATUS		current
+     DESCRIPTION
+             "Specifies the option code specified by RFC specification."
+ ::= { wwpLeosDhcpClientOptionEntry 3 }
+
+ wwpLeosDhcpOptionState OBJECT-TYPE
+     SYNTAX		INTEGER {
+				disabled(1),
+				enabled(2)
+                        }
+     MAX-ACCESS		read-write
+     STATUS		current
+     DESCRIPTION
+             "Specifies if the given option is enabled/disabled."
+ ::= { wwpLeosDhcpClientOptionEntry 4 }
+
+ --
+ -- Notifications
+ --
+ wwpLeosDhcpClientOptionDisabledNotification NOTIFICATION-TYPE	
+        OBJECTS	   {
+	              wwpLeosDhcpOptionCode 
+		   }
+	STATUS	current
+	DESCRIPTION
+		"A wwpLeosDhcpClientOptionDisabledNotification is sent 
+		 whenever device receives dhcp option which is disabled
+		 on the device."
+	::= { wwpLeosDhcpClientMIBNotifications 1 }
+ END
+
+ --
+ -- WWP-LEOS-DHCP-CLIENT-MIB.my
+ --

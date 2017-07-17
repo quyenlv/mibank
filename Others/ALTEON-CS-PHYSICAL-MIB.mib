@@ -1,0 +1,1319 @@
+-- COPYRIGHT NOTICE
+-- Copyright (c) Alteon Networks, Inc. 2002
+-- All rights reserved
+-- 
+-- HISTORY
+-- $Log: cheetahPhysical.mib $
+-- Revision ge_latest_margozzi/2 2002/11/27 01:19:20 margozzi
+-- 	fdbRefSps changed from Integer to String.
+-- 
+-- Revision submit_cheetah_1583/1 2002/11/27 00:14:04 rmundhra
+-- Fixed CR Q00570451: EMS: Monitor>Bridge>Fwd database
+-- shows different SP than telnet.
+-- 
+-- Revision submit_cheetah_1573/1 2002/11/26 18:15:22 rmundhra
+-- Modified the range for vlan entries to be 4090
+-- for Cheetah switches as the other 4 entries are 
+-- going to be used internally.
+-- 
+-- Revision submit_cheetah_1546/1 2002/11/21 01:04:10 rrekha
+-- Fixed Q00546520 : Added FDB table in the private mib since
+-- the standard mib table dot1dTpFdbTable does not have all the 
+-- columns.
+-- 
+-- Revision submit_cheetah_1109/1 2002/10/02 23:32:30 rrekha
+-- Fixed Q00533514: Added MIB object fdbClear to clear the 
+-- FDB.
+-- 
+-- Revision submit_cheetah_217/1 2002/06/26 20:27:30 rrekha
+-- Modified some of the incorrect ranges. Also removed ranges
+-- for table indices as these should be obtained from the max
+-- table sizes. Fixed typos in BGP mibs.
+-- 
+-- Revision submit_cheetah_20/1 2002/06/06 23:11:02 mmacnt
+-- testing submit
+-- 
+-- Revision submit_cheetah_13/1 2002/06/06 22:56:43 rrekha
+-- Correct description for fdbStatsFinds.
+-- 
+-- Revision ch_1_0_0_dev/4 2002/06/04 21:48:06 rrekha
+-- Added MIB objects for FDB statistics.
+-- 
+-- Revision ch_1_0_0_dev/3 2002/04/23 21:47:11 smiao
+-- Renamed node cheetah to aws-switches.
+-- 
+-- Revision ch_1_0_0_dev/2 2002/03/19 04:51:30 smiao
+-- Removed port mirroring operation for SNMP and webUI.
+-- 
+-- Revision ch_1_0_0_dev/1 2002/03/07 19:01:55 smiao
+-- Removed unnecssary MIB objects for CHEEATH.
+-- 
+-- Revision ch10latest_smiao/2 2002/02/13 01:41:24 smiao
+-- 	Initial checked in for cheetah MIB files.
+-- 
+-- $EndLog$
+--
+
+ALTEON-CS-PHYSICAL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    IpAddress, Counter, Gauge
+        FROM RFC1155-SMI
+    OBJECT-TYPE
+        FROM RFC-1212
+    PhysAddress, DisplayString
+        FROM RFC1213-MIB
+    aws-switch 
+        FROM ALTEON-ROOT-MIB;
+
+layer2            OBJECT IDENTIFIER ::= { aws-switch 2 }
+
+layer2Configs     OBJECT IDENTIFIER ::= { layer2 1 }
+layer2Stats       OBJECT IDENTIFIER ::= { layer2 2 }
+layer2Info        OBJECT IDENTIFIER ::= { layer2 3 }
+layer2Oper        OBJECT IDENTIFIER ::= { layer2 4 }
+
+vlan              OBJECT IDENTIFIER ::= { layer2Configs 1 }
+trunkgroup        OBJECT IDENTIFIER ::= { layer2Configs 2 }
+stgCfg            OBJECT IDENTIFIER ::= { layer2Configs 3 }
+mirroring         OBJECT IDENTIFIER ::= { layer2Configs 4 }
+
+mirrPortMirr      OBJECT IDENTIFIER ::= { mirroring 1 }
+mirrVlanMirr      OBJECT IDENTIFIER ::= { mirroring 2 }
+
+fdbStats	  OBJECT IDENTIFIER ::= { layer2Stats 1 }
+
+fdbInfo 	  OBJECT IDENTIFIER ::= { layer2Info 1 }
+
+-- VLAN group
+vlanMaxEnt OBJECT-TYPE
+    SYNTAX  INTEGER 
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The maximum number of rows in the VLAN configuration table."
+    ::= { vlan 1 }
+
+vlanCurCfgTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF VlanCurCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of VLAN configuration."
+    ::= { vlan 2 }
+
+vlanCurCfgTableEntry OBJECT-TYPE
+    SYNTAX  VlanCurCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the VLAN configuration table."
+    INDEX  { vlanCurCfgVlanId }
+    ::= { vlanCurCfgTable 1 }
+
+VlanCurCfgTableEntry ::= SEQUENCE {
+    vlanCurCfgVlanId 		INTEGER,
+    vlanCurCfgVlanName 		DisplayString,
+    vlanCurCfgPorts 		OCTET STRING,
+    vlanCurCfgState 		INTEGER,
+    vlanCurCfgBwmContract	INTEGER,
+    vlanCurCfgStg  	        INTEGER
+    }
+
+vlanCurCfgVlanId OBJECT-TYPE
+    SYNTAX  INTEGER  (1..4090)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The VLAN identifier."
+    ::= { vlanCurCfgTableEntry 1 }
+
+vlanCurCfgVlanName OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..32))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The VLAN name."
+    ::= { vlanCurCfgTableEntry 2 }
+
+vlanCurCfgPorts	OBJECT-TYPE
+    SYNTAX  OCTET STRING
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The port list in the VLAN. The ports are presented in bitmap format.
+	 in receiving order:
+
+	     OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ port 8
+             ||    ||  
+             ||    ||___ port 7
+             ||    |____ port 6
+             ||      .    .   .
+             ||_________ port 1
+             |__________ reserved
+
+         where x : 1 - The represented port belongs to the VLAN
+		   0 - The represented port does not belong to the VLAN"
+    ::= { vlanCurCfgTableEntry 3 }
+
+vlanCurCfgState	OBJECT-TYPE
+    SYNTAX  INTEGER  {
+	enabled(2),
+	disabled(3)
+	}
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Enable or disable a VLAN"
+    ::= { vlanCurCfgTableEntry 4 }
+
+vlanCurCfgBwmContract OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Default contract number the VLAN "
+    ::= { vlanCurCfgTableEntry 5 }
+
+vlanCurCfgStg OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The Spanning Tree Group for the VLAN."
+    ::= { vlanCurCfgTableEntry 6 }
+
+vlanNewCfgTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF VlanNewCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of VLAN configuration."
+    ::= { vlan 3 }
+
+vlanNewCfgTableEntry OBJECT-TYPE
+    SYNTAX  VlanNewCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the VLAN configuration table."
+    INDEX  { vlanNewCfgVlanId }
+    ::= { vlanNewCfgTable 1 }
+
+VlanNewCfgTableEntry ::= SEQUENCE {
+    vlanNewCfgVlanId 		INTEGER,
+    vlanNewCfgVlanName 		DisplayString,
+    vlanNewCfgPorts 		OCTET STRING,
+    vlanNewCfgState 		INTEGER,
+    vlanNewCfgAddPort 		INTEGER,
+    vlanNewCfgRemovePort	INTEGER,
+    vlanNewCfgDelete 		INTEGER,
+    vlanNewCfgBwmContract	INTEGER,
+    vlanNewCfgStg  	        INTEGER
+    }
+
+vlanNewCfgVlanId OBJECT-TYPE
+    SYNTAX  INTEGER  (1..4090)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The VLAN identifier."
+    ::= { vlanNewCfgTableEntry 1 }
+
+vlanNewCfgVlanName OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..32))
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The VLAN name."
+    ::= { vlanNewCfgTableEntry 2 }
+
+vlanNewCfgPorts	OBJECT-TYPE
+    SYNTAX  OCTET STRING
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The port list in the VLAN.  The ports are presented in bitmap format.
+         in receiving order:
+
+	     OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ port 8
+             ||    ||  
+             ||    ||___ port 7
+             ||    |____ port 6
+             ||      .    .   .
+             ||_________ port 1
+             |__________ reserved
+
+         where x : 1 - The represented port belongs to the VLAN
+	           0 - The represented port does not belong to the VLAN"
+    ::= { vlanNewCfgTableEntry 3 }
+
+vlanNewCfgState	OBJECT-TYPE
+    SYNTAX  INTEGER  {
+	enabled(2),
+	disabled(3)
+	}
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Enable or disable a VLAN"
+    ::= { vlanNewCfgTableEntry 4 }
+
+vlanNewCfgAddPort OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The port to be added to the specified VLAN.  A '0' value is 
+         returned when read."
+    ::= { vlanNewCfgTableEntry 5 }
+
+vlanNewCfgRemovePort OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The port to be removed from the specified VLAN.  A '0'
+         value is returned when read."
+    ::= { vlanNewCfgTableEntry 6 }
+
+vlanNewCfgDelete OBJECT-TYPE
+    SYNTAX  INTEGER  {
+        other(1),
+        delete(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This is an action object to create or delete a VLAN.
+         other(1) is returned always when read.
+         The following values are writable: delete(2)...to delete a VLAN"
+    ::= { vlanNewCfgTableEntry 7 }
+
+vlanNewCfgBwmContract OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Default contract number for the VLAN."
+    ::= { vlanNewCfgTableEntry 8 }
+
+vlanNewCfgStg OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The Spanning Tree Group for the VLAN."
+    ::= { vlanNewCfgTableEntry 9 }
+
+-- Trunk Group Group
+trunkGroupTableMaxSize OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The maximum number of entries in trunk group table."
+    ::= { trunkgroup 1 }
+
+trunkGroupCurCfgTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TrunkGroupCurCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of trunk group configuration."
+    ::= { trunkgroup 2 }
+
+trunkGroupCurCfgTableEntry OBJECT-TYPE
+    SYNTAX  TrunkGroupCurCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the trunk group configuration table."
+    INDEX   { trunkGroupCurCfgIndex }
+    ::= { trunkGroupCurCfgTable 1 }
+
+TrunkGroupCurCfgTableEntry ::= SEQUENCE {
+    trunkGroupCurCfgIndex         INTEGER,
+    trunkGroupCurCfgPorts         OCTET STRING,
+    trunkGroupCurCfgState         INTEGER,
+    trunkGroupCurCfgBwmContract   INTEGER
+    }
+ 
+trunkGroupCurCfgIndex OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The identifier of the trunk group."
+    ::= { trunkGroupCurCfgTableEntry 1 }
+ 
+trunkGroupCurCfgPorts OBJECT-TYPE
+    SYNTAX  OCTET STRING
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The port list in the trunk group. The ports are presented in 
+         bitmap format.
+ 
+         in receiving order:
+ 
+             OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ port 8
+             ||    ||  
+             ||    ||___ port 7
+             ||    |____ port 6
+             ||      .    .   .
+             ||_________ port 1
+             |__________ reserved
+
+         where x : 1 - The represented port belongs to the trunk group
+                   0 - The represented port does not belong to the trunk group"
+    ::= { trunkGroupCurCfgTableEntry 2 }
+ 
+trunkGroupCurCfgState OBJECT-TYPE
+    SYNTAX  INTEGER  {
+        enable(1),
+        disable(2)
+        }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Enable or disable a trunk group."
+    ::= { trunkGroupCurCfgTableEntry 3 }
+ 
+trunkGroupCurCfgBwmContract OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Default BW contract of a trunk group."
+    ::= { trunkGroupCurCfgTableEntry 4 }
+ 
+trunkGroupNewCfgTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TrunkGroupNewCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of trunk group configuration."
+    ::= { trunkgroup 3 }
+
+trunkGroupNewCfgTableEntry OBJECT-TYPE
+    SYNTAX  TrunkGroupNewCfgTableEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the trunk group configuration table."
+    INDEX   { trunkGroupNewCfgIndex }
+    ::= { trunkGroupNewCfgTable 1 }
+
+TrunkGroupNewCfgTableEntry ::= SEQUENCE {
+    trunkGroupNewCfgIndex          INTEGER,
+    trunkGroupNewCfgPorts          OCTET STRING,
+    trunkGroupNewCfgAddPort        INTEGER,
+    trunkGroupNewCfgRemovePort     INTEGER,
+    trunkGroupNewCfgState          INTEGER,
+    trunkGroupNewCfgDelete         INTEGER,
+    trunkGroupNewCfgBwmContract    INTEGER
+    }
+ 
+trunkGroupNewCfgIndex OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The identifier of the trunk group."
+    ::= { trunkGroupNewCfgTableEntry 1 }
+ 
+trunkGroupNewCfgPorts OBJECT-TYPE
+    SYNTAX  OCTET STRING
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The port list in the trunk group.  The ports are presented
+         in bitmap format.
+
+         in receiving order:
+
+             OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ port 8
+             ||    ||  
+             ||    ||___ port 7
+             ||    |____ port 6
+             ||      .    .   .
+             ||_________ port 1
+             |__________ reserved
+ 
+         where x : 1 - The represented port belongs to the trunk group
+                   0 - The represented port does not belong to the trunk group"
+    ::= { trunkGroupNewCfgTableEntry 2 }
+ 
+trunkGroupNewCfgAddPort OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The port to be added in the trunk group. When read, 0 is returned."
+    ::= { trunkGroupNewCfgTableEntry 3 }
+
+trunkGroupNewCfgRemovePort OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The port to be deleted from the trunk group. when read, 0
+	 is returned."
+    ::= { trunkGroupNewCfgTableEntry 4 }
+
+trunkGroupNewCfgState OBJECT-TYPE
+    SYNTAX  INTEGER  {
+        enable(1),
+        disable(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Enable or disable a trunk group."
+    ::= { trunkGroupNewCfgTableEntry 5 }
+ 
+trunkGroupNewCfgDelete OBJECT-TYPE
+    SYNTAX  INTEGER  {
+        other(1),
+        delete(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Setting the value to delete(2) will delete the entire
+         row. When read, other(1) is returned."
+    ::= { trunkGroupNewCfgTableEntry 6 }
+
+trunkGroupNewCfgBwmContract OBJECT-TYPE
+    SYNTAX  INTEGER  
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Default BW contract of a trunk group."
+    ::= { trunkGroupNewCfgTableEntry 7 }
+
+-- Spanning Tree Group Configuration
+-- This group specifies the additional configurations that are not
+-- covered by the Bridge MIB (RFC 1493).
+-- The relative Spanning Tree information can be retrieved or configured
+-- using Bridge MIB with an unique community string for each group specified
+-- in entLogicalTable of Entity MIB (RFC 2037).
+--
+stgCurCfgTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF StgCurCfgTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The table of Spanning Tree Group configuration."
+    ::= { stgCfg 1 }
+
+stgCurCfgTableEntry OBJECT-TYPE
+    SYNTAX StgCurCfgTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Information about a particular Spanning Tree Group configuration."
+    INDEX { stgCurCfgIndex }
+    ::= { stgCurCfgTable 1 }
+
+StgCurCfgTableEntry ::= SEQUENCE {
+    stgCurCfgIndex      INTEGER,
+    stgCurCfgState      INTEGER,
+    stgCurCfgVlanBmap1	OCTET STRING,	
+    stgCurCfgVlanBmap2	OCTET STRING	
+    }
+
+stgCurCfgIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The identifier of a particular Spanning Tree Group.  This is also
+         index to the entLogicalTable of Entity MIB."
+    ::= { stgCurCfgTableEntry 1 }
+
+stgCurCfgState OBJECT-TYPE
+    SYNTAX INTEGER {
+        on(1),
+        off(2)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Turn on of off Spanning Tree operation of a particular Spanning
+         Tree Group."
+    ::= { stgCurCfgTableEntry 2 }
+
+stgCurCfgVlanBmap1 OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE(0..256)) 
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The vlans applied to the spanning tree group.  The vlans are 
+         presented in bitmap format. This string displays vlan number
+	 from 1 to 2048.
+
+	 in receiving order:
+
+	     OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ vlan 9
+             ||    ||  
+             ||    ||___ vlan 8
+             ||    |____ vlan 7
+             ||      .    .   .
+             ||_________ vlan 2
+             |__________ vlan 1 (as index to stgCurCfgTable)
+
+         where x : 1 - The represented vlan applied to the spanning tree. 
+		   0 - The represented vlan not applied to the spanning tree"
+    ::= { stgCurCfgTableEntry 3 }
+
+stgCurCfgVlanBmap2 OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE(0..256)) 
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The vlans applied to the spanning tree group.  The vlans are 
+         presented in bitmap format. This string displays vlan number
+	 from 2049 to 4096.
+
+	 in receiving order:
+
+	     OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ vlan 2057 
+             ||    ||  
+             ||    ||___ vlan 2056 
+             ||    |____ vlan 2055 
+             ||      .    .   .
+             ||_________ vlan 2050 
+             |__________ vlan 2049 (as index to stgCurCfgTable)
+
+         where x : 1 - The represented vlan applied to the spanning tree. 
+		   0 - The represented vlan not applied to the spanning tree"
+    ::= { stgCurCfgTableEntry 4 }
+
+
+stgNewCfgTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF StgNewCfgTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The table of Spanning Tree Groups configuration in the new_config."
+    ::= { stgCfg 2 }
+
+stgNewCfgTableEntry OBJECT-TYPE
+    SYNTAX StgNewCfgTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Information about a particular Spanning Tree Group configuration."
+    INDEX { stgNewCfgIndex }
+    ::= { stgNewCfgTable 1 }
+
+StgNewCfgTableEntry ::= SEQUENCE {
+    stgNewCfgIndex      INTEGER,
+    stgNewCfgState      INTEGER,
+    stgNewCfgDefaultCfg INTEGER,
+    stgNewCfgAddVlan    INTEGER,
+    stgNewCfgRemoveVlan INTEGER,
+    stgNewCfgVlanBmap1	OCTET STRING,
+    stgNewCfgVlanBmap2	OCTET STRING
+    }
+
+stgNewCfgIndex  OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The identifier of a particular Spanning Tree Group.  This is also
+         index to the entLogicalTable of Entity MIB."
+    ::= { stgNewCfgTableEntry 1 }
+
+stgNewCfgState OBJECT-TYPE
+    SYNTAX INTEGER {
+        on(1),
+        off(2)
+        }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Turn on of off Spanning Tree operation of a particular Spanning
+         Tree Group."
+    ::= { stgNewCfgTableEntry 2 }
+
+stgNewCfgDefaultCfg OBJECT-TYPE
+    SYNTAX INTEGER {
+        default-config(1)
+        }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Setting the value to default-config(1) will set the default
+         configuration as recommended by IEEE 802.1D for a particular
+         Spanning Tree Group.  default-config (1) is always returned 
+	 When read, but it does not mean anything."
+    ::= { stgNewCfgTableEntry 3 }
+
+stgNewCfgAddVlan OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The vlan to be added to the specified Spanning Tree Group.  A 
+         '0' value is returned when read." 
+    ::= {stgNewCfgTableEntry 4 }
+
+stgNewCfgRemoveVlan OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The vlan to be removed from the specified Spanning Tree Group.
+         A '0' value is returned when read."
+    ::= { stgNewCfgTableEntry 5 }
+
+stgNewCfgVlanBmap1 OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE(0..256)) 
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The vlans applied to the spanning tree group.  The vlans are 
+         presented in bitmap format. This string displays vlan number
+	 from 1 to 2048.
+
+	 in receiving order:
+
+	     OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ vlan 9
+             ||    ||  
+             ||    ||___ vlan 8
+             ||    |____ vlan 7
+             ||      .    .   .
+             ||_________ vlan 2
+             |__________ vlan 1 (as index to stgCurCfgTable)
+
+         where x : 1 - The represented vlan applied to the spanning tree. 
+		   0 - The represented vlan not applied to the spanning tree"
+    ::= { stgNewCfgTableEntry 6 }
+
+stgNewCfgVlanBmap2 OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE(0..256)) 
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+	"The vlans applied to the spanning tree group.  The vlans are 
+         presented in bitmap format. This string displays vlan number
+	 from 2049 to 4096.
+
+	 in receiving order:
+
+	     OCTET 1  OCTET 2  .....
+             xxxxxxxx xxxxxxxx ..... 
+             ||    || |_ vlan 2057 
+             ||    ||  
+             ||    ||___ vlan 2056 
+             ||    |____ vlan 2055 
+             ||      .    .   .
+             ||_________ vlan 2050 
+             |__________ vlan 2049 (as index to stgCurCfgTable)
+
+         where x : 1 - The represented vlan applied to the spanning tree. 
+		   0 - The represented vlan not applied to the spanning tree"
+    ::= { stgNewCfgTableEntry 7 }
+
+stgCurCfgPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF StgCurCfgPortTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The table of Spanning Tree Group port configuration in the
+         current_config."
+    ::= { stgCfg 3 }
+
+stgCurCfgPortTableEntry OBJECT-TYPE
+    SYNTAX StgCurCfgPortTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Information about port configuration of a particular Spanning Tree
+         Group."
+    INDEX { stgCurCfgStgIndex, stgCurCfgPortIndex }
+    ::= { stgCurCfgPortTable 1 }
+
+StgCurCfgPortTableEntry ::= SEQUENCE {
+    stgCurCfgStgIndex      INTEGER,
+    stgCurCfgPortIndex     INTEGER,
+    stgCurCfgPortState     INTEGER
+    }
+
+stgCurCfgStgIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The identifier of a particular Spanning Tree Group.  This is also
+         index to the entLogicalTable of Entity MIB."
+    ::= { stgCurCfgPortTableEntry 1 }
+
+stgCurCfgPortIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The port identifier of a particular Spanning Tree Group."
+    ::= { stgCurCfgPortTableEntry 2 }
+
+stgCurCfgPortState OBJECT-TYPE
+    SYNTAX INTEGER {
+        on(1),
+        off(2)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Turn on of off Spanning Tree operation of a particular port of a
+         Spanning Tree Group."
+    ::= { stgCurCfgPortTableEntry 3 }
+
+
+stgNewCfgPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF StgNewCfgPortTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The table of Spanning Tree Group port configuration in the
+         new_config."
+    ::= { stgCfg 4 }
+
+stgNewCfgPortTableEntry OBJECT-TYPE
+    SYNTAX StgNewCfgPortTableEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Information about port configuration of a particular Spanning Tree
+         Group."
+    INDEX { stgNewCfgStgIndex, stgNewCfgPortIndex }
+    ::= { stgNewCfgPortTable 1 }
+
+StgNewCfgPortTableEntry ::= SEQUENCE {
+    stgNewCfgStgIndex      INTEGER,
+    stgNewCfgPortIndex     INTEGER,
+    stgNewCfgPortState     INTEGER
+    }
+
+stgNewCfgStgIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The identifier of a particular Spanning Tree Group.  This is also
+         index to the entLogicalTable of Entity MIB."
+    ::= { stgNewCfgPortTableEntry 1 }
+
+stgNewCfgPortIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The port identifier of a particular Spanning Tree Group."
+    ::= { stgNewCfgPortTableEntry 2 }
+
+stgNewCfgPortState OBJECT-TYPE
+    SYNTAX INTEGER {
+        on(1),
+        off(2)
+        }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Turn on of off Spanning Tree operation of a particular port of a
+         Spanning Tree Group."
+    ::= { stgNewCfgPortTableEntry 3 }
+
+-- Complete Port Mirroring 
+pmCurCfgPortMirrState OBJECT-TYPE
+    SYNTAX  INTEGER {
+	enabled(1),
+	disabled(2)
+	}
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The state of port-based port mirroring."
+    ::= { mirrPortMirr 1 }
+ 
+pmNewCfgPortMirrState OBJECT-TYPE
+    SYNTAX  INTEGER {
+	enabled(1),
+	disabled(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The state of port-based port mirroring."
+    ::= { mirrPortMirr 2 }
+
+pmCurCfgPortMonitorTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF PmCurCfgPortMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of monitoring ports."
+    ::= { mirrPortMirr 3 }
+
+pmCurCfgPortMonitorEntry OBJECT-TYPE
+    SYNTAX  PmCurCfgPortMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the monitoring port table."
+    INDEX   { pmCurCfgPmirrMoniPortIndex, pmCurCfgPmirrMirrPortIndex }
+    ::= { pmCurCfgPortMonitorTable 1 }
+
+PmCurCfgPortMonitorEntry ::= SEQUENCE {
+    pmCurCfgPmirrMoniPortIndex       INTEGER,
+    pmCurCfgPmirrMirrPortIndex       INTEGER,
+    pmCurCfgPmirrDirection           INTEGER
+    }
+
+pmCurCfgPmirrMoniPortIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The monitoring port number." 
+    ::= { pmCurCfgPortMonitorEntry 1 }
+
+pmCurCfgPmirrMirrPortIndex OBJECT-TYPE 
+    SYNTAX  INTEGER 
+    ACCESS  read-only 
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The mirrored port number" 
+    ::= { pmCurCfgPortMonitorEntry 2 }
+
+pmCurCfgPmirrDirection OBJECT-TYPE
+    SYNTAX  INTEGER {
+	in(1),
+	out(2),
+	both(3)
+        }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The type of traffic to be monitored with respect to the
+         mirrored port."
+    ::= { pmCurCfgPortMonitorEntry 3 }
+
+pmNewCfgPortMonitorTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF PmNewCfgPortMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of monitoring ports."
+    ::= { mirrPortMirr 4 }
+
+pmNewCfgPortMonitorEntry OBJECT-TYPE
+    SYNTAX  PmNewCfgPortMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the monitoring port table."
+    INDEX   { pmNewCfgPmirrMoniPortIndex, pmNewCfgPmirrMirrPortIndex }
+    ::= { pmNewCfgPortMonitorTable 1 }
+
+PmNewCfgPortMonitorEntry ::= SEQUENCE {
+    pmNewCfgPmirrMoniPortIndex          INTEGER,
+    pmNewCfgPmirrMirrPortIndex          INTEGER,
+    pmNewCfgPmirrDirection              INTEGER,
+    pmNewCfgPmirrDelete                 INTEGER
+    }
+
+pmNewCfgPmirrMoniPortIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The monitoring port number." 
+    ::= { pmNewCfgPortMonitorEntry 1 }
+
+pmNewCfgPmirrMirrPortIndex OBJECT-TYPE 
+    SYNTAX  INTEGER 
+    ACCESS  read-only 
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The mirrored port number" 
+    ::= { pmNewCfgPortMonitorEntry 2 }
+
+pmNewCfgPmirrDirection OBJECT-TYPE
+    SYNTAX  INTEGER {
+	in(1),
+	out(2),
+	both(3)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The type of traffic to be monitored with respect to the
+         mirrored port."
+    ::= { pmNewCfgPortMonitorEntry 3 }
+
+pmNewCfgPmirrDelete OBJECT-TYPE
+    SYNTAX  INTEGER  {
+        other(1),
+        delete(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Setting the value to delete(2) will delete the entire
+         row. When read, other(1) is returned."
+    ::= { pmNewCfgPortMonitorEntry 4 }
+
+-- Vlan-based port mirroring
+
+pmCurCfgVlanMirrState OBJECT-TYPE
+    SYNTAX  INTEGER {
+	enabled(1),
+	disabled(2)
+	}
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The state of vlan-based port mirroring."
+    ::= { mirrVlanMirr 1 }
+ 
+pmNewCfgVlanMirrState OBJECT-TYPE
+    SYNTAX  INTEGER {
+	enabled(1),
+	disabled(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The state of vlan-based port mirroring."
+    ::= { mirrVlanMirr 2 }
+
+pmCurCfgVlanMonitorTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF PmCurCfgVlanMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of vlan based port mirroring."
+    ::= { mirrVlanMirr 3 }
+
+pmCurCfgVlanMonitorEntry OBJECT-TYPE
+    SYNTAX  PmCurCfgVlanMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the monitoring vlan table."
+    INDEX   { pmCurCfgVmirrMoniPortIndex, pmCurCfgVmirrMirrVlanIndex }
+    ::= { pmCurCfgVlanMonitorTable 1 }
+
+PmCurCfgVlanMonitorEntry ::= SEQUENCE {
+    pmCurCfgVmirrMoniPortIndex       INTEGER,
+    pmCurCfgVmirrMirrVlanIndex       INTEGER,
+    pmCurCfgVmirrDirection           INTEGER
+    }
+
+pmCurCfgVmirrMoniPortIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The monitoring port number." 
+    ::= { pmCurCfgVlanMonitorEntry 1 }
+
+pmCurCfgVmirrMirrVlanIndex OBJECT-TYPE 
+    SYNTAX  INTEGER 
+    ACCESS  read-only 
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The mirrored vlan number" 
+    ::= { pmCurCfgVlanMonitorEntry 2 }
+
+pmCurCfgVmirrDirection OBJECT-TYPE
+    SYNTAX  INTEGER {
+	in(1),
+	out(2),
+	both(3)
+        }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The type of traffic to be monitored with respect to the
+         mirrored vlan."
+    ::= { pmCurCfgVlanMonitorEntry 3 }
+
+pmNewCfgVlanMonitorTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF PmNewCfgVlanMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of vlan-based port mirroring."
+    ::= { mirrVlanMirr 4 }
+
+pmNewCfgVlanMonitorEntry OBJECT-TYPE
+    SYNTAX  PmNewCfgVlanMonitorEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the monitoring vlan table."
+    INDEX   { pmNewCfgVmirrMoniPortIndex, pmNewCfgVmirrMirrVlanIndex }
+    ::= { pmNewCfgVlanMonitorTable 1 }
+
+PmNewCfgVlanMonitorEntry ::= SEQUENCE {
+    pmNewCfgVmirrMoniPortIndex          INTEGER,
+    pmNewCfgVmirrMirrVlanIndex          INTEGER,
+    pmNewCfgVmirrDirection              INTEGER,
+    pmNewCfgVmirrDelete                 INTEGER
+    }
+
+pmNewCfgVmirrMoniPortIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The monitoring port number." 
+    ::= { pmNewCfgVlanMonitorEntry 1 }
+
+pmNewCfgVmirrMirrVlanIndex OBJECT-TYPE 
+    SYNTAX  INTEGER 
+    ACCESS  read-only 
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The mirrored vlan number" 
+    ::= { pmNewCfgVlanMonitorEntry 2 }
+
+pmNewCfgVmirrDirection OBJECT-TYPE
+    SYNTAX  INTEGER {
+	in(1),
+	out(2),
+	both(3)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The type of traffic to be monitored with respect to the
+         mirrored vlan."
+    ::= { pmNewCfgVlanMonitorEntry 3 }
+
+pmNewCfgVmirrDelete OBJECT-TYPE
+    SYNTAX  INTEGER  {
+        other(1),
+        delete(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "Setting the value to delete(2) will delete the entire
+         row. When read, other(1) is returned."
+    ::= { pmNewCfgVlanMonitorEntry 4 }
+
+-- FDB Statistics
+ 
+fdbStatsCreates OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of entries created in the Forwarding Database."
+    ::= { fdbStats 1 }
+
+fdbStatsDeletes OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of entries deleted from the Forwarding Database."
+    ::= { fdbStats 2 }
+
+fdbStatsCurrent OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Current number of entries in the Forwarding Database."
+    ::= { fdbStats 3 }
+
+fdbStatsHiwat OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Highest number of entries recorded at any given time in the 
+         Forwarding Database."
+    ::= { fdbStats 4 }
+
+fdbStatsLookups OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of entry lookups in the Forwarding Database."
+    ::= { fdbStats 5 }
+
+fdbStatsLookupFails OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of unsuccessful searches made in the Forwarding Database."
+    ::= { fdbStats 6 }
+
+fdbStatsFinds OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of searches in the Forwarding Database."
+    ::= { fdbStats 7 }
+
+fdbStatsFindFails OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of search failures in the Forwarding Database."
+    ::= { fdbStats 8 }
+
+fdbStatsFindOrCreates OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of entries found or created in the Forwarding Database."
+    ::= { fdbStats 9 }
+
+fdbStatsOverflows OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Number of entries overflowing the Forwarding Database."
+    ::= { fdbStats 10 }
+
+fdbClear OBJECT-TYPE
+    SYNTAX  INTEGER {
+        ok(1),
+        clear(2)
+        }
+    ACCESS  read-write
+    STATUS  mandatory 
+    DESCRIPTION
+        "Setting this value to clear(2) clears the entire master FDB."
+    ::= { fdbInfo 1 }
+
+--  FDB table
+fdbTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF FdbEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The table of FDB entries."
+    ::= { fdbInfo 2 }
+
+fdbEntry OBJECT-TYPE
+    SYNTAX  FdbEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "A row in the FDB table"
+    INDEX   { fdbMacAddr }
+    ::= { fdbTable 1 }
+
+FdbEntry ::= SEQUENCE {
+    fdbMacAddr            PhysAddress,
+    fdbVlan       	  INTEGER,
+    fdbSrcPort            INTEGER,
+    fdbState              INTEGER,
+    fdbRefSps             DisplayString,
+    fdbLearnedPort        INTEGER
+    }
+
+fdbMacAddr OBJECT-TYPE
+    SYNTAX  PhysAddress
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The MAC address for the FDB entry."
+    ::= { fdbEntry 1 }
+
+fdbVlan OBJECT-TYPE 
+    SYNTAX  INTEGER 
+    ACCESS  read-only 
+    STATUS  mandatory 
+    DESCRIPTION 
+        "The VLAN ID for the FDB entry." 
+    ::= { fdbEntry 2 }
+
+fdbSrcPort OBJECT-TYPE  
+    SYNTAX  INTEGER 
+    ACCESS  read-only  
+    STATUS  mandatory  
+    DESCRIPTION  
+       "Either the value '0', or the port number of the port on which a frame 
+        having a source address equal to the value of the corresponding 
+        instance has been seen.  A value of '0' indicates that the port 
+        number has not been learned but that the bridge does have some
+        forwarding/filtering information about this address."
+    ::= { fdbEntry 3 }
+
+fdbState OBJECT-TYPE  
+    SYNTAX  INTEGER {
+        unknown(1),
+        ignore(2),
+        forward(3),
+        flood(4),
+        ffd(5),
+        trunk(6),
+        vir(7),
+        vsr(8),
+        vpr(9),
+        other(10)
+        }
+    ACCESS  read-only  
+    STATUS  mandatory  
+    DESCRIPTION  
+        "The state of the FDB entry. The meanings of the values are :
+         unknown(1) : the MAC address has not yet been learned by the switch
+                      but has only been seen as a destination address
+         forward(3) : the MAC address has been learned by the switch
+         flood(4)   : the MAC address is a multicast destination address 
+         trunk(6)   : frames with this MAC address are forwarded to trunk
+                      group
+         vir(7)     : frames with this MAC address are forwarded for L3 
+                      processing"
+    ::= { fdbEntry 4 }
+
+fdbRefSps OBJECT-TYPE   
+    SYNTAX  DisplayString (SIZE(0..32))
+    ACCESS  read-only   
+    STATUS  mandatory   
+    DESCRIPTION   
+        "The referenced SPs associated with this FDB entry."   
+    ::= { fdbEntry 5 }
+
+fdbLearnedPort OBJECT-TYPE   
+    SYNTAX  INTEGER  
+    ACCESS  read-only   
+    STATUS  mandatory   
+    DESCRIPTION   
+        "The learned port associated with this FDB entry."   
+    ::= { fdbEntry 6 }
+
+END
+

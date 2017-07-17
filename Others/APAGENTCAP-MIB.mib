@@ -1,0 +1,1141 @@
+--------------------------------------------------------------------------------
+-- ACMEPACKET-AGENTCAP-MIB.txt:  Acme Packet agent capability MIB file
+--
+-- August 2001, pzhou
+--
+-- Copyright (c) by Acme Packet, Inc.
+-- All rights reserved.
+---------------------------------------------------------------
+
+
+APAGENTCAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+	enterprises, snmpModules, mib-2 
+		 				FROM SNMPv2-SMI
+	MODULE-COMPLIANCE, AGENT-CAPABILITIES
+						FROM SNMPv2-CONF
+	acmepacketAgentCapability 	FROM ACMEPACKET-SMI;
+
+apAgentCapModule MODULE-IDENTITY
+		LAST-UPDATED	"2005070800Z"
+		ORGANIZATION 	"Acme Packet, Inc"
+		CONTACT-INFO
+			"           	Customer Service
+		 	Postal:		Acme Packet, Inc
+					71 Third Avenue 
+					Burlington, MA 01803
+					US
+		    	Tel:		1-781-328-4400
+		 	E-mail:		support@acmepacket.com"
+		DESCRIPTION	
+			"Add agent capacity for release 3.0.
+                        Modified: ifGroup."
+ 		REVISION	"2004111800Z"
+		DESCRIPTION
+			" Add agent capacity for release 2.0. "
+		REVISION 	"0006211500Z"
+		DESCRIPTION
+			" The agent capability MIB for Acme Packet"
+		REVISION 	"200605010000Z"
+		DESCRIPTION
+			" Add agent cpability for SD9000 series"
+		REVISION 	"200705070000Z"
+		DESCRIPTION
+			" Add agent cpability for SD9000 series"
+		::= { acmepacketAgentCapability 1}
+
+
+-- standard mibs modules
+apSnmpMibCapabilities   OBJECT IDENTIFIER ::= { apAgentCapModule 1 }
+apIfMibCapabilities     OBJECT IDENTIFIER ::= { apAgentCapModule 2 }
+apIPMibCapabilities     OBJECT IDENTIFIER ::= { apAgentCapModule 3 }
+apTCPMibCapabilities    OBJECT IDENTIFIER ::= { apAgentCapModule 4 }
+apUDPMibCapabilities    OBJECT IDENTIFIER ::= { apAgentCapModule 5 }
+apEntityCapabilities    OBJECT IDENTIFIER ::= { apAgentCapModule 6 }
+
+-- enterprise specific mibs
+apSlogMibCapabilities          OBJECT IDENTIFIER ::= { apAgentCapModule  7 }
+apSmgmtMibCapabilities         OBJECT IDENTIFIER ::= { apAgentCapModule  8 }
+apEnvMonitorMibCapabilities    OBJECT IDENTIFIER ::= { apAgentCapModule  9 }
+apSwinventoryMibCapabilities   OBJECT IDENTIFIER ::= { apAgentCapModule 10 }
+apLicenseMibCapabilities       OBJECT IDENTIFIER ::= { apAgentCapModule 11 }
+apAmiMibCapabilities           OBJECT IDENTIFIER ::= { apAgentCapModule 12 }
+apCodecMibCapabilities         OBJECT IDENTIFIER ::= { apAgentCapModule 13 }
+apSecurityMibCapabilities      OBJECT IDENTIFIER ::= { apAgentCapModule 14 }
+
+--------------------------------------------------------------
+-- 
+-- Following are the Standard Groups that we supports
+--
+--------------------------------------------------------------
+
+
+--------------------------------------------------------------
+--
+-- snmpMib
+--
+--------------------------------------------------------------
+
+apSnmpCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	      STATUS		 current
+	      DESCRIPTION	"Acme Packet Agent Capability for SNMPv2-MIB."
+
+	      SUPPORTS	SNMPv2-MIB
+	      INCLUDES        { systemGroup,
+				snmpGroup,
+				snmpCommunityGroup, 
+				snmpObsoleteGroup,
+				snmpBasicNotificationsGroup }
+	          ::= { apSnmpMibCapabilities 1 }
+
+
+--------------------------------------------------------------
+-- 
+-- ifMIB
+-- 
+--------------------------------------------------------------
+
+apInterfacesCap  AGENT-CAPABILITIES
+              PRODUCT-RELEASE	"Acme Packet SD"
+	      STATUS		 current
+	      DESCRIPTION	"Acme Packet Agent Capability for interfaces."
+
+  	      SUPPORTS	IF-MIB
+ 		   	INCLUDES	{ ifGeneralInformationGroup,
+					  ifPacketGroup,
+					  ifOldObjectsGroup,
+					  linkUpDownNotificationsGroup }
+
+			VARIATION               ifLinkUpDownTrapEnable
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION               ifConnectorPresent
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION               ifHighSpeed
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION		ifAdminStatus
+			  ACCESS		read-only
+			  DESCRIPTION	"Agent does not support this
+                                         SET requests for security reason"
+
+			VARIATION               ifAlias
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION               ifTableLastChange
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION               ifInUnknownProtos
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION		ifInMulticastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+	
+			VARIATION		ifInBroadcastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifOutMulticastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifOutBroadcastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifPromiscuousMode
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifOutQLen
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+		  ::= { apIfMibCapabilities 1 }
+
+apIfMibCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS          	current
+            DESCRIPTION     	"Acme Packet Agent Capability IfMib support."
+            SUPPORTS		IF-MIB
+ 		   	INCLUDES	{ ifGeneralGroup,
+					  ifPacketGroup,
+                                          ifOldObjectsGroup,
+					  ifStackGroup,
+					  linkUpDownNotificationsGroup
+					}
+
+                        VARIATION               ifLinkUpDownTrapEnable
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION               ifHighSpeed
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION		ifAdminStatus
+			  ACCESS		read-only
+			  DESCRIPTION	"Agent does not support this SET
+                                         requests for security reason"	
+
+			VARIATION               ifAlias
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION               ifTableLastChange
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION		ifInMulticastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+	
+			VARIATION		ifInBroadcastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifOutMulticastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifOutBroadcastPkts
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifPromiscuousMode
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+			VARIATION		ifOutQLen
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+            ::= { apIfMibCapabilities 2 }
+
+
+apIfMibHCCap  AGENT-CAPABILITIES
+              PRODUCT-RELEASE	"Acme Packet SD"
+	      STATUS		 current
+	      DESCRIPTION	"Acme Packet Agent Capability for interfaces."
+
+  		SUPPORTS	IF-MIB
+ 		   INCLUDES	{ ifGeneralGroup,
+				  ifPacketGroup,
+				  ifOldObjectsGroup,
+				  ifHCPacketGroup,
+				  ifCounterDiscontinuityGroup,
+				  linkUpDownNotificationsGroup 
+				}
+
+			VARIATION               ifLinkUpDownTrapEnable
+                          ACCESS                read-only
+			  DESCRIPTION	"Agent does not support this
+					SET requests for security reasons"
+
+			VARIATION		ifAdminStatus
+			  ACCESS		read-only
+			  DESCRIPTION	"Agent does not support this
+					SET requests for security reasons"
+
+			VARIATION               ifTableLastChange
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION               ifInUnknownProtos
+                          ACCESS                not-implemented
+                          DESCRIPTION   "information is not available"
+
+			VARIATION		ifOutQLen
+			  ACCESS		not-implemented
+			  DESCRIPTION	"information is not available"
+
+		  ::= { apIfMibCapabilities 3 }
+
+
+--------------------------------------------------------------
+-- 
+-- ipMib
+-- 
+--------------------------------------------------------------
+
+apIpCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+
+            STATUS          	current
+            DESCRIPTION     	"Acme Packet Agent Capability IP support."
+		SUPPORTS	IP-MIB
+		INCLUDES	{ ipGroup,icmpGroup }
+
+		VARIATION		ipNetToMediaIfIndex
+		  ACCESS		not-implemented
+		  DESCRIPTION	"information is not available"
+
+		VARIATION		ipNetToMediaPhysAddress
+		  ACCESS		not-implemented
+		  DESCRIPTION	"information is not available"
+
+		VARIATION		ipNetToMediaNetAddress
+		  ACCESS		not-implemented
+		  DESCRIPTION	"information is not available"
+
+		VARIATION		ipNetToMediaType
+		  ACCESS		not-implemented
+	  	  DESCRIPTION		"information is not available"
+
+            ::= { apIPMibCapabilities 1 }
+
+
+--------------------------------------------------------------
+--
+-- tcp
+--
+--------------------------------------------------------------
+
+apTcpCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+
+            STATUS          	current
+            DESCRIPTION     	"Acme Packet Agent Capability TCP support."
+	    SUPPORTS            TCP-MIB
+		INCLUDES        { tcpGroup }
+                VARIATION       tcpConnState
+                ACCESS          read-only
+                DESCRIPTION   "Agent does not support SET requests"
+            ::= { apTCPMibCapabilities 1 }
+
+
+--------------------------------------------------------------
+-- 
+-- udpMib
+-- 
+--------------------------------------------------------------
+
+
+apUdpCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+
+            STATUS          	current
+            DESCRIPTION     	"Acme Packet Agent Capability UDP support."
+	    SUPPORTS            UDP-MIB
+		INCLUDES        { udpGroup }
+            ::= {  apUDPMibCapabilities 1 }
+
+--------------------------------------------------------------
+--
+-- entity mib
+--
+--------------------------------------------------------------
+
+apEntityCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet for Relase 2.0"
+	    STATUS          	current
+            DESCRIPTION		"Acme Packet Agent Capability for entity MIB."
+	    SUPPORTS		ENTITY-MIB
+		INCLUDES        { entityPhysicalGroup,
+				  entityGeneralGroup,
+				  entityPhysical2Group }
+	    ::= { apEntityCapabilities 1 }
+
+--------------------------------------------------------------
+--
+-- enterprise specific mibs
+--
+--------------------------------------------------------------
+
+--------------------------------------------------------------
+-- 
+-- syslog MIB
+-- 
+--------------------------------------------------------------
+
+apSyslogCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	      STATUS		 current
+	      DESCRIPTION	"Acme Packet Agent Capability for enterprise
+                                 syslog MIB."
+
+		SUPPORTS		APSYSLOG-MIB
+			INCLUDES	{ apSyslogGroup,
+					  apSyslogNotificationsGroup }
+  		::= { apSlogMibCapabilities 1 }
+
+
+--------------------------------------------------------------
+-- 
+-- system management MIB
+-- 
+--------------------------------------------------------------
+		
+
+apSmgmtCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ apSysMgmtGeneralGroup,
+				  apSysMgmtCombinedGroup,
+				  apSysMgmtSipGroup,
+				  apSysMgmtH323Group,
+				  apSysMgmtSigRealmGroup,
+				  apSysMgmtNotificationsGroup,
+				  apSysMgmtObsoleteNotificationsGroup,
+				  apSysMgmtH323NotificationsGroup }
+  	    ::= { apSmgmtMibCapabilities 1 }
+
+
+
+apSmgmtCap2 AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system management MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ apSysMgmtGeneralGroup,
+				  apSysMgmtSipGroup,
+		                  apSysMgmtSigRealmGroup,
+				  apSysMgmtNotificationsGroup,
+				  apSysMgmtNotificationsGroup2
+				 }
+
+                VARIATION       apSysCPUUtil
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysMemoryUtil
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysHealthScore
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysRedundancy
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysState
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysMgmtPowerTrap
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release.
+				it has been replaced with the
+				apEnvMonTempChangeNotification"
+
+                VARIATION       apSysMgmtTempTrap
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release.
+				it has been replace with the
+				apEnvMonVoltageChangeNotification"
+
+                VARIATION       apSysMgmtFanTrap
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysMgmtRedundancyTrap
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysMgmtSystemStateTrap
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysMgmtTaskDeleteTrap
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+  	    ::= { apSmgmtMibCapabilities 2 }
+
+
+apSmgmtCap3 AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ apSysMgmtGeneralGroup,
+				  apSysMgmtCombinedGroup,
+				  apSysMgmtSipGroup,
+				  apSysMgmtH323Group,
+				  apSysMgmtSigRealmGroup,
+				  apSysMgmtCtrlStatsGroup,
+				  apSysMgmtENUMServerStatusGroup,
+				  apSysMgmtNotificationsGroup,
+				  apSysMgmtObsoleteNotificationsGroup,
+				  apSysMgmtH323NotificationsGroup,
+				  apSysMgmtNotificationsGroup3
+				}
+  	    ::= { apSmgmtMibCapabilities 3 }
+
+
+apSmgmtCap4 AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ apSysMgmtGeneralGroup,
+				  apSysMgmtCombinedGroup,
+				  apSysMgmtSipGroup,
+				  apSysMgmtH323Group,
+				  apSysMgmtSigRealmGroup,
+				  apSysMgmtCtrlStatsGroup,
+				  apSysMgmtENUMServerStatusGroup,
+				  apSysMgmtNSEPStatsGroup,
+				  apSysMgmtNotificationsGroup,
+				  apSysMgmtObsoleteNotificationsGroup,
+				  apSysMgmtH323NotificationsGroup,
+				  apSysMgmtNotificationsGroup3,
+				  apSysMgmtNTPNotificationsGroup,
+				  apSysMgmtRegNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 4 }
+
+
+apSmgmtCap5 AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ apSysMgmtGeneralGroup,
+				  apSysMgmtCombinedGroup,
+				  apSysMgmtSipGroup,
+				  apSysMgmtH323Group,
+				  apSysMgmtSigRealmGroup,
+				  apSysMgmtCtrlStatsGroup,
+				  apSysMgmtENUMServerStatusGroup,
+				  apSysMgmtNotificationsGroup,
+				  apSysMgmtObsoleteNotificationsGroup,
+				  apSysMgmtH323NotificationsGroup,
+				  apSysMgmtNotificationsGroup3,
+				  apSysMgmtHDRNotificationsGroup,
+				  apSysMgmtMediaNotificationsGroup,
+				  apSysMgmtH248NotificationsGroup,
+				  apSysMgmtRFactorNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 5 }
+
+apSmgmtCap6 AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ apSysMgmtGeneralGroup,
+				  apSysMgmtCombinedGroup,
+				  apSysMgmtSipGroup,
+				  apSysMgmtH323Group,
+				  apSysMgmtSigRealmGroup,
+				  apSysMgmtCtrlStatsGroup,
+				  apSysMgmtENUMServerStatusGroup,
+				  apSysMgmtNotificationsGroup,
+				  apSysMgmtDOSNotificationsGroup,
+				  apSysMgmtH323NotificationsGroup,
+				  apSysMgmtNotificationsGroup3,
+				  apSysMgmtHDRNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 6 }
+
+apSmgmtNSEPCap
+	AGENT-CAPABILITIES
+        PRODUCT-RELEASE	"Acme Packet SD"
+	STATUS		 current
+	DESCRIPTION	"Acme Packet Agent Capability for enterprise 
+                         system mamgerment MIB."
+
+    	SUPPORTS	APSYSMGMT-MIB
+	   INCLUDES	{ apSysMgmtNSEPStatsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 7 }
+
+apSmgmtCtrlStatsCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ apSysMgmtCtrlStatsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 8 }
+
+apSmgmtLDAPCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtLDAPServerStatusNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 9 }
+
+
+apSmgmtHDRCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{
+				   apSysMgmtHDRNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 10 }
+
+apSmgmtMediaSuperCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtMediaNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 11 }
+
+apSmgmtH248Cap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtH248NotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 12 }
+
+apSmgmtRFactorCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtRFactorNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 13 }
+
+apSmgmtSipRejectCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtSipRejectNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 14 }
+
+apSmgmtDOSNotifyCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtDOSNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 15 }
+
+apSmgmtRegNotifyCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtRegNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 16 }
+
+apSmgmtNTPNotifyCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtNTPNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 17 }
+
+apSmgmtCollectorPushSuccessNotifyCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system mamgerment MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtCollectorPushSuccessNotificationsGroup
+                                }
+            ::= { apSmgmtMibCapabilities 18 }
+
+apSmgmtExtSigRealmCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system mamgerment MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtExtSigRealmStatsGroup,
+                                  apSysMgmtRealmExceedNotificationsGroup
+                                }
+            ::= { apSmgmtMibCapabilities 19 }
+
+
+apSmgmtClockNotifyCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system mamgerment MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtClockSkewNotificationsGroup
+                                }
+            ::= { apSmgmtMibCapabilities 20 }
+
+apSmgmtRegistrationCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtRegistrationGroup
+                                }
+                VARIATION       apSysMgcpGWEndpoints
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+                VARIATION       apSysH323Registration 
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+            ::= { apSmgmtMibCapabilities 21 }
+
+apSmgmtRegistrationCap2
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtRegistrationGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 22 }
+
+apSmgmtRegCacheLimCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system mamgerment MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtRegCacheLimitGroup,
+				  apSysMgmtRegCacheLimitNotificationsGroup
+                                }
+            ::= { apSmgmtMibCapabilities 23 }
+
+apSmgmtShortSessionCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtShortSessionGroup,
+				  apSysMgmtShortSessionNotificationsGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 24 }
+
+
+apSystemManagementGatewaySynchronizedMonitorCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                 apSysMgmtMonitorNetworkGatewaySynchronizedNotificationsGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 25 }
+
+apSmgmtRegistrationCap3
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtRegistrationGroup
+                                }
+                VARIATION       apSysMgcpGWEndpoints
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+
+            ::= { apSmgmtMibCapabilities 26 }
+
+apSmgmtCallRecordingCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtCallRecordingGroup,
+                                  apSysMgmtCallRecordingNotificationsGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 27 }
+
+apSmgmtH323AdditionsCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtH323Group
+                                }
+
+            ::= { apSmgmtMibCapabilities 28 }
+
+
+apSmgmtENUMCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+
+                                  apSysMgmtENUMServerStatusGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 29 }
+
+
+apSmgmtExtSipCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+
+                                  apSysMgmtSipExtNotificationsGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 30 }
+
+
+apSmgmtRealmIcmpFailureCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtRealmIcmpFailureNotificationsGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 31 }
+
+apSmgmtTrapTableObjectCap
+           AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtTrapTableObjectGroup 
+                                }
+
+            ::= { apSmgmtMibCapabilities 32 }
+
+apSmgmtCDRPushReceiverFailureCap
+           AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtCDRPushReceiverNotificationsGroup 
+                                }
+
+            ::= { apSmgmtMibCapabilities 33 }
+
+apSmgmtRealmStatsQoSCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system management MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apSysMgmtRealmStatsQoSGroup
+                                }
+
+            ::= { apSmgmtMibCapabilities 34 }
+
+apSmgmtInetAddrDOSNotifyCap
+	    AGENT-CAPABILITIES
+            PRODUCT-RELEASE	"Acme Packet SD"
+	    STATUS		 current
+	    DESCRIPTION		"Acme Packet Agent Capability for enterprise 
+                                 system mamgerment MIB."
+
+	    SUPPORTS		APSYSMGMT-MIB
+		INCLUDES	{ 
+				  apSysMgmtInetAddrDOSNotificationsGroup
+				}
+  	    ::= { apSmgmtMibCapabilities 35 }
+
+apSmgmtApplicationCPUUsageCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 system mamgerment MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        { apSysMgmtApplicationCPUUsageGroup
+                                }
+            ::= { apSmgmtMibCapabilities 36 }
+
+--------------------------------------------------------------
+-- 
+-- environmental monitoring MIB
+-- 
+--------------------------------------------------------------
+
+apEnvMonCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS         	current
+            DESCRIPTION     	"Acme Packet Agent Capability for enterprise 
+				Environmental Monitor MIB."
+	    SUPPORTS		ACMEPACKET-ENVMON-MIB
+		INCLUDES        { apEnvMonGroup,
+                                  apEnvMonNotifyGroup }
+	    ::= { apEnvMonitorMibCapabilities 1 }
+
+
+
+apEnvMonCap2 AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS         	current
+            DESCRIPTION     	"Acme Packet Agent Capability for enterprise 
+				Environmental Monitor MIB."
+	    SUPPORTS		ACMEPACKET-ENVMON-MIB
+		INCLUDES        { apEnvMonGroup,
+				  apEnvMonExtGroup,
+				  apEnvMonCardGroup,
+                                  apEnvMonNotifyGroup,
+				  apEnvMonExtNotifyGroup
+				  }
+                VARIATION       apEnvMonI2CState
+                ACCESS          not-implemented
+                DESCRIPTION   "information not applicapable to this release"
+	    ::= { apEnvMonitorMibCapabilities 2 }
+
+
+apEnvMonPortChangeCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS         	current
+            DESCRIPTION     	"Acme Packet Agent Capability for enterprise 
+				Environmental Monitor MIB."
+	    SUPPORTS		ACMEPACKET-ENVMON-MIB
+		INCLUDES        { apEnvMonPortNotifyGroup
+				  }
+	    ::= { apEnvMonitorMibCapabilities 3 }
+
+
+--------------------------------------------------------------
+-- 
+-- software inventory MIB
+-- 
+--------------------------------------------------------------
+
+apSwInventoryCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS          	current
+            DESCRIPTION     	"Acme Packet Agent Capability for
+                                 enterprise software inventory MIB."
+	    SUPPORTS            APSWINVENTORY-MIB
+		INCLUDES        { apSwBootObjectsGroup,
+				  apSwCfgObjectsGroup,
+                                  apSwInventoryNotificationsGroup }
+            ::= { apSwinventoryMibCapabilities 1 }
+
+--------------------------------------------------------------
+-- 
+-- license MIB
+-- 
+--------------------------------------------------------------
+
+apLicenseCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS         	current
+            DESCRIPTION     	"Acme Packet Agent Capability for enterprise 
+				License MIB."
+	    SUPPORTS		APLICENSE-MIB
+		INCLUDES        { apLicenseObjectsGroup,
+                                  apLicenseNotificationsGroup }
+	    ::= { apLicenseMibCapabilities 1 }
+
+--------------------------------------------------------------
+--
+-- acme managemnt interface mib
+--
+--------------------------------------------------------------
+
+apAmiCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS         	current
+            DESCRIPTION     	"Acme Packet Agent Capability for enterprise 
+				AMI MIB."
+	    SUPPORTS		APAMI-MIB
+		INCLUDES        { apAMIMibObjectsGroup }
+	    ::= { apAmiMibCapabilities 1 }
+
+--------------------------------------------------------------
+--
+-- acme codec mib
+--
+--------------------------------------------------------------
+
+apCodecRealmCodecCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 codec MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apCodecRealmStatsObjectsGroup
+                                }
+
+            ::= { apCodecMibCapabilities 1 }
+
+apCodecMediaProcessingCap
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 codec MIB."
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                 apCodecMediaProcessingObjectsGroup
+                                }
+
+            ::= { apCodecMibCapabilities 2 }
+
+apCodecRealmCodecCap2
+            AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS               current
+            DESCRIPTION         "Acme Packet Agent Capability for enterprise
+                                 codec MIB. (Additional Codecs)"
+
+            SUPPORTS            APSYSMGMT-MIB
+                INCLUDES        {
+                                  apCodecRealmStatsObjectsGroup2
+                                }
+
+            ::= { apCodecMibCapabilities 3 }
+
+--------------------------------------------------------------
+-- 
+-- Security MIB
+-- 
+--------------------------------------------------------------
+
+apSecurityCap AGENT-CAPABILITIES
+            PRODUCT-RELEASE     "Acme Packet SD"
+            STATUS         	current
+            DESCRIPTION     	"Acme Packet Agent Capability for enterprise 
+				License MIB."
+	    SUPPORTS		APLICENSE-MIB
+		INCLUDES        { 
+                                  apSecurityNotificationsGroup 
+				}
+	    ::= { apSecurityMibCapabilities 1 }
+
+END
+

@@ -1,0 +1,47 @@
+BLUECOAT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE, Integer32, Counter32 FROM SNMPv2-SMI
+	DisplayString			FROM SNMPv2-TC
+	enterprises 			FROM RFC1155-SMI;
+
+-- Blue Coat's private MIBs
+
+blueCoat MODULE-IDENTITY
+	LAST-UPDATED "0208280300Z"
+	ORGANIZATION "Blue Coat Systems, Inc."
+	CONTACT-INFO
+		"support@bluecoat.com
+		http://www.bluecoat.com"
+	DESCRIPTION
+		"The MIB module for Blue Coat"
+
+	::= { enterprises 3417 }
+
+-- blueCoat	OBJECT IDENTIFIER ::= { enterprises 3417 }
+products	OBJECT IDENTIFIER ::= { blueCoat 1 }
+blueCoatMgmt	OBJECT IDENTIFIER ::= { blueCoat 2 }
+device		OBJECT IDENTIFIER ::= { products 1 }
+sg1000	OBJECT IDENTIFIER ::= { device 1 }
+sg100	OBJECT IDENTIFIER ::= { device 2 }
+sg500	OBJECT IDENTIFIER ::= { device 3 }
+sg2000	OBJECT IDENTIFIER ::= { device 4 }
+sg5000	OBJECT IDENTIFIER ::= { device 5 }
+sg500A	OBJECT IDENTIFIER ::= { device 6 }
+sg3000	OBJECT IDENTIFIER ::= { device 7 }
+sg5x5	OBJECT IDENTIFIER ::= { device 8 }
+sg110	OBJECT IDENTIFIER ::= { device 9 }
+sg600	OBJECT IDENTIFIER ::= { device 10 }
+sg6000	OBJECT IDENTIFIER ::= { device 11 }
+sg610	OBJECT IDENTIFIER ::= { device 12 }
+sg6x5	OBJECT IDENTIFIER ::= { device 13 }
+sg3000s	OBJECT IDENTIFIER ::= { device 14 }
+sg5000s	OBJECT IDENTIFIER ::= { device 15 }
+sg7x5	OBJECT IDENTIFIER ::= { device 16 }
+sg710	OBJECT IDENTIFIER ::= { device 17 }
+sg7000	OBJECT IDENTIFIER ::= { device 18 }
+sg611	OBJECT IDENTIFIER ::= { device 19 }
+sg800	OBJECT IDENTIFIER ::= { device 20 }
+sg400	OBJECT IDENTIFIER ::= { device 21 }
+
+END

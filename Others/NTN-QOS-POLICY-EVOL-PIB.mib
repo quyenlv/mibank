@@ -1,0 +1,756 @@
+
+NTN-QOS-POLICY-EVOL-PIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32, MODULE-IDENTITY, OBJECT-TYPE, Integer32
+            FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP
+            FROM SNMPv2-CONF
+    RowStatus, StorageType
+            FROM SNMPv2-TC
+    SnmpAdminString
+            FROM SNMP-FRAMEWORK-MIB
+    PolicyInstanceId, RoleCombination
+            FROM POLICY-FRAMEWORK-PIB
+    Dscp, QosInterfaceQueueCount
+            FROM QOS-POLICY-IP-PIB
+    QosIeee802Cos
+            FROM QOS-POLICY-802-PIB
+    policy
+            FROM SYNOPTICS-ROOT-MIB;
+
+ntnQosPolicyEvolPib  MODULE-IDENTITY
+    LAST-UPDATED "0103221200Z"     -- March 22, 2001
+    ORGANIZATION "Nortel Networks, Inc."
+    CONTACT-INFO "
+                  John Seligson
+                  Nortel Networks, Inc.
+                  4401 Great America Parkway
+                  Santa Clara, CA 95054 USA
+                  Phone: +1 408 495 2992
+                  Email: jseligso@nortelnetworks.com"
+    DESCRIPTION
+            "The Nortel Network's PIB module containing 
+             evolved data definitions related to the base 
+             PIB modules (Framework, IP QoS, 802 QoS) 
+             produced by the IETF."
+
+    ::= { policy 7 }
+
+ntnQosPolicyEvolPibClasses 
+            OBJECT IDENTIFIER ::= { ntnQosPolicyEvolPib 1 }
+
+--
+-- Nortel Networks Interface Type Table (evolved from standard
+-- Interface Type Table from draft Diffserv PIB) 
+--
+
+ntnQosInterfaceTypeTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF NtnQosInterfaceTypeEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "Interface type definitions. This class describes the types
+        of interfaces that exist on the device. An interface type
+        is denoted by its designated role identifier."
+
+    ::= { ntnQosPolicyEvolPibClasses 1 }
+
+ntnQosInterfaceTypeEntry OBJECT-TYPE
+    SYNTAX         NtnQosInterfaceTypeEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An instance of this class describes the characteristics
+        of a type of an interface. Interface type characteristics
+        include a role combination identifier, an interface class
+        designation and a filter capabilities attribute.  An
+        instance is required for each different unique role
+        combination identifier which represents the different
+        interface types that are operational in the device at
+        any given time.  The PEP does not report which specific
+        interfaces have which characteristics."
+
+    INDEX { ntnQosInterfaceTypeId }
+    ::= { ntnQosInterfaceTypeTable 1 }
+
+NtnQosInterfaceTypeEntry ::= SEQUENCE {
+        ntnQosInterfaceTypeId           PolicyInstanceId,
+        ntnQosInterfaceTypeRoles        RoleCombination,
+        ntnQosInterfaceTypeIfClass      INTEGER,
+        ntnQosInterfaceTypeCapabilities BITS,
+        ntnQosInterfaceTypeStorageType  StorageType,
+        ntnQosInterfaceTypeStatus       RowStatus
+}
+
+ntnQosInterfaceTypeId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An arbitrary integer index that uniquely identifies a
+        instance of the ntnQosInterfaceType class. Class instances
+        may not be contiguous."
+
+    ::= { ntnQosInterfaceTypeEntry 1 }
+
+ntnQosInterfaceTypeRoles OBJECT-TYPE
+    SYNTAX         RoleCombination
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The role combination that is used to identify interfaces
+        with the characteristics specified by the attributes
+        of this class instance. Interface role combination
+        identifiers are used within a number of classes to
+        logically identify a physical set of interfaces to which
+        policy rules and actions are applied. Role combination
+        identifiers must exist in this table prior to being
+        referenced in other class instances."
+
+    ::= { ntnQosInterfaceTypeEntry 2 }
+
+ntnQosInterfaceTypeIfClass OBJECT-TYPE
+    SYNTAX         INTEGER {
+                       trusted(1),  
+                       nonTrusted(2),
+                       unrestricted(3)
+                   }
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "A value describing the overall classification of
+        traffic received on interfaces with the given role
+        combination. Traffic received on trusted interfaces
+        may be processed differently and be subject 
+        to different restrictions that traffic received on
+        non-trusted interfaces. The treatment of traffic 
+        based on interface class is implementation dependent."
+
+    ::= { ntnQosInterfaceTypeEntry 3 }
+
+ntnQosInterfaceTypeCapabilities OBJECT-TYPE
+    SYNTAX         BITS {
+                        other(0),
+
+                        -- Classification support
+                        inputIpClassification(1),
+                        outputIpClassification(2),
+                        input802Classification(3),
+                        output802Classification(4)
+                   }
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "An enumeration of interface capabilities.  Used by the
+        PDP or network manager to select which policies and 
+        configuration it should push to the PEP."
+
+    ::= { ntnQosInterfaceTypeEntry 4 }
+
+ntnQosInterfaceTypeStorageType OBJECT-TYPE
+    SYNTAX         StorageType
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+
+        Conceptual rows having the value permanent(4) need not
+        allow write-access to any columnar objects in the row.
+
+        This object may not be modified if the associated
+        ntnQosInterfaceTypeStatus object is equal to active(1)."
+
+    DEFVAL  { volatile }
+    ::= { ntnQosInterfaceTypeEntry 5 }
+
+ntnQosInterfaceTypeStatus OBJECT-TYPE
+    SYNTAX         RowStatus
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The status of this row.
+
+        An entry may not exist in the active state unless all
+        objects in the entry have an appropriate value. Row
+        creation using only default values is supported."
+
+    ::= { ntnQosInterfaceTypeEntry 6 }
+
+--
+-- Nortel Networks 802.1p User Priority Assignment Table
+--
+-- Supports the assignment of 802.1p user priority (Pri) 
+-- values to queues for each queue set.
+--
+
+ntnQosQsetPriAssignmentTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF NtnQosQsetPriAssignmentEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "Supports the assignment of 802.1p user priority 
+        values to a queue for each interface with a specific 
+        queue set. There will be 8 instances of this class 
+        for each supported queue set."
+
+    ::= { ntnQosPolicyEvolPibClasses 2 }
+
+ntnQosQsetPriAssignmentEntry OBJECT-TYPE
+    SYNTAX         NtnQosQsetPriAssignmentEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An instance of the ntnQosQsetPriAssignment class."
+
+    INDEX { ntnQosQsetPriAssignmentId }
+    ::= { ntnQosQsetPriAssignmentTable 1 }
+
+NtnQosQsetPriAssignmentEntry ::= SEQUENCE {
+        ntnQosQsetPriAssignmentId          PolicyInstanceId,
+        ntnQosQsetPriAssignmentQset        Integer32,
+        ntnQosQsetPriAssignmentPri         QosIeee802Cos,
+        ntnQosQsetPriAssignmentQueue       QosInterfaceQueueCount,
+        ntnQosQsetPriAssignmentStorageType StorageType,
+        ntnQosQsetPriAssignmentStatus      RowStatus
+}
+
+ntnQosQsetPriAssignmentId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An index that is used to uniquely identify the 
+        instance of the ntnQosQsetPriAssignment class."
+
+    ::= { ntnQosQsetPriAssignmentEntry 1 }
+
+ntnQosQsetPriAssignmentQset OBJECT-TYPE
+    SYNTAX         Integer32
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The queue set with which an interface must be 
+        configured to support the Pri-to-queue assignment 
+        described by this instance. The specified queue
+        set must be defined in the qosIfQueueTable prior
+        to being referenced by this entry. Otherwise a 
+        'priAssociationUnknown(3)' error code will be 
+        returned."
+
+    ::= { ntnQosQsetPriAssignmentEntry 2 }
+
+ntnQosQsetPriAssignmentPri OBJECT-TYPE
+    SYNTAX         QosIeee802Cos
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The 802.1p user priority to which this class 
+        instance applies."
+
+    ::= { ntnQosQsetPriAssignmentEntry 3 }
+
+ntnQosQsetPriAssignmentQueue OBJECT-TYPE
+    SYNTAX         QosInterfaceQueueCount
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The specific queue, within the queue set that is
+        associated with the interface set identified by the
+        ntnQosQsetPriAssignmentRoles tag, on which traffic 
+        with the specified user priority, dictated by the 
+        ntnQosQsetPriAssignmentPri value, is placed. Failure 
+        to specify an appropriate queue results in a
+        'priAssociationConflict(4)' error indication being 
+        returned."
+
+    ::= { ntnQosQsetPriAssignmentEntry 4 }
+
+ntnQosQsetPriAssignmentStorageType OBJECT-TYPE
+    SYNTAX         StorageType
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+
+        Conceptual rows having the value permanent(4) need not
+        allow write-access to any columnar objects in the row.
+
+        This object may not be modified if the associated
+        ntnQosQsetPriAssignmentStatus object is equal to active(1)."
+
+    DEFVAL  { volatile }
+    ::= { ntnQosQsetPriAssignmentEntry 5 }
+
+ntnQosQsetPriAssignmentStatus OBJECT-TYPE
+    SYNTAX         RowStatus
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The status of this row.
+
+        An entry may not exist in the active state unless all
+        objects in the entry have an appropriate value. Row
+        creation using only default values is supported."
+
+    ::= { ntnQosQsetPriAssignmentEntry 6 }
+
+--
+-- Nortel Networks DSCP Assignment Table
+--
+-- Supports the assignment of DSCP values to queues 
+-- for each queue set.
+--
+
+ntnQosQsetDscpAssignmentTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF NtnQosQsetDscpAssignmentEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "Supports the assignment of DSCP values to 
+        a queue for each interface with a specific 
+        queue set. There will be 64 instances of this 
+        class for each supported queue set."
+
+    ::= { ntnQosPolicyEvolPibClasses 3 }
+
+ntnQosQsetDscpAssignmentEntry OBJECT-TYPE
+    SYNTAX         NtnQosQsetDscpAssignmentEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An instance of the ntnQosQsetDscpAssignment class."
+
+    INDEX { ntnQosQsetDscpAssignmentId }
+    ::= { ntnQosQsetDscpAssignmentTable 1 }
+
+NtnQosQsetDscpAssignmentEntry ::= SEQUENCE {
+        ntnQosQsetDscpAssignmentId          PolicyInstanceId,
+        ntnQosQsetDscpAssignmentQset        Integer32,
+        ntnQosQsetDscpAssignmentDscp        Dscp,
+        ntnQosQsetDscpAssignmentQueue       QosInterfaceQueueCount,
+        ntnQosQsetDscpAssignmentStorageType StorageType,
+        ntnQosQsetDscpAssignmentStatus      RowStatus
+}
+
+ntnQosQsetDscpAssignmentId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An index that is used to uniquely identify the 
+        instance of the ntnQosQsetDscpAssignment class."
+
+    ::= { ntnQosQsetDscpAssignmentEntry 1 }
+
+ntnQosQsetDscpAssignmentQset OBJECT-TYPE
+    SYNTAX         Integer32
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The queue set with which an interface must be 
+        configured to support the Dscp-to-queue assignment 
+        described by this instance. The specified queue
+        set must be defined in the qosIfQueueTable prior
+        to being referenced by this entry. Otherwise a 
+        'priAssociationUnknown(3)' error code will be 
+        returned."
+
+    ::= { ntnQosQsetDscpAssignmentEntry 2 }
+
+ntnQosQsetDscpAssignmentDscp OBJECT-TYPE
+    SYNTAX         Dscp
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The DSCP value to which this class 
+        instance applies."
+
+    ::= { ntnQosQsetDscpAssignmentEntry 3 }
+
+ntnQosQsetDscpAssignmentQueue OBJECT-TYPE
+    SYNTAX         QosInterfaceQueueCount
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The specific queue, within the queue set that is
+        associated with the interface set identified by the
+        ntnQosQsetDscpAssignmentRoles tag, on which traffic 
+        with the specified user priority, dictated by the 
+        ntnQosQsetDscpAssignmentDscp value, is placed. Failure 
+        to specify an appropriate queue results in a
+        'priAssociationConflict(4)' error indication being 
+        returned."
+
+    ::= { ntnQosQsetDscpAssignmentEntry 4 }
+
+ntnQosQsetDscpAssignmentStorageType OBJECT-TYPE
+    SYNTAX         StorageType
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+
+        Conceptual rows having the value permanent(4) need not
+        allow write-access to any columnar objects in the row.
+
+        This object may not be modified if the associated
+        ntnQosQsetDscpAssignmentStatus object is equal to active(1)."
+
+    DEFVAL  { volatile }
+    ::= { ntnQosQsetDscpAssignmentEntry 5 }
+
+ntnQosQsetDscpAssignmentStatus OBJECT-TYPE
+    SYNTAX         RowStatus
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The status of this row.
+
+        An entry may not exist in the active state unless all
+        objects in the entry have an appropriate value. Row
+        creation using only default values is supported."
+
+    ::= { ntnQosQsetDscpAssignmentEntry 6 }
+
+--
+-- Nortel Networks Shaping Parameters Table
+--
+-- Supports the definition of shaping parameters that
+-- can be applied to individual flows
+--
+
+ntnQosShapingParamsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF NtnQosShapingParamsEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "Supports the definition of shaping parameters
+        that can be applied to individual flows. Shaping
+        criteria is associated with a flow using the
+        qosTargetShaper attribute of the qosTarget class."
+
+    ::= { ntnQosPolicyEvolPibClasses 4 }
+
+ntnQosShapingParamsEntry OBJECT-TYPE
+    SYNTAX         NtnQosShapingParamsEntry
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An instance of the ntnQosShapingParams class."
+
+    INDEX { ntnQosShapingParamsId }
+    ::= { ntnQosShapingParamsTable 1 }
+
+NtnQosShapingParamsEntry ::= SEQUENCE {
+        ntnQosShapingParamsId          PolicyInstanceId,
+        ntnQosShapingParamsRate        Unsigned32,
+        ntnQosShapingParamsBurstSize   Unsigned32,
+        ntnQosShapingParamsQueueSize   INTEGER,
+        ntnQosShapingParamsStorageType StorageType,
+        ntnQosShapingParamsStatus      RowStatus,
+        ntnQosShapingParamsLabel       SnmpAdminString
+}
+
+ntnQosShapingParamsId OBJECT-TYPE
+    SYNTAX         PolicyInstanceId
+    MAX-ACCESS     not-accessible
+    STATUS         current
+    DESCRIPTION
+        "An index that is used to uniquely identify the 
+        instance of the ntnQosShapingParams class."
+
+    ::= { ntnQosShapingParamsEntry 1 }
+
+ntnQosShapingParamsRate OBJECT-TYPE
+    SYNTAX         Unsigned32 (0..'ffffffff'h)
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The maximum rate, in kilobits per second, at which
+        traffic shaped using this rate criteria will be transmitted
+        over a given period of time. Transmitted traffic may 
+        exceed this rate for short periods in accordance with
+        the associated burst size. Typically, this value specifies
+        the rate at which tokens are added to a token bucket 
+        used to shape flows.
+
+        This object specifies a rate in kilobits per second 
+        units such that, for example, a value of 100 equates 
+        to a shaped flow being transmitted at a maximum rate
+        of 100,000 bits per second."
+
+    ::= { ntnQosShapingParamsEntry 2 }
+
+ntnQosShapingParamsBurstSize OBJECT-TYPE
+    SYNTAX         Unsigned32
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The maximum traffic burst size, in bytes, that can
+        be transmitted without experiencing a shaping delay.
+        Typically, this value represents the maximum number
+        of tokens in a token bucket.
+
+        Note that the value of this attribute may modified 
+        in an implementation dependent, such as being rounded
+        down to an acceptable value, to account for system
+        limitations."
+
+    ::= { ntnQosShapingParamsEntry 3 }
+
+ntnQosShapingParamsQueueSize OBJECT-TYPE
+    SYNTAX         INTEGER {
+                       onePkt(1),  
+                       twoPkts(2),
+                       fourPkts(3),
+                       eightPkts(4),
+                       sixteenPkts(5)
+                   }
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The amount of traffic, in packets, that may exceed the
+        maximum burst size and still be queued for transmission.
+        This value specifies the size of a shaping queue that 
+        holds a flow's traffic that is being delayed for shaping 
+        purposes. The specified enumeration dictates whether one
+        ('onePkt'), two ('twoPkts'), four ('fourPkts'), eight,
+        ('eightPkts') or sixteen ('sixteenPkts') packets can be
+        held in the shaping queue prior to transmission."
+
+    ::= { ntnQosShapingParamsEntry 4 }
+
+ntnQosShapingParamsStorageType OBJECT-TYPE
+    SYNTAX         StorageType
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The storage type for this conceptual row.
+
+        Conceptual rows having the value permanent(4) need not
+        allow write-access to any columnar objects in the row.
+
+        This object may not be modified if the associated
+        ntnQosQsetDscpAssignmentStatus object is equal to active(1)."
+
+    DEFVAL  { volatile }
+    ::= { ntnQosShapingParamsEntry 5 }
+
+ntnQosShapingParamsStatus OBJECT-TYPE
+    SYNTAX         RowStatus
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The status of this row.
+
+        An entry may not exist in the active state unless all
+        objects in the entry have an appropriate value. Row
+        creation using only default values is supported."
+
+    ::= { ntnQosShapingParamsEntry 6 }
+
+ntnQosShapingParamsLabel OBJECT-TYPE
+    SYNTAX         SnmpAdminString (SIZE(0..32))
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "A label used to reference the entry in a textual manner."
+
+    ::= { ntnQosShapingParamsEntry 7 }
+
+--
+-- Conformance Section
+--
+
+ntnQosPolicyEvolPibConformance 
+                OBJECT IDENTIFIER ::= { ntnQosPolicyEvolPib 2 }
+
+ntnQosPolicyEvolPibCompliances
+                OBJECT IDENTIFIER ::= { ntnQosPolicyEvolPibConformance 1 }
+ntnQosPolicyEvolPibGroups
+                OBJECT IDENTIFIER ::= { ntnQosPolicyEvolPibConformance 2 }
+
+ntnQosPolicyEvolPibCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the
+            Nortel Networks QoS Policy Evolution PIB."
+
+    MODULE  -- this module
+
+        GROUP   ntnQosInterfaceTypeGroup
+        DESCRIPTION
+            "The ntnQosInterfaceTypeTable is mandatory if
+            the qosInterfaceTypeTable is not supported. These
+            tables are mutually exclusive."
+
+        OBJECT        ntnQosInterfaceTypeRoles
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosInterfaceTypeIfClass
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosInterfaceTypeCapabilities
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosInterfaceTypeStorageType
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required, nor is
+                     support for the nonVolatile(2) enumeration."
+
+        OBJECT        ntnQosInterfaceTypeStatus
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        GROUP   ntnQosQsetPriAssignmentGroup
+        DESCRIPTION
+            "The ntnQosQsetPriAssignmentGroup is mandatory if 
+            mapping 802.1 user priority values to queues is
+            supported and if the ntnQosIfPriAssignmentTable
+            is not supported. These tables are mutually
+            exclusive."
+
+        OBJECT        ntnQosQsetPriAssignmentQset
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosQsetPriAssignmentPri
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosQsetPriAssignmentQueue
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosQsetPriAssignmentStorageType
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required, nor is
+                     support for the nonVolatile(2) enumeration."
+
+        OBJECT        ntnQosQsetPriAssignmentStatus
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        GROUP   ntnQosQsetDscpAssignmentGroup
+        DESCRIPTION
+            "The ntnQosQsetDscpAssignmentGroup is mandatory 
+            if mapping DSCP values to queues is supported and
+            if the qosIfDscpAssignmentTable is not supported.
+            These tables are mutually exclusive."
+
+        OBJECT        ntnQosQsetDscpAssignmentQset
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosQsetDscpAssignmentDscp
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosQsetDscpAssignmentQueue
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosQsetDscpAssignmentStorageType
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required, nor is
+                     support for the nonVolatile(2) enumeration."
+
+        OBJECT        ntnQosQsetDscpAssignmentStatus
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        GROUP   ntnQosShapingParamsGroup
+        DESCRIPTION
+            "The ntnQosShapingParamsGroup is mandatory if 
+            shaping of flows is supported by the device." 
+
+        OBJECT        ntnQosShapingParamsRate
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosShapingParamsBurstSize
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosShapingParamsQueueSize
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosShapingParamsStorageType
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required, nor is
+                     support for the nonVolatile(2) enumeration."
+
+        OBJECT        ntnQosShapingParamsStatus
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+        OBJECT        ntnQosShapingParamsLabel
+        MIN-ACCESS    read-only
+        DESCRIPTION  "Write access is not required."
+
+    ::= { ntnQosPolicyEvolPibCompliances 1 }
+
+ntnQosInterfaceTypeGroup OBJECT-GROUP
+    OBJECTS {
+             ntnQosInterfaceTypeRoles,
+             ntnQosInterfaceTypeIfClass,
+             ntnQosInterfaceTypeCapabilities,
+             ntnQosInterfaceTypeStorageType,
+             ntnQosInterfaceTypeStatus
+    }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the ntnQosInterfaceTypeExtTable."
+
+    ::= { ntnQosPolicyEvolPibGroups 1 }
+
+ntnQosQsetPriAssignmentGroup OBJECT-GROUP
+    OBJECTS {
+             ntnQosQsetPriAssignmentQset,
+             ntnQosQsetPriAssignmentPri,
+             ntnQosQsetPriAssignmentQueue,
+             ntnQosQsetPriAssignmentStorageType,
+             ntnQosQsetPriAssignmentStatus
+    }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the ntnQosQsetPriAssignmentTable."
+
+    ::= { ntnQosPolicyEvolPibGroups 2 }
+
+ntnQosQsetDscpAssignmentGroup OBJECT-GROUP
+    OBJECTS {
+             ntnQosQsetDscpAssignmentQset,
+             ntnQosQsetDscpAssignmentDscp,
+             ntnQosQsetDscpAssignmentQueue,
+             ntnQosQsetDscpAssignmentStorageType,
+             ntnQosQsetDscpAssignmentStatus
+    }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the ntnQosQsetDscpAssignmentTable."
+
+    ::= { ntnQosPolicyEvolPibGroups 3 }
+
+ntnQosShapingParamsGroup OBJECT-GROUP
+    OBJECTS {
+             ntnQosShapingParamsRate,
+             ntnQosShapingParamsBurstSize,
+             ntnQosShapingParamsQueueSize,
+             ntnQosShapingParamsStorageType,
+             ntnQosShapingParamsStatus,
+             ntnQosShapingParamsLabel
+    }
+    STATUS  current
+    DESCRIPTION
+            "Objects from the ntnQosShapingParamsTable."
+
+    ::= { ntnQosPolicyEvolPibGroups 4 }
+
+END
+

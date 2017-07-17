@@ -1,0 +1,576 @@
+
+PDN-HEADER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     enterprises
+	FROM RFC1155-SMI;
+
+--
+--     Copyright (C) 1994-2000, Paradyne.  All rights reserved.
+--
+--     Title: Paradyne Top Level Enterprise Definitions
+--
+
+--
+-- =========================================================
+-- PdnHeader, Version 3.0, 08/31//2000
+-- =========================================================
+--
+--     This file may be freely copied and distributed as
+--     long as no changes are made to it.
+--
+
+pdyn                 OBJECT IDENTIFIER ::= { enterprises 1795 }
+pdn-products         OBJECT IDENTIFIER ::= { pdyn 1 }
+pdn-mgmt             OBJECT IDENTIFIER ::= { pdyn 2 }
+
+--
+--  The NMS/pdnP products subtrees are used for enterprise OIDs
+--
+
+-- ========== NMS products ==========
+
+paradyneNMS-products      OBJECT IDENTIFIER ::= { pdn-products 13 }
+
+-- nms-6800-products      OBJECT IDENTIFIER ::= { paradyneNMS-products }
+
+nms-6700-products         OBJECT IDENTIFIER ::= { paradyneNMS-products 2 }
+
+nms-dce-products          OBJECT IDENTIFIER ::= { paradyneNMS-products 3 }
+
+nms-gem-products          OBJECT IDENTIFIER ::= { paradyneNMS-products 4 }
+gem-aac-341               OBJECT IDENTIFIER ::= { nms-gem-products 1 }
+
+nms-logical-products      OBJECT IDENTIFIER ::= { paradyneNMS-products 5 }
+iso-physical              OBJECT IDENTIFIER ::= { nms-logical-products 1 }
+iso-link                  OBJECT IDENTIFIER ::= { nms-logical-products 2 }
+iso-network               OBJECT IDENTIFIER ::= { nms-logical-products 3 }
+access-router               OBJECT IDENTIFIER ::= { iso-network 1 }
+iso-transport             OBJECT IDENTIFIER ::= { nms-logical-products 4 }
+iso-session               OBJECT IDENTIFIER ::= { nms-logical-products 5 }
+iso-presentation          OBJECT IDENTIFIER ::= { nms-logical-products 6 }
+iso-application           OBJECT IDENTIFIER ::= { nms-logical-products 7 }
+chassis-manager             OBJECT IDENTIFIER ::= { iso-application 1 }
+
+-- ========== PDN products ==========
+
+paradyne-products         OBJECT IDENTIFIER ::= { pdn-products 14 }
+
+pdn-cellRelay-products   OBJECT IDENTIFIER ::= { paradyne-products 1 }
+
+-- 3000/9000/7000 Series
+pdn-snmp-products        OBJECT IDENTIFIER ::= { paradyne-products 2 }
+
+csu                       OBJECT IDENTIFIER ::= { pdn-snmp-products 1 }
+t1-3150                     OBJECT IDENTIFIER ::= { csu 1 }
+t1-3151                     OBJECT IDENTIFIER ::= { csu 2 }
+
+dsu-csu                   OBJECT IDENTIFIER ::= { pdn-snmp-products 2 }
+t1-3160                     OBJECT IDENTIFIER ::= { dsu-csu 1 }
+t1-3164                     OBJECT IDENTIFIER ::= { dsu-csu 2 }
+t1-3165                     OBJECT IDENTIFIER ::= { dsu-csu 3 }
+t1-3161                     OBJECT IDENTIFIER ::= { dsu-csu 4 }
+e1-3172                     OBJECT IDENTIFIER ::= { dsu-csu 5 }
+e1-3174                     OBJECT IDENTIFIER ::= { dsu-csu 6 }
+t1-3162                     OBJECT IDENTIFIER ::= { dsu-csu 7 }
+t1-3166                     OBJECT IDENTIFIER ::= { dsu-csu 8 }
+
+ntu                       OBJECT IDENTIFIER ::= { pdn-snmp-products 3 }
+e1-3350                     OBJECT IDENTIFIER ::= { ntu 1 }
+e1-3360                     OBJECT IDENTIFIER ::= { ntu 2 }
+e1-3364                     OBJECT IDENTIFIER ::= { ntu 3 }
+e1-3365                     OBJECT IDENTIFIER ::= { ntu 4 }
+
+dev9XXX                   OBJECT IDENTIFIER ::= { pdn-snmp-products 4 }
+fr-96XX                   OBJECT IDENTIFIER ::= { dev9XXX 1 }
+fr-9620                     OBJECT IDENTIFIER ::= { fr-96XX 1 }
+fr-2slot                    OBJECT IDENTIFIER ::= { fr-96XX 2 }
+fr-naf                      OBJECT IDENTIFIER ::= { fr-96XX 3 }
+fr-nac                      OBJECT IDENTIFIER ::= { fr-96XX 4 }
+fr-9624                     OBJECT IDENTIFIER ::= { fr-96XX 5 }
+fr-9626                     OBJECT IDENTIFIER ::= { fr-96XX 6 }
+fr-9623                     OBJECT IDENTIFIER ::= { fr-96XX 7 }
+fr-9624-OS                  OBJECT IDENTIFIER ::= { fr-96XX 8 }
+
+bonaire                   OBJECT IDENTIFIER ::= { dev9XXX 2 }
+bonaire-1slot               OBJECT IDENTIFIER ::= { bonaire 1 }
+bonaire-2slot               OBJECT IDENTIFIER ::= { bonaire 2 }
+bonaire-naf                 OBJECT IDENTIFIER ::= { bonaire 3 }
+bonaire-nac                 OBJECT IDENTIFIER ::= { bonaire 4 }
+
+t1-916X                   OBJECT IDENTIFIER ::= { dev9XXX 3 }
+t1-1slot                    OBJECT IDENTIFIER ::= { t1-916X 1 }
+t1-9162                     OBJECT IDENTIFIER ::= { t1-916X 2 }
+t1-9165                     OBJECT IDENTIFIER ::= { t1-916X 3 }
+t1-nac                      OBJECT IDENTIFIER ::= { t1-916X 4 }
+t1-9262                     OBJECT IDENTIFIER ::= { t1-916X 5 }
+t1-9265                     OBJECT IDENTIFIER ::= { t1-916X 6 }
+t1-9161                     OBJECT IDENTIFIER ::= { t1-916X 7 }
+t1-9261                     OBJECT IDENTIFIER ::= { t1-916X 8 }
+
+t1fr-912X                 OBJECT IDENTIFIER ::= { dev9XXX 4 }
+t1fr-9121                   OBJECT IDENTIFIER ::= { t1fr-912X 1 }
+t1fr-2slot                  OBJECT IDENTIFIER ::= { t1fr-912X 2 }
+t1fr-naf                    OBJECT IDENTIFIER ::= { t1fr-912X 3 }
+t1fr-nac                    OBJECT IDENTIFIER ::= { t1fr-912X 4 }
+t1fr-9124	                OBJECT IDENTIFIER ::= { t1fr-912X 5 }
+t1fr-9124-NNI               OBJECT IDENTIFIER ::= { t1fr-912X 6 }
+t1fr-9126                   OBJECT IDENTIFIER ::= { t1fr-912X 7 }
+t1fr-9128                   OBJECT IDENTIFIER ::= { t1fr-912X 8 }
+t1fr-9124-II                OBJECT IDENTIFIER ::= { t1fr-912X 9 }
+t1fr-9124-L                 OBJECT IDENTIFIER ::= { t1fr-912X 10 }
+t1fr-9123                   OBJECT IDENTIFIER ::= { t1fr-912X 11 }
+t1fr-9124-OS                OBJECT IDENTIFIER ::= { t1fr-912X 12 }
+
+atm-95XX                  OBJECT IDENTIFIER ::= { dev9XXX 5 }
+atm-9580                    OBJECT IDENTIFIER ::= { atm-95XX 1 }
+
+msa-919X                  OBJECT IDENTIFIER ::= { dev9XXX 6 }
+msa-9192                    OBJECT IDENTIFIER ::= { msa-919X 1 }
+msa-9195                    OBJECT IDENTIFIER ::= { msa-919X 2 }
+msa-9292                    OBJECT IDENTIFIER ::= { msa-919X 3 }
+msa-9295                    OBJECT IDENTIFIER ::= { msa-919X 4 }
+
+int-98XX                  OBJECT IDENTIFIER ::= { dev9XXX 7 }
+int-9820                    OBJECT IDENTIFIER ::= { int-98XX 1 }
+int-9820-C                  OBJECT IDENTIFIER ::= { int-98XX 2 }
+int-9820-8M                 OBJECT IDENTIFIER ::= { int-98XX 3 }
+int-9820-45M                OBJECT IDENTIFIER ::= { int-98XX 4 }
+
+nni-9XXX                  OBJECT IDENTIFIER ::= { dev9XXX 8 }
+nni-9110                    OBJECT IDENTIFIER ::= { nni-9XXX 1 }
+
+msdsl-9XXX                OBJECT IDENTIFIER ::= { dev9XXX 9 }
+msdsl-9724                  OBJECT IDENTIFIER ::= { msdsl-9XXX 1 }
+
+isdn-9XXX                 OBJECT IDENTIFIER ::= { dev9XXX 10 }
+isdn-9664                   OBJECT IDENTIFIER ::= { isdn-9XXX 1 }
+ 
+dev7XXX                   OBJECT IDENTIFIER ::= { pdn-snmp-products 5 }
+dds-76XX                    OBJECT IDENTIFIER ::= { dev7XXX 1 }
+dds-7610                      OBJECT IDENTIFIER ::= { dds-76XX 1 }
+dds-7612                      OBJECT IDENTIFIER ::= { dds-76XX 2 }
+dds-7613                      OBJECT IDENTIFIER ::= { dds-76XX 3 }
+t1-71XX                     OBJECT IDENTIFIER ::= { dev7XXX 2 }
+t1-7110                       OBJECT IDENTIFIER ::= { t1-71XX 1 }
+t1-7112                       OBJECT IDENTIFIER ::= { t1-71XX 2 }
+
+-- 3600 Series
+pdn-36xx-products        OBJECT IDENTIFIER ::= { paradyne-products 3 }
+
+-- ACCULINK Access Controller
+pdn-aac-products         OBJECT IDENTIFIER ::= { paradyne-products 4 }
+aac-34                    OBJECT IDENTIFIER ::= { pdn-aac-products 1 }
+
+aac-34X                   OBJECT IDENTIFIER ::= { pdn-aac-products 2 }
+aac-FL                      OBJECT IDENTIFIER ::= { aac-34X 1 }
+aac-UE                      OBJECT IDENTIFIER ::= { aac-34X 2 }
+aac-FP                      OBJECT IDENTIFIER ::= { aac-34X 3 }
+aac-300                     OBJECT IDENTIFIER ::= { aac-34X 4 }
+
+aac-cards                 OBJECT IDENTIFIER ::= { pdn-aac-products 3 }
+aac-frs                     OBJECT IDENTIFIER ::= { aac-cards 1 }
+aac-ipc                     OBJECT IDENTIFIER ::= { aac-cards 2 }
+aac-atm                     OBJECT IDENTIFIER ::= { aac-cards 3 }
+
+aac-4X                    OBJECT IDENTIFIER ::= { pdn-aac-products 4 }
+aac-4XFL                    OBJECT IDENTIFIER ::= { aac-4X 1 }
+aac-4XUE                    OBJECT IDENTIFIER ::= { aac-4X 2 }
+aac-4XFP                    OBJECT IDENTIFIER ::= { aac-4X 3 }
+aac-4X300                   OBJECT IDENTIFIER ::= { aac-4X 4 }
+
+-- Common
+pdn-common-products      OBJECT IDENTIFIER ::= { paradyne-products 5 }
+pdn-testOIDs               OBJECT IDENTIFIER ::= { pdn-common-products 1 }
+pdnLoopbackTest            OBJECT IDENTIFIER ::= { pdn-testOIDs 1 }
+pdnBertTest                OBJECT IDENTIFIER ::= { pdn-testOIDs 2 }
+pdnPingTest                OBJECT IDENTIFIER ::= { pdn-testOIDs 3 }
+pdnTraceRouteTest          OBJECT IDENTIFIER ::= { pdn-testOIDs 4 }
+
+-- Eagle
+pdn-eagle-products       OBJECT IDENTIFIER ::= { paradyne-products 6 }
+
+-- Access Router
+pdn-ar-products          OBJECT IDENTIFIER ::= { paradyne-products 7 }
+ar-541                      OBJECT IDENTIFIER ::= { pdn-ar-products 1 }
+ar-611                      OBJECT IDENTIFIER ::= { pdn-ar-products 2 }
+ar-621                      OBJECT IDENTIFIER ::= { pdn-ar-products 3 }
+ar-641                      OBJECT IDENTIFIER ::= { pdn-ar-products 4 }
+ar-712                      OBJECT IDENTIFIER ::= { pdn-ar-products 5 }
+ar-722                      OBJECT IDENTIFIER ::= { pdn-ar-products 6 }
+ar-928                      OBJECT IDENTIFIER ::= { pdn-ar-products 7 }
+ar-711                      OBJECT IDENTIFIER ::= { pdn-ar-products 8 }
+
+-- Access Server
+pdn-as-products          OBJECT IDENTIFIER ::= { paradyne-products 8 }
+as-4                        OBJECT IDENTIFIER ::= { pdn-as-products 1 }
+as-8                        OBJECT IDENTIFIER ::= { pdn-as-products 2 }
+as-24                       OBJECT IDENTIFIER ::= { pdn-as-products 3 }
+
+-- xDSL
+pdn-xdsl-products        OBJECT IDENTIFIER ::= { paradyne-products 9 }
+xdsl-5100                   OBJECT IDENTIFIER ::= { pdn-xdsl-products 1 }
+xdsl-unused1                OBJECT IDENTIFIER ::= { pdn-xdsl-products 2 }
+xdsl-8800-old               OBJECT IDENTIFIER ::= { pdn-xdsl-products 3 }
+xdsl-unused2                OBJECT IDENTIFIER ::= { pdn-xdsl-products 4 }
+xdsl-8600-old               OBJECT IDENTIFIER ::= { pdn-xdsl-products 5 }
+xdsl-ipc                    OBJECT IDENTIFIER ::= { pdn-xdsl-products 6 }
+xdsl-8100                     OBJECT IDENTIFIER ::= { xdsl-ipc 1 }
+xdsl-8200                     OBJECT IDENTIFIER ::= { xdsl-ipc 2 }
+xdsl-chassis                OBJECT IDENTIFIER ::= { pdn-xdsl-products 8 }
+xdsl-8600                     OBJECT IDENTIFIER ::= { xdsl-chassis 1 }
+xdsl-8800                     OBJECT IDENTIFIER ::= { xdsl-chassis 2 }
+xdsl-8610                     OBJECT IDENTIFIER ::= { xdsl-chassis 3 }
+xdsl-8810                     OBJECT IDENTIFIER ::= { xdsl-chassis 4 }
+xdsl-8820                     OBJECT IDENTIFIER ::= { xdsl-chassis 5 }
+xdsl-8610-X                   OBJECT IDENTIFIER ::= { xdsl-chassis 6 }
+xdsl-8810-X                   OBJECT IDENTIFIER ::= { xdsl-chassis 7 }
+xdsl-8820-X                   OBJECT IDENTIFIER ::= { xdsl-chassis 8 }
+xdsl-remote                 OBJECT IDENTIFIER ::= { pdn-xdsl-products 9 }
+xdsl-5446                     OBJECT IDENTIFIER ::= { xdsl-remote 1 }
+xdsl-7914                     OBJECT IDENTIFIER ::= { xdsl-remote 2 }
+xdsl-5246                     OBJECT IDENTIFIER ::= { xdsl-remote 3 }
+xdsl-5216                     OBJECT IDENTIFIER ::= { xdsl-remote 4 }
+xdsl-5170                     OBJECT IDENTIFIER ::= { xdsl-remote 5 }
+xdsl-5171                     OBJECT IDENTIFIER ::= { xdsl-remote 6 }
+xdsl-5546                     OBJECT IDENTIFIER ::= { xdsl-remote 7 }
+xdsl-5620                     OBJECT IDENTIFIER ::= { xdsl-remote 8 }
+xdsl-6310                     OBJECT IDENTIFIER ::= { xdsl-remote 9 }
+xdsl-7975                     OBJECT IDENTIFIER ::= { xdsl-remote 10 }
+xdsl-7976                     OBJECT IDENTIFIER ::= { xdsl-remote 11 }
+xdsl-7974                     OBJECT IDENTIFIER ::= { xdsl-remote 12 }
+xdsl-7986                     OBJECT IDENTIFIER ::= { xdsl-remote 13 }
+xdsl-7985                     OBJECT IDENTIFIER ::= { xdsl-remote 14 }
+xdsl-7984                     OBJECT IDENTIFIER ::= { xdsl-remote 15 }
+xdsl-6341                     OBJECT IDENTIFIER ::= { xdsl-remote 16 }
+xdsl-6342                     OBJECT IDENTIFIER ::= { xdsl-remote 17 }
+xdsl-6331                     OBJECT IDENTIFIER ::= { xdsl-remote 18 }
+xdsl-6332                     OBJECT IDENTIFIER ::= { xdsl-remote 19 }
+xdsl-6371                     OBJECT IDENTIFIER ::= { xdsl-remote 20 }
+xdsl-6372                     OBJECT IDENTIFIER ::= { xdsl-remote 21 }
+xdsl-6321                     OBJECT IDENTIFIER ::= { xdsl-remote 23 }
+xdsl-6322                     OBJECT IDENTIFIER ::= { xdsl-remote 24 }
+xdsl-6341r2                   OBJECT IDENTIFIER ::= { xdsl-remote 25 }
+xdsl-6342r2                   OBJECT IDENTIFIER ::= { xdsl-remote 26 }
+xdsl-6331r2                   OBJECT IDENTIFIER ::= { xdsl-remote 27 }
+xdsl-6332r2                   OBJECT IDENTIFIER ::= { xdsl-remote 28 }
+xdsl-6371r2                   OBJECT IDENTIFIER ::= { xdsl-remote 29 }
+xdsl-6372r2                   OBJECT IDENTIFIER ::= { xdsl-remote 30 }
+xdsl-6321r2                   OBJECT IDENTIFIER ::= { xdsl-remote 31 }
+xdsl-6322r2                   OBJECT IDENTIFIER ::= { xdsl-remote 32 }
+xdsl-6328                     OBJECT IDENTIFIER ::= { xdsl-remote 33 } -- unused
+xdsl-6329                     OBJECT IDENTIFIER ::= { xdsl-remote 34 } -- unused
+xdsl-6301                     OBJECT IDENTIFIER ::= { xdsl-remote 35 }
+xdsl-6302                     OBJECT IDENTIFIER ::= { xdsl-remote 36 }
+xdsl-6350                     OBJECT IDENTIFIER ::= { xdsl-remote 38 }
+xdsl-cards                    OBJECT IDENTIFIER ::= { pdn-xdsl-products 10 }
+card-mcc                      OBJECT IDENTIFIER ::= { xdsl-cards 1 }
+card-adsl                     OBJECT IDENTIFIER ::= { xdsl-cards 2 } -- unused
+card-radsl                    OBJECT IDENTIFIER ::= { xdsl-cards 3 }
+card-sdsl                     OBJECT IDENTIFIER ::= { xdsl-cards 4 } -- unused
+card-vdsl                     OBJECT IDENTIFIER ::= { xdsl-cards 5 } -- unused
+card-8774                     OBJECT IDENTIFIER ::= { xdsl-cards 6 }
+card-8540                     OBJECT IDENTIFIER ::= { xdsl-cards 7 }
+card-8775                     OBJECT IDENTIFIER ::= { xdsl-cards 8 }
+card-8776                     OBJECT IDENTIFIER ::= { xdsl-cards 9 }
+card-8786                     OBJECT IDENTIFIER ::= { xdsl-cards 10 }
+card-8946                     OBJECT IDENTIFIER ::= { xdsl-cards 11 }
+card-8510                     OBJECT IDENTIFIER ::= { xdsl-cards 12 }
+card-8310                     OBJECT IDENTIFIER ::= { xdsl-cards 13 }
+card-e1-sdsl                  OBJECT IDENTIFIER ::= { xdsl-cards 14 }
+card-mcc2                     OBJECT IDENTIFIER ::= { xdsl-cards 15 }
+card-8785                     OBJECT IDENTIFIER ::= { xdsl-cards 16 }
+card-8784                     OBJECT IDENTIFIER ::= { xdsl-cards 17 }
+card-8312                     OBJECT IDENTIFIER ::= { xdsl-cards 18 }
+card-8344                     OBJECT IDENTIFIER ::= { xdsl-cards 19 }
+card-mcc-plus                 OBJECT IDENTIFIER ::= { xdsl-cards 20 }
+card-mcp                      OBJECT IDENTIFIER ::= { xdsl-cards 21 }
+card-8334                     OBJECT IDENTIFIER ::= { xdsl-cards 22 }
+card-xxxx                     OBJECT IDENTIFIER ::= { xdsl-cards 23 }
+card-8343                     OBJECT IDENTIFIER ::= { xdsl-cards 24 }
+card-8333                     OBJECT IDENTIFIER ::= { xdsl-cards 25 }
+card-8719                     OBJECT IDENTIFIER ::= { xdsl-cards 26 }
+card-8747                     OBJECT IDENTIFIER ::= { xdsl-cards 27 }
+card-8777                     OBJECT IDENTIFIER ::= { xdsl-cards 28 }
+card-8779                     OBJECT IDENTIFIER ::= { xdsl-cards 29 }
+card-8021                     OBJECT IDENTIFIER ::= { xdsl-cards 30 }
+card-8022                     OBJECT IDENTIFIER ::= { xdsl-cards 31 }
+card-8373                     OBJECT IDENTIFIER ::= { xdsl-cards 32 }
+card-8374                     OBJECT IDENTIFIER ::= { xdsl-cards 33 }
+card-8323                     OBJECT IDENTIFIER ::= { xdsl-cards 34 }
+card-8324                     OBJECT IDENTIFIER ::= { xdsl-cards 35 }
+card-8023                     OBJECT IDENTIFIER ::= { xdsl-cards 36 }
+card-8024                     OBJECT IDENTIFIER ::= { xdsl-cards 37 }
+card-8335                     OBJECT IDENTIFIER ::= { xdsl-cards 38 }
+card-833x                     OBJECT IDENTIFIER ::= { xdsl-cards 39 }
+card-833y                     OBJECT IDENTIFIER ::= { xdsl-cards 40 }
+card-8352                     OBJECT IDENTIFIER ::= { xdsl-cards 51 }
+card-8354                     OBJECT IDENTIFIER ::= { xdsl-cards 52 }
+xdsl-ports                  OBJECT IDENTIFIER ::= { pdn-xdsl-products 11 }
+port-dsl                      OBJECT IDENTIFIER ::= { xdsl-ports 1 }
+port-mvl                      OBJECT IDENTIFIER ::= { xdsl-ports 2 }
+port-e10                      OBJECT IDENTIFIER ::= { xdsl-ports 3 }
+port-e100                     OBJECT IDENTIFIER ::= { xdsl-ports 4 }
+port-oc3                      OBJECT IDENTIFIER ::= { xdsl-ports 5 }
+port-ds3                      OBJECT IDENTIFIER ::= { xdsl-ports 6 }
+port-sar                      OBJECT IDENTIFIER ::= { xdsl-ports 7 }
+port-hdlc                     OBJECT IDENTIFIER ::= { xdsl-ports 8 }
+xdsl-slots                  OBJECT IDENTIFIER ::= { pdn-xdsl-products 12 }
+slot-std                      OBJECT IDENTIFIER ::= { xdsl-slots 1 }
+xdsl-components             OBJECT IDENTIFIER ::= { pdn-xdsl-products 13 }
+comp-powerA                   OBJECT IDENTIFIER ::= { xdsl-components 1 }
+comp-powerB                   OBJECT IDENTIFIER ::= { xdsl-components 2 }
+comp-fan                      OBJECT IDENTIFIER ::= { xdsl-components 3 }
+comp-mgmt                     OBJECT IDENTIFIER ::= { xdsl-components 4 }
+comp-atm                      OBJECT IDENTIFIER ::= { xdsl-components 5 }
+
+-- Compression
+pdn-comp-products        OBJECT IDENTIFIER ::= { paradyne-products 10 }
+comp-9028                   OBJECT IDENTIFIER ::= { pdn-comp-products 1 }
+
+-- PTC
+pdn-ptc-products         OBJECT IDENTIFIER ::= { paradyne-products 11 }
+xdsl-xdsl                   OBJECT IDENTIFIER ::= { pdn-ptc-products 1 }
+
+-- DSL Router Endpoint
+pdnDslEndpoint OBJECT IDENTIFIER ::= { paradyne-products 12 }
+
+--
+--  The NMS/pdn mgmt subtrees are used for MIB objects
+--
+
+-- ========== NMS mgmt ==========
+
+paradyneNMS           OBJECT IDENTIFIER ::= { pdn-mgmt 23 }
+
+-- nms-6800           OBJECT IDENTIFIER ::= { paradyneNMS 1 thru 4}
+nms-6700              OBJECT IDENTIFIER ::= { paradyneNMS 5 }
+
+-- ========== pdn mgmt ==========
+
+paradyne              OBJECT IDENTIFIER ::= { pdn-mgmt 24 }
+
+pdn-cellRelay        OBJECT IDENTIFIER ::= { paradyne 1 } 
+
+pdn-common           OBJECT IDENTIFIER ::= { paradyne 2 }
+pdn-frontPanel       OBJECT IDENTIFIER ::= { pdn-common 1 }
+pdn-chassis          OBJECT IDENTIFIER ::= { pdn-common 2 } -- unused
+pdn-callDir          OBJECT IDENTIFIER ::= { pdn-common 3 }
+pdn-devStatus        OBJECT IDENTIFIER ::= { pdn-common 4 }
+pdn-devID            OBJECT IDENTIFIER ::= { pdn-common 5 }
+pdn-interfaces       OBJECT IDENTIFIER ::= { pdn-common 6 }
+-- ifMap                  OBJECT IDENTIFIER ::= { pdn-interfaces 1 }
+-- dds                    OBJECT IDENTIFIER ::= { pdn-interfaces 2 }
+-- portUsage              OBJECT IDENTIFIER ::= { pdn-interfaces 3 }
+-- voice                  OBJECT IDENTIFIER ::= { pdn-interfaces 4 }
+ent-ds1                   OBJECT IDENTIFIER ::= { pdn-interfaces 5 }
+-- devDS1Tests              OBJECT IDENTIFIER ::= { ent-ds1 1 }
+-- ds1PerfStats             OBJECT IDENTIFIER ::= { ent-ds1 4 }
+syncPort                  OBJECT IDENTIFIER ::= { pdn-interfaces 6 }
+-- syncDataPortConfigTbl    OBJECT IDENTIFIER ::= { syncPort 1 }
+-- devSyncPortTest          OBJECT IDENTIFIER ::= { syncPort 2 }
+-- edlPerfStats             OBJECT IDENTIFIER ::= { syncPort 4 }
+crossConnect              OBJECT IDENTIFIER ::= { pdn-interfaces 7 }
+-- devDs1FracTable          OBJECT IDENTIFIER ::= { crossConnect 1 }
+-- devSyncDataPortAssignTbl OBJECT IDENTIFIER ::= { crossConnect 2 }
+-- pvcXconnect              OBJECT IDENTIFIER ::= { crossConnect 3 }
+xdsl                      OBJECT IDENTIFIER ::= { pdn-interfaces 8 }
+-- xdsl                     OBJECT IDENTIFIER ::= { xdsl 1 }
+-- dhcp                     OBJECT IDENTIFIER ::= { xdsl 2 }
+-- pdsl                     OBJECT IDENTIFIER ::= { xdsl 3 }
+pdnFrameRelay             OBJECT IDENTIFIER ::= { pdn-interfaces 9 }
+-- frame-relay-clear-stat   OBJECT IDENTIFIER ::= { pdnFrameRelay 1 }
+-- frNetDcp                 OBJECT IDENTIFIER ::= { pdnFrameRelay 2 }
+-- devPVCTest               OBJECT IDENTIFIER ::= { pdnFrameRelay 3 }
+-- ocuPort                OBJECT IDENTIFIER ::= { pdn-interfaces 10 }
+pdnAtm                    OBJECT IDENTIFIER ::= { pdn-interfaces 11 }
+-- devAtmSlv                OBJECT IDENTIFIER ::= { pdnAtm 1 }
+-- devAtmPVCTest            OBJECT IDENTIFIER ::= { pdnAtm 2 }
+-- devAtmStatsMIB           OBJECT IDENTIFIER ::= { pdnAtm 3 }
+-- devAtmSCM                OBJECT IDENTIFIER ::= { pdnAtm 4 }
+-- pdnAtmExtMIB             OBJECT IDENTIFIER ::= { pdnAtm 5 }
+-- pdnAtmM4ExtMIB           OBJECT IDENTIFIER ::= { pdnAtm 6 }
+pdnIfExt                  OBJECT IDENTIFIER ::= { pdn-interfaces 12 }
+-- pdnIfExtConfig	  OBJECT IDENTIFIER ::= { pdnIfExt 1 }
+-- pdnIfExtTestConfig	  OBJECT IDENTIFIER ::= { pdnIfExt 2 }
+-- pdnIfExtEncapConfig    OBJECT IDENTIFIER ::= { pdnIfExt 3 }
+pdnSonetMIB               OBJECT IDENTIFIER ::= { pdn-interfaces 13 }
+pdnDs3MIB                 OBJECT IDENTIFIER ::= { pdn-interfaces 14 }
+pdnmsdsl                  OBJECT IDENTIFIER ::= { pdn-interfaces 15 }
+pdnIsdn                   OBJECT IDENTIFIER ::= { pdn-interfaces 16 }
+pdnMgmtLink               OBJECT IDENTIFIER ::= { pdn-interfaces 17 }
+pdnDiagPortal             OBJECT IDENTIFIER ::= { pdn-interfaces 18 }
+
+pdn-devConfig        OBJECT IDENTIFIER ::= { pdn-common 7 }
+pdn-security         OBJECT IDENTIFIER ::= { pdn-common 8 }
+pdn-traps            OBJECT IDENTIFIER ::= { pdn-common 9 }
+pdn-control          OBJECT IDENTIFIER ::= { pdn-common 10 }
+pdn-ipInjection      OBJECT IDENTIFIER ::= { pdn-common 11 }
+pdn-ip               OBJECT IDENTIFIER ::= { pdn-common 12 }
+pdn-rmon             OBJECT IDENTIFIER ::= { pdn-common 13 }
+pdn-fileXfer         OBJECT IDENTIFIER ::= { pdn-common 14 } 
+pdn-feature          OBJECT IDENTIFIER ::= { pdn-common 15 }
+pdn-diagnostics      OBJECT IDENTIFIER ::= { pdn-common 16 }
+-- diagTestMIBObjects    OBJECT IDENTIFIER ::= { pdn-diagnostics 1  }
+-- diagTestMIBTraps      OBJECT IDENTIFIER ::= { pdn-diagnostics 2 }
+
+pdn-dns              OBJECT IDENTIFIER ::= { pdn-common 17 }
+-- pdnDNSMIBObjects      OBJECT IDENTIFIER ::= { pdn-dns 1 }
+-- pdnDNSMIBTraps        OBJECT IDENTIFIER ::= { pdn-dns 2 }
+
+pdn-ether            OBJECT IDENTIFIER ::= { pdn-common 18 }
+-- pdnPortConfigMIBObjects  OBJECT IDENTIFIER ::= { pdn-ether 1 }
+-- pdnPortConfigMIBTraps    OBJECT IDENTIFIER ::= { pdn-ether 2 }
+
+
+pdn-socket           OBJECT IDENTIFIER ::= { pdn-common 19 }
+-- devSocketStatsMIBObjects  OBJECT IDENTIFIER ::= { pdn-socket 1 }
+-- devSocketStatsMIBTraps    OBJECT IDENTIFIER ::= { pdn-socket 2 }
+
+
+pdn-time             OBJECT IDENTIFIER ::= { pdn-common 20 }
+-- devTimeMIBObjects       OBJECT IDENTIFIER ::= { pdn-time 1 }
+-- devTimeMIBTraps         OBJECT IDENTIFIER ::= { pdn-time 2 }
+
+
+pdn-bridge           OBJECT IDENTIFIER ::= { pdn-common 21 }
+-- pdnBridgeGenericMIBObjects OBJECT IDENTIFIER ::= { pdn-bridge 1 }
+-- pdnBridgeMIBTraps OBJECT IDENTIFIER ::= { pdn-bridge 2 }
+
+pdn-domain           OBJECT IDENTIFIER ::= { pdn-common 22 }
+-- pdnDomainMIBObjects   OBJECT IDENTIFIER ::= { pdn-domain 1 }
+-- pdnDomainMIBTraps     OBJECT IDENTIFIER ::= { pdn-domain 2 }
+
+pdn-filter           OBJECT IDENTIFIER ::= { pdn-common 23 }
+-- sysDevFilterMIBObjects OBJECT IDENTIFIER ::= { pdn-filter 1 }
+-- sysDevFilterMIBTraps   OBJECT IDENTIFIER ::= { pdn-filter 2 }
+
+pdn-dslam           OBJECT IDENTIFIER ::= { pdn-common 24 }
+-- sysDevDslamMIBObjects OBJECT IDENTIFIER ::= { pdn-dslam 1 }
+-- sysDevDslamMIBTraps   OBJECT IDENTIFIER ::= { pdn-dslam 2 }
+
+pdn-radius           OBJECT IDENTIFIER ::= { pdn-common 25 }
+-- sysDevRadiusMIBObjects OBJECT IDENTIFIER ::= { pdn-radius 1 }
+-- sysDevRadiusMIBTraps   OBJECT IDENTIFIER ::= { pdn-radius 2 }
+
+
+pdn-inet             OBJECT IDENTIFIER ::= { pdn-common 26 }
+-- pdnInetMIBObjects OBJECT IDENTIFIER ::= { pdn-inet 1 }
+-- pdnInetMIBTraps   OBJECT IDENTIFIER ::= { pdn-inet 2 }
+
+
+pdn-arp             OBJECT IDENTIFIER ::= { pdn-common 27 }
+-- pdnNetToMediaGenericMIBObjects  OBJECT IDENTIFIER ::= { pdn-arp 1 }
+-- pdnNetToMediaMIBTraps OBJECT IDENTIFIER ::= { pdn-arp 2 }
+
+pdn-devStats        OBJECT IDENTIFIER ::= { pdn-common 28 }
+-- devStatsMIBObjects    OBJECT IDENTIFIER ::= { pdn-devStats 1 }
+-- devStatsMIBTraps      OBJECT IDENTIFIER ::= { pdn-devStats 2 }
+
+pdn-dhcp	    OBJECT IDENTIFIER ::= { pdn-common 29 }
+pdn-nat		    OBJECT IDENTIFIER ::= { pdn-common 30 }
+pdn-syslog	    OBJECT IDENTIFIER ::= { pdn-common 31 }
+pdn-dialControl     OBJECT IDENTIFIER ::= { pdn-common 32 }
+
+pdn-devNetTiming          OBJECT IDENTIFIER ::= { pdn-common 33 }
+-- pdnDevNetTimingMIB            OBJECT IDENTIFIER ::= { pdn-devTiming 1 }
+-- pdnDevNetTimingMIBObjects     OBJECT IDENTIFIER ::= { pdnDevNetTimingMIB 1 }
+-- pdnDevNetTimingMIBTraps       OBJECT IDENTIFIER ::= { pdnDevNetTimingMIB 2 }
+-- pdnDevNetTimingMIBConformance OBJECT IDENTIFIER ::= { pdnDevNetTimingMIB 3 }
+
+pdn-snmp             OBJECT IDENTIFIER ::= { paradyne 3 }
+ent-9XXX              OBJECT IDENTIFIER ::= { pdn-snmp 1 }
+ent-96XX              OBJECT IDENTIFIER ::= { ent-9XXX 1 } -- unused
+ent-bonaire           OBJECT IDENTIFIER ::= { ent-9XXX 2 } -- unused
+ent-91XX              OBJECT IDENTIFIER ::= { ent-9XXX 3 } -- unused
+
+pdn-36xx             OBJECT IDENTIFIER ::= { paradyne 4 } -- unused
+
+pdn-aac              OBJECT IDENTIFIER ::= { paradyne 5 } -- unused
+
+pdn-eagle            OBJECT IDENTIFIER ::= { paradyne 6 } -- unused
+
+pdn-ar               OBJECT IDENTIFIER ::= { paradyne 7 } -- unused
+
+pdn-as               OBJECT IDENTIFIER ::= { paradyne 8 } -- unused
+
+pdn-xdsl             OBJECT IDENTIFIER ::= { paradyne 9 }
+ent-5100                OBJECT IDENTIFIER ::= { pdn-xdsl 1 }
+-- xdslIfConfigMIBObjects        OBJECT IDENTIFIER ::= { pdn-xdsl 2 }
+ent-8800                OBJECT IDENTIFIER ::= { pdn-xdsl 3 } 
+-- sysDevStats            OBJECT IDENTIFIER ::= { ent-8800 1 } 
+-- sysDevConfig           OBJECT IDENTIFIER ::= { ent-8800 2 } 
+-- sysDevFilter           OBJECT IDENTIFIER ::= { ent-8800 3 } 
+-- diagTests              OBJECT IDENTIFIER ::= { ent-8800 4 } 
+-- pdnDot1dBridge         OBJECT IDENTIFIER ::= { ent-8800 5 } 
+-- pdnDomain              OBJECT IDENTIFIER ::= { ent-8800 6 } 
+-- sysDevRadiusAuth       OBJECT IDENTIFIER ::= { ent-8800 7 } 
+-- sysDevUserAccount      OBJECT IDENTIFIER ::= { ent-8800 8 } 
+-- xdslIfConfigMIBTraps          OBJECT IDENTIFIER ::= { pdn-xdsl 4 }
+ent-8600                OBJECT IDENTIFIER ::= { pdn-xdsl 5 } -- unused
+pdn-sle                 OBJECT IDENTIFIER ::= { pdn-xdsl 6 }
+
+pdn-comp             OBJECT IDENTIFIER ::= { paradyne 10 }
+ent-9028                OBJECT IDENTIFIER ::= { pdn-comp 1 } -- unused
+
+pdn-ptc              OBJECT IDENTIFIER ::= { paradyne 11 }
+ent-ptc                 OBJECT IDENTIFIER ::= { pdn-ptc 1 } -- unused
+
+pdn-mpe              OBJECT IDENTIFIER ::= { paradyne 12 }
+
+pdn-experimental     OBJECT IDENTIFIER ::= { paradyne 13 }
+
+pdn-ietf-drafts      OBJECT IDENTIFIER ::= { paradyne 14 }
+-- draft-ietf-frnetmib-frsi-00  OBJECT IDENTIFER ::= { pdn-ietf-drafts 1 }
+
+mpe-mib2         OBJECT IDENTIFIER ::= { pdn-mpe 4 }
+-- mpeMib2MIBObjects OBJECT IDENTIFIER ::= { mpe-mib2 1 }
+-- mpeMib2MIBTraps   OBJECT IDENTIFIER ::= { mpe-mib2 2 }
+
+
+mpe-devHealth    OBJECT IDENTIFIER ::= { pdn-mpe 7 }
+-- mpeDevHealthAndStatusMIBObjects  OBJECT IDENTIFIER ::= { mpe-devHealth  1 }
+-- mpeDevHealthAndStatusMIBTraps    OBJECT IDENTIFIER ::= { mpe-devHealth  2 }
+
+-- mpe-devControl    OBJECT IDENTIFIER ::= { pdn-mpe 10 }
+-- mpeDevControlMIBObjects      OBJECT IDENTIFIER ::= { mpe-devControl 1  }
+-- mpeDevControlMIBTraps        OBJECT IDENTIFIER ::= { mpe-devControl 2  }
+
+mpe-bridge         OBJECT IDENTIFIER ::= { pdn-mpe 21 }
+-- mpePdnBridgeGenericMIBObjects OBJECT IDENTIFIER ::= { mpe-bridge 1 }
+-- mpePdnBridgeMIBTraps OBJECT IDENTIFIER ::= { mpe-bridge 2 }
+
+mpe-domain       OBJECT IDENTIFIER ::= { pdn-mpe 22 }
+-- mpePdnDomainMIBObjects   OBJECT IDENTIFIER ::= { mpe-domain 1 }
+-- mpePdnDomainMIBTraps     OBJECT IDENTIFIER ::= { mpe-domain 2 }
+
+mpe-filter         OBJECT IDENTIFIER ::= { pdn-mpe 23 }
+-- mpeSysDevFilterMIBObjects OBJECT IDENTIFIER ::= { mpe-filter 1 }
+-- mpeSysDevFilterMIBTraps   OBJECT IDENTIFIER ::= { mpe-filter 2 }
+
+mpe-dslam         OBJECT IDENTIFIER ::= { pdn-mpe 24 }
+-- mpeSysDevDslamMIBObjects OBJECT IDENTIFIER ::= { mpe-dslam 1 }
+-- mpeSysDevDslamMIBTraps   OBJECT IDENTIFIER ::= { mpe-dslam 2 }
+
+mpe-arp            OBJECT IDENTIFIER ::= { pdn-mpe 27 }
+-- mpePdnNetToMediaGenericMIBObjects      OBJECT IDENTIFIER ::= { mpe-arp 1 } 
+-- mpePdnNetToMediaGenericMIBTraps        OBJECT IDENTIFIER ::= { mpe-arp 2 }
+
+mpe-devStats     OBJECT IDENTIFIER ::= { pdn-mpe 28 }
+-- mpeDevStatsMIBObjects    OBJECT IDENTIFIER ::= { mpe-devStats 1 }
+-- mpeDevStatsMIBTraps      OBJECT IDENTIFIER ::= { mpe-devStats 2 }
+
+mpe-devConfig     OBJECT IDENTIFIER ::= { pdn-mpe 29 }
+-- mpeDevConfigMIB            OBJECT IDENTIFIER ::= { mpe-devConfig 1 }
+-- mpeDevConfigMIBObjects     OBJECT IDENTIFIER ::= { mpeDevConfigMIB 1 }
+-- mpeDevConfigMIBTraps       OBJECT IDENTIFIER ::= { mpeDevConfigMIB 2 }
+-- mpeDevConfigMIBConformance OBJECT IDENTIFIER ::= { mpeDevConfigMIB 3 }
+
+mpe-atm     OBJECT IDENTIFIER ::= { pdn-mpe 30 }
+-- mpeAtmConfMIB             OBJECT IDENTIFIER ::= { mpe-atm 1 }
+-- mpeAtmConfMIBObjects      OBJECT IDENTIFIER ::= { mpeAtmConfMIB 1 }
+-- mpeAtmConfMIBTraps        OBJECT IDENTIFIER ::= { mpeAtmConfMIB 2 }
+-- mpeAtmConfMIBConformance  OBJECT IDENTIFIER ::= { mpeAtmConfMIB 3 }
+
+END
+
